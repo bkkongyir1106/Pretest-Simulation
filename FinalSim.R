@@ -1,15 +1,15 @@
 set.seed(110)
-num.sim <- 50
+num.sim <- 100
 alpha <- 0.05
 mydist <- c("Expotential","Uniform", "Standard Normal")
 mysum <- c(10,20,30,40,50)
 
-mypval<-numeric(length(mydist)*length(mysum))
-mypvalues <- array(mypval, dim = c(5, 3), dimnames = list(mysum,mydist))
+powr<-numeric(length(mydist)*length(mysum))
+mypower <- array(mypval, dim = c(5, 3), dimnames = list(mysum,mydist))
 
 for(i in 1:length(mysum)){
   n<-mysum[i]
-  pval <- NULL
+  powr <- NULL
   for (k in 1:length(mydist)){ 
     dist<-mydist[k]
     for (j in 1: num.sim) {
@@ -18,9 +18,9 @@ for(i in 1:length(mysum)){
       st<-shapiro.test(x)
       p[j]<-st$p.value
     }
-    pval[k]<-mean(p>alpha)
+    powr[k]<-mean(p<=alpha)
   }
-  mypvalues[i,] <- t(as.matrix(pval))
+  mypower[i,] <- t(as.matrix(powr))
 }
 
-mypvalues
+mypower
