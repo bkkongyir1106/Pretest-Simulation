@@ -1,0 +1,28 @@
+set.seed(110)
+num.sim <- 100
+alpha <- 0.05
+mydist <- c("Expotential","Uniform", "Standard Normal")
+mysum <- c(10,20,30,40,50)
+
+powr<-numeric(length(mydist)*length(mysum))
+mypower <- array(powr, dim = c(5, 3), dimnames = list(mysum,mydist))
+
+#mypower<-NULL
+for(i in 1:length(mysum)){
+  n<-mysum[i]
+  powr <- NULL
+  for (k in 1:length(mydist)){ 
+    dist<-mydist[k]
+    p<-NULL
+    for (j in 1: num.sim) {
+      
+      if(k==1){x<-rexp(n,1)} else if (k==2){ x<-runif(n,0,1)} else {x<-rnorm(n,0,1)}
+      st<-shapiro.test(x)
+      p[j]<-st$p.value
+    }
+    powr[k]<-mean(p<=alpha)
+  }
+  mypower[i,] <- t(as.matrix(powr))
+}
+
+mypower
