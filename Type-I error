@@ -1,24 +1,16 @@
-# this function generates data from 
-#  an arbitrary distribution
+
 set.seed(32)
 gen_data <- function(distn, sample_size, ...) {
   return(do.call(distn, list(sample_size,...)))
 }
-
-# This function tests a sample for normality
 normality_test <- function(sample_data, shapiro.alpha) {
   return(shapiro.test(sample_data)$p.value > shapiro.alpha)
 }
-
-#########################################################
-# iter_passed_size: no of samples that passed normality #
-#########################################################
 set.seed(32)
 sim <- function(iter_passed_size, distn, mu, sd,shapiro.alpha, t.alpha, 
                 sample_size, ...){
-  count = 0  #No of times data is generated irrespective of passing normality
-  reject_h0 = 0 # No fo times we reject the null hypothesis in the t-test
-  total_t.test_passed = iter_passed_size #just a reassignment
+  reject_h0 = 0
+  total_t.test_passed = iter_passed_size 
   
   while(iter_passed_size > 0) {
     x <- gen_data(distn, sample_size, ...)
@@ -31,7 +23,6 @@ sim <- function(iter_passed_size, distn, mu, sd,shapiro.alpha, t.alpha,
     }
   }
  reject_h0 / total_t.test_passed
-  #print(c("Power: ",(total_t.test_passed- reject_h0) / total_t.test_passed))
 }
 sample <- c(10,20)
 alpha <- c(0.05, 0.01)
