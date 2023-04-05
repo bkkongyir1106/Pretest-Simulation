@@ -1,0 +1,34 @@
+
+#set.seed(32)
+alpha<-0.05
+shapiro_alpha <- c(0.1,0.05,0.01, 0.005)
+sample_size<-c(10,20,30,40,50,100)
+pval<- numeric(length(shapiro_alpha)*length(sample_size))
+pvalue<-array(pval, dim = c(length(sample_size), length((shapiro_alpha))),
+              dimnames = list(sample_size,shapiro_alpha))
+num_sim<-0
+for(i in 1: length(sample_size)){
+  n<-sample_size[i]
+  for(j in 1: length(shapiro_alpha)){
+    s.alpha<-shapiro_alpha[j]
+    sample_passed<-0 
+    reject_h0<-numeric(sample_passed)
+    while (sample_passed<1000){
+      x1<-rnorm(n,0,sd=1)
+      x2<-rnorm(n,0,sd=1)
+      if(shapiro.test(x1)$p.value>s.alpha & shapiro.test(x2)$p.value>s.alpha){
+        pval<-t.test(x1,x2)$p.value
+      }
+      if(pval<alpha){
+        reject_h0[sample_passed]<-1
+      }
+      else{ reject_h0[sample_passed]<-0}
+      sample_passed<-sample_passed+1
+      num_sim<-num_sim+1
+    }
+    pvalue[i,j]<-mean(reject_h0)
+    
+  }
+  
+}
+pvalue
