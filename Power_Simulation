@@ -3,11 +3,12 @@ set.seed(32)
 alpha<-0.05
 df<-1
 mu.vec <- seq(-2,2,0.2)
-sample_size<-c(10,20,30,40,50,100)
+sample_size<-c(10,20,30,40,50)
 pval1.t <- pval1.w<-pval2.t <- pval2.w<-pval3.t <- pval3.w<-pval4.t <- pval4.w<- numeric()
 powr<- numeric(length(mu.vec)*length(sample_size))
 power1.t<-power1.w<-power2.t<-power2.w<-power3.t<-power3.w<-power4.t<-power4.w<-array(powr,
           dim = c(length(sample_size), length((mu.vec))),dimnames = list(sample_size,mu.vec))
+
 for(i in 1: length(sample_size)){
   print(i)
   n<-sample_size[i]
@@ -15,31 +16,32 @@ for(i in 1: length(sample_size)){
     mu<-mu.vec[j]
     for (k in 1:10000){
       # normal
-      x_norm<-rnorm(n,mean=mu,sd=sqrt(2*df))
-      z1<-x_norm/sqrt(2*df)
-      pval1.t[k]<-t.test(z1)$p.value
-      pval1.w[k] <- wilcox.test(z1)$p.value
+      x<-rnorm(n,mean=mu,sd=sqrt(2*df))
+      y<-x-mu
+      z<-y/sqrt(2*df)+mu
+      pval1.t[k]<-t.test(z)$p.value
+      pval1.w[k] <- wilcox.test(z)$p.value
       
       # chi-square
-      x_chi.sq <- rchisq(n, df)
-      y_chi.sq<-x_chi.sq-df+mu
-      z_chi.sq<-y_chi.sq/(sqrt(2*df))
-      pval2.t[k]<-t.test(z_chi.sq)$p.value
-      pval2.w[k] <- wilcox.test(z_chi.sq)$p.value
+      x<-rchisq(n, df)
+      y<-x-df
+      z<-y/(sqrt(2*df))+mu
+      pval2.t[k]<-t.test(z)$p.value
+      pval2.w[k] <- wilcox.test(z)$p.value
       
       #uniform
       x<-runif(n,min=0,max=df)
-      y<-x-df/2+mu
-      z<-y/(df/sqrt(12))
+      y<-x-df/2
+      z<-y/(df/sqrt(12))+mu
       pval3.t[k]<-t.test(z)$p.value
       pval3.w[k] <- wilcox.test(z)$p.value
       
       #exponential
-      # x_exp<-rexp(n,rate=1/df)
-      # y_exp<-x-df+mu
-      # z_exp<-y_exp/df
-      # pval4.t[k]<-t.test(z_exp)$p.value
-      # pval4.w[k] <- wilcox.test(z_exp)$p.value
+      x<-rexp(n,rate=1/df)
+      y<-x-df
+      z<-(y/df)+mu
+      pval4.t[k]<-t.test(z)$p.value
+      pval4.w[k] <- wilcox.test(z)$p.value
       
     }
     power1.t[i,j]<-mean(pval1.t<alpha)
@@ -48,8 +50,8 @@ for(i in 1: length(sample_size)){
     power2.w[i,j]<-mean(pval2.w<alpha)
     power3.t[i,j]<-mean(pval3.t<alpha)
     power3.w[i,j]<-mean(pval3.w<alpha)
-    # power4.t[i,j]<-mean(pval4.t<alpha)
-    # power4.w[i,j]<-mean(pval4.w<alpha)
+     power4.t[i,j]<-mean(pval4.t<alpha)
+     power4.w[i,j]<-mean(pval4.w<alpha)
   }
 }
 
@@ -58,7 +60,7 @@ par(mfrow=c(2,2))
 plot(mu.vec,power1.t[1,],type="l",col="black")
 lines(mu.vec,power2.t[1,],lty=2, col = "red")
 lines(mu.vec,power3.t[1,],lty=3, col = "green")
-#lines(mu.vec,power4.t[1,],lty=4, col = 'blue')
+lines(mu.vec,power4.t[1,],lty=4, col = 'blue')
 title(main = "POWER OF T TEST FOR Sample size=10")
 legend("bottomleft", legend=c("Normal", "Chi-square", 'Uniform'),
               col=c("black","red", "green"), lty =c(1:3),cex = 0.5)
@@ -67,16 +69,16 @@ legend("bottomleft", legend=c("Normal", "Chi-square", 'Uniform'),
 plot(mu.vec,power1.t[2,],type="l",col="black")
 lines(mu.vec,power2.t[2,],lty=2, col = "red")
 lines(mu.vec,power3.t[2,],lty=3, col = "green")
-#lines(mu.vec,power4.t[2,],lty=4,col = 'blue')
+lines(mu.vec,power4.t[2,],lty=4,col = 'blue')
 title(main = "POWER OF T TEST FOR Sample size=20")
 legend("bottomleft", legend=c("Normal", "Chi-square", 'Uniform'),
        col=c("black","red", "green"), lty =c(1:3),cex = 0.5)
 
 
-plot(mu.vec,power1.t[6,],type="l",col="black")
-lines(mu.vec,power2.t[6,],lty=2, col = "red")
-lines(mu.vec,power3.t[6,],lty=3,col = "green")
-#lines(mu.vec,power4.t[6,],lty=4,col = 'blue')
+plot(mu.vec,power1.t[5,],type="l",col="black")
+lines(mu.vec,power2.t[5,],lty=2, col = "red")
+lines(mu.vec,power3.t[5,],lty=3,col = "green")
+lines(mu.vec,power4.t[5,],lty=4,col = 'blue')
 title(main = "POWER OF T TEST FOR Sample size=100")
 legend("bottomleft", legend=c("Normal", "Chi-square", 'Uniform'),
        col=c("black","red", "green"), lty =c(1:3),cex = 0.5)
@@ -87,7 +89,6 @@ lines(mu.vec,power1.t[2,],lty=2, col = "red")
 lines(mu.vec,power1.t[3,],lty=3,col = "green")
 lines(mu.vec,power1.t[4,],lty=4, col = 'blue')
 lines(mu.vec,power1.t[5,],lty=5,col = 'purple')
-lines(mu.vec,power1.t[6,],lty=6, col = 'orange')
 title(main = "POWER OF T TEST for data from normal distn")
 legend("bottomleft", legend=c("n=10", "n=20", 'n=30','n=40',"n=50","n=100"),
        col=c("black","red", "green",'blue','purple','orange'), lty =c(1:6),cex = 0.5)
