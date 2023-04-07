@@ -1,0 +1,54 @@
+# function to Generate data
+set.seed(32)
+gen_data <- function(distn, sample_size, ...) {
+  return(do.call(distn, list(sample_size,...)))
+}
+# function to test for normality
+normality_test <- function(sample_data, shapiro.alpha) {
+  return(shapiro.test(sample_data)$p.value > shapiro.alpha)
+}
+set.seed(32)
+# function to  perform two samples t test
+sim <- function(iter_passed_size, distn, mu, sd,shapiro.alpha, t.alpha, sample_size, ...){
+  count<-0
+  reject_h0 = 0
+  total_t.test_passed = iter_passed_size 
+  while(iter_passed_size > 0) {
+    x1 <- gen_data(distn, sample_size, ...)
+    x2 <- gen_data(distn, sample_size, ...)
+    count = count + 1
+    if(normality_test(x1,shapiro.alpha)& normality_test(x2,shapiro.alpha)) {
+      if(t.test(x1,x2, mu=mu)$p.value < t.alpha) {
+        reject_h0 = reject_h0 + 1
+      }
+      iter_passed_size = iter_passed_size - 1
+    }
+  }
+ reject_h0 / total_t.test_passed
+}
+
+shapiro_alpha <- c(0.1,0.05,0.01)
+sample_size<-c(10,20,30,40)
+pval<- numeric(length(shapiro_alpha)*length(sample_size))
+pvalue<-pvalue_e<-pvalue_u<-array(pval, dim = c(length(sample_size), length((shapiro_alpha))),
+              dimnames = list(sample_size,shapiro_alpha))
+
+for (i in 1:length(sample_size)){
+  n <- sample_size[i]
+  print(i)
+  for (j in 1:length(shapiro_alpha)){
+    print(j)
+    alpha <- shapiro_alpha[j]
+    pvalue[i,j] <- sim(10000,"rnorm",0,1,0.05, alpha,n)
+    pvalue_e[i,j] <- sim(10000,"rexp",0, NA,0.05, alpha,n)
+  }
+}
+pvalue
+pvalue_e
+save(data, file = "Type_I.error_t.Rdata")
+
+load("Type_I.error_t.Rdata")
+
+
+
+
