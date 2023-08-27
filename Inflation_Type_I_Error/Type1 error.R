@@ -46,15 +46,16 @@ for(i in 1: length(sample_size)){
 Inflation_TypeI_error_unif
 Inflation_TypeI_error_exp
 png(file="error_inflation.jpeg", width=600, height=600)
-plot(sample_size, Type1_error_Norm, type="l", col = 1, 
+plot(sample_size, Type1_error_Norm, type="l", col = "violet", 
      ylim = c(-0.03, 0.08),xlab = "Sample Size", ylab = "Type I error")
-lines(sample_size, Type1_error_unif, col = 2)
-lines(sample_size, Type1_error_exp, col = 3)
-lines(sample_size, Inflation_TypeI_error_unif, col = 4)
-lines(sample_size, Inflation_TypeI_error_unif, col = 5)
+lines(sample_size, Type1_error_unif, col = "red")
+lines(sample_size, Type1_error_exp, col = "green")
+lines(sample_size, Inflation_TypeI_error_unif, col = "cyan")
+lines(sample_size, Inflation_TypeI_error_unif, col = "blue")
+abline(h=0.0, col="black")
 title(main = "Type I Error Rate.")
-legend("topleft", legend=c("Type1_error_Norm", "Type1_error_unif", "Type1_error_exp", "Inflation_TypeI_error_unif", "Inflation_TypeI_error_unif"),col=1:5, 
-       lty =1:5,cex = 0.5)
+legend("topleft", legend=c("Type1_error_Norm", "Type1_error_unif", "Type1_error_exp", "Inflation_TypeI_error_unif", "Inflation_TypeI_error_unif", "0.05 line"),
+       col=c("violet","red", "green","cyan","blue", "black"), lty =1:5,cex = 0.5)
 dev.off()
 
 save.image(paste0("Type1_error",".RData"))
