@@ -111,7 +111,7 @@ for (i in 1 : length(sample_size)) {
     if(shapiro.test(w1)$p.value <= alpha/2 | shapiro.test(w2)$p.value <= alpha/2){
       rejectH0_SW_test_weibull[j] <- 1
     }#power of SW test
-    if(t.test((w1-7)/sqrt(49), (g2-7)/sqrt(49) + df)$p.value <= alpha){
+    if(t.test((w1-gamma(8/7))/sqrt(gamma(9/7)-(gamma(8/7))^2), (w2-gamma(8/7))/sqrt(gamma(9/7)-(gamma(8/7))^2) + df)$p.value <= alpha){
       powr_t_test_weibull[j] <- 1
     }#power of t test
   }
@@ -217,7 +217,7 @@ abline(h = 0)
 title(main = "Power loss of t test")
 legend("topleft", legend=c("expontial", "uniform", "gamma", "beta", "chisq", "weibull"),
        col=c("red", "blue", "green", "purple", "violet"), lty =1,cex = 0.5)
- 
+
 dev.off()
 
 save.image(paste0("two_samples",".RData"))
