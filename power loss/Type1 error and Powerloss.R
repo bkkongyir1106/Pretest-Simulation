@@ -1,22 +1,22 @@
 rm(list = ls())
 setwd("D:/OSU/Research_Fall2023/One sample t test")
 set.seed(1)
-N <- 10000
+N <- 1000000
 alpha <- 0.05
 df <- 0.5
 sample_size <- c(10,20,30,40,50)
-Type1_error_Norm <- Type1_error_exp <- Type1_error_unif <- Type1_error_beta <- Type1_error_gamma <- Type1_error_chisq <- numeric(length(sample_size))
-inflation_Type1_error_exp <- inflation_Type1_error_unif <- inflation_Type1_error_beta <- inflation_Type1_error_gamma <- inflation_Type1_error_chisq <- numeric(length(sample_size))
-Power_SW_test_exp <- Power_SW_test_unif <- Power_SW_test_beta <- Power_SW_test_gamma <- Power_SW_test_chisq <- numeric(length(sample_size))
-power_t_test_Norm <- power_t_test_exp <- power_t_test_unif <- power_t_test_gamma <- power_t_test_beta <- power_t_test_chisq <- numeric(length(sample_size))
-powrloss_exp <-powrloss_unif  <-powrloss_gamma <-powrloss_beta <-powrloss_chisq <- numeric(length(sample_size))
+Type1_error_Norm <- Type1_error_exp <- Type1_error_unif <- Type1_error_beta <- Type1_error_gamma <- Type1_error_chisq <- Type1_error_weibull<- numeric(length(sample_size))
+inflation_Type1_error_exp <- inflation_Type1_error_unif <- inflation_Type1_error_beta <- inflation_Type1_error_gamma <- inflation_Type1_error_chisq <- inflation_Type1_error_weibull<- numeric(length(sample_size))
+Power_SW_test_exp <- Power_SW_test_unif <- Power_SW_test_beta <- Power_SW_test_gamma <- Power_SW_test_chisq <- Power_SW_test_weibul <- numeric(length(sample_size))
+power_t_test_Norm <- power_t_test_exp <- power_t_test_unif <- power_t_test_gamma <- power_t_test_beta <- power_t_test_chisq <- power_t_test_weibull <- numeric(length(sample_size))
+powrloss_exp <-powrloss_unif  <-powrloss_gamma <-powrloss_beta <-powrloss_chisq <- powrloss_weibull<- numeric(length(sample_size))
 for (i in 1 : length(sample_size)) {
   n <- sample_size[i]
   print(n)
   
-  rejectH0_SW_test_exp <- rejectH0_SW_test_unif <- rejectH0_SW_test_beta <- rejectH0_SW_test_gamma <- rejectH0_SW_test_chisq <- numeric(N)
-  rejectH0_t_test_exp <- rejectH0_t_test_unif <- rejectH0_t_test_beta <- rejectH0_t_test_norm <- rejectH0_t_test_gamma <- rejectH0_t_test_chisq<- numeric(N)
-  powr_t_test_norm <- powr_t_test_exp <- powr_t_test_unif <- powr_t_test_beta <- powr_t_test_gamma <- powr_t_test_chisq <-numeric(N)
+  rejectH0_SW_test_exp <- rejectH0_SW_test_unif <- rejectH0_SW_test_beta <- rejectH0_SW_test_gamma <- rejectH0_SW_test_chisq <- rejectH0_SW_test_weibull<- numeric(N)
+  rejectH0_t_test_exp <- rejectH0_t_test_unif <- rejectH0_t_test_beta <- rejectH0_t_test_norm <- rejectH0_t_test_gamma <- rejectH0_t_test_chisq <- rejectH0_t_test_weibull<- numeric(N)
+  powr_t_test_norm <- powr_t_test_exp <- powr_t_test_unif <- powr_t_test_beta <- powr_t_test_gamma <- powr_t_test_chisq <- powr_t_test_weibull <-numeric(N)
   for(j in 1 : N){
     
     #========================================
@@ -60,7 +60,7 @@ for (i in 1 : length(sample_size)) {
     #       beta distn                      #
     # =======================================
     b0 <- rbeta(n, shape1 = 2, shape2 = 9) - 2/11
-    b <- b0/(sqrt(18/133))
+    b <- b0/(sqrt(3/242))
     if(t.test(b)$p.value <= alpha){
       rejectH0_t_test_beta[j] <- 1
     }# Type I error 
@@ -99,6 +99,20 @@ for (i in 1 : length(sample_size)) {
     if(t.test(k + df)$p.value <= alpha){
       powr_t_test_chisq[j] <- 1
     }#power of t test
+    #========================================
+    #       weibull distn                     #
+    # =======================================
+    w1 <- rweibull(n, shape = 7, scale = 1) 
+    w <- (w1-gamma(8/7))/sqrt(gamma(9/7)-(gamma(8/7))^2)
+    if(t.test(w)$p.value <= alpha){
+      rejectH0_t_test_weibull[j] <- 1
+    }
+    if(shapiro.test(w)$p.value <= alpha){
+      rejectH0_SW_test_weibull[j] <- 1
+    }
+    if(t.test(w + df)$p.value <= alpha){
+      powr_t_test_weibull[j] <- 1
+    }#power of t test
   }
   # Type I error
   Type1_error_Norm[i] <- round(mean(rejectH0_t_test_norm), 3)
@@ -107,18 +121,21 @@ for (i in 1 : length(sample_size)) {
   Type1_error_beta[i] <- round(mean(rejectH0_t_test_beta), 3)
   Type1_error_gamma[i] <- round(mean(rejectH0_t_test_gamma), 3)
   Type1_error_chisq[i] <- round(mean(rejectH0_t_test_chisq), 3)
+  Type1_error_weibull[i] <- round(mean(rejectH0_t_test_weibull), 3)
   #inflation of Type I error
   inflation_Type1_error_exp[i] <- Type1_error_exp[i] - Type1_error_Norm[i]
   inflation_Type1_error_unif[i] <- Type1_error_unif[i] - Type1_error_Norm[i]
   inflation_Type1_error_beta[i] <- Type1_error_beta[i] - Type1_error_Norm[i]
   inflation_Type1_error_gamma[i] <- Type1_error_gamma[i] - Type1_error_Norm[i]
   inflation_Type1_error_chisq[i] <- Type1_error_chisq[i] - Type1_error_Norm[i]
+  inflation_Type1_error_weibull[i] <- Type1_error_weibull[i] - Type1_error_Norm[i]
   #power of SW test
   Power_SW_test_exp[i] <- round(mean(rejectH0_SW_test_exp), 3)
   Power_SW_test_unif[i] <- round(mean(rejectH0_SW_test_unif), 3)
   Power_SW_test_beta[i] <- round(mean(rejectH0_SW_test_beta), 3)
   Power_SW_test_gamma[i] <- round(mean(rejectH0_SW_test_gamma), 3)
   Power_SW_test_chisq[i] <- round(mean(rejectH0_SW_test_chisq), 3)
+  Power_SW_test_weibul[i] <- round(mean(rejectH0_SW_test_weibull), 3)
   # Power of t test
   power_t_test_Norm[i] <- round(mean(powr_t_test_norm), 3)
   power_t_test_exp[i] <- round(mean(powr_t_test_exp), 3)
@@ -126,12 +143,14 @@ for (i in 1 : length(sample_size)) {
   power_t_test_beta[i] <- round(mean(powr_t_test_beta), 3)
   power_t_test_gamma[i] <- round(mean(powr_t_test_gamma), 3)
   power_t_test_chisq[i] <- round(mean(powr_t_test_chisq), 3)
+  power_t_test_weibull[i] <- round(mean(powr_t_test_weibull), 3)
   #power loss
   powrloss_exp[i] <- power_t_test_Norm[i] - power_t_test_exp[i]
   powrloss_unif[i] <- power_t_test_Norm[i] - power_t_test_unif[i]
   powrloss_gamma[i] <- power_t_test_Norm[i] - power_t_test_beta[i]
   powrloss_beta[i] <- power_t_test_Norm[i] - power_t_test_gamma[i]
   powrloss_chisq[i] <- power_t_test_Norm[i] - power_t_test_chisq[i]
+  powrloss_weibull[i] <- power_t_test_Norm[i] - power_t_test_weibull[i]
 }
 
 par(mfrow=c(2,2))
@@ -142,9 +161,10 @@ lines(sample_size, Power_SW_test_unif, lwd= 2, col = "blue")
 lines(sample_size, Power_SW_test_beta,lwd= 2, col = "purple")
 lines(sample_size, Power_SW_test_gamma, lwd= 2,col = "green")
 lines(sample_size, Power_SW_test_chisq, lwd= 2,col = "pink")
+lines(sample_size, Power_SW_test_weibul, lwd= 2, col = "gray")
 title(main = "Power SW test.")
-legend("topleft", legend=c("exponential", "uniform", "beta", "gamma", "chisq"),
-       col=c("red","blue", "purple", "green", "pink"), lty =1,cex = 0.5)
+legend("topleft", legend=c("exponential", "uniform", "beta", "gamma", "chisq","weibull"),
+       col=c("red","blue", "purple", "green", "pink", "gray"), lty =1,cex = 0.5)
 
 
 plot(sample_size, inflation_Type1_error_unif, type="l",lwd= 2, col = "red", 
@@ -152,10 +172,11 @@ plot(sample_size, inflation_Type1_error_unif, type="l",lwd= 2, col = "red",
 lines(sample_size, inflation_Type1_error_beta, lwd= 2, col = "blue")
 lines(sample_size, inflation_Type1_error_gamma,lwd= 2, col = "green")
 lines(sample_size, inflation_Type1_error_chisq,lwd= 2, col = "pink")
-abline(h=0)
+lines(sample_size, inflation_Type1_error_weibull,lwd= 2, col = "gray")
+abline(h=0, lwd=2)
 title(main = "Inflation of Type 1 error rate")
-legend("topleft", legend=c("expontial", "uniform", "beta", "chisq"),
-       col=c("red", "blue", "green", "pink"), lty =1,cex = 0.5)
+legend("topleft", legend=c("expontial", "uniform", "beta", "chisq", "weibull"),
+       col=c("red", "blue", "green", "pink", "gray"), lty =1,cex = 0.5)
 
 #Power of t test
 plot(sample_size, power_t_test_Norm, type="l", lwd= 2, col = "red", 
@@ -165,9 +186,10 @@ lines(sample_size, power_t_test_unif,lwd= 2, col = "gold")
 lines(sample_size, power_t_test_beta,lwd= 2, col = "green")
 lines(sample_size, power_t_test_gamma, col = "brown")
 lines(sample_size, power_t_test_chisq, col = "pink")
+lines(sample_size, power_t_test_weibull, col = "gray")
 title(main = "Power of t test")
-legend("topleft", legend=c("normal", "expontial", "uniform", "beta", "gamma"),
-       col=c( "red","blue", "gold", "green", "brown", "pink"), lty =1,cex = 0.5)
+legend("topleft", legend=c("normal", "expontial", "uniform", "beta", "gamma", "weibull"),
+       col=c( "red","blue", "gold", "green", "brown", "pink", "gray"), lty =1,cex = 0.5)
 
 #power loss of t test
 plot(sample_size, powrloss_exp, type="l", lwd= 2, col = "red", 
@@ -176,10 +198,11 @@ lines(sample_size, powrloss_unif,lwd= 2, col = "blue")
 lines(sample_size, powrloss_gamma, lwd= 2, col = "green")
 lines(sample_size, powrloss_beta, lwd= 2,col = "purple")
 lines(sample_size, powrloss_chisq, lwd= 2,col = "pink")
+lines(sample_size, powrloss_weibull, lwd= 2,col = "gray")
 abline(h = 0)
 title(main = "Power loss of t test")
-legend("topleft", legend=c("expontial", "uniform", "gamma", "beta", "chisq"),
-       col=c("red", "blue", "green", "purple"), lty =1,cex = 0.5)
+legend("topleft", legend=c("expontial", "uniform", "gamma", "beta", "chisq", "weibull"),
+       col=c("red", "blue", "green", "purple", "pink", "gray"), lty =1,cex = 0.5)
 
 dev.off()
 
