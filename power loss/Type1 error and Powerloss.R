@@ -1,5 +1,5 @@
 rm(list = ls())
-setwd("D:/OSU/Research_Fall2023/One sample t test")
+setwd("C:/Users/kongy/OneDrive/Desktop/Research/Pretest-Simulation/power loss")
 set.seed(1)
 N <- 1000000
 alpha <- 0.05
