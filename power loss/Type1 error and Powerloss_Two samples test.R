@@ -154,8 +154,8 @@ for (i in 1 : length(sample_size)) {
   powrloss_weibull[i] <- power_t_test_Norm[i] - power_t_test_weibull[i]
 }
 
-png(filename = "two_sample_test.png", width = 600, height = 600)
-par(mfrow=c(2,2))
+png(filename = "Power SW and Power loss of t test.png", width = 600, height = 600)
+par(mfrow=c(2,1))
 #power of SW test
 plot(sample_size, Power_SW_test_exp, type="l", lwd= 1, col = "red", 
      ylim = c(0, 1),xlab = "Sample Size", ylab = "Power")
@@ -167,44 +167,6 @@ lines(sample_size, Power_SW_test_weibul, lwd= 1,col = "violet")
 title(main = "Power SW test.")
 legend("topleft", legend=c("exponential", "uniform", "beta", "gamma", "chisq", "Weibull"),
        col=c("red","blue", "purple", "green", "pink", "violet"), lty =1,cex = 0.5)
-#Type I error rate
-plot(sample_size, Type1_error_Norm, type="l", lwd= 2, col = "red",
-     ylim = c(0, 0.1),xlab = "Sample Size", ylab = "Power")
-lines(sample_size, Type1_error_exp, lwd= 2, col = "blue")
-lines(sample_size, Type1_error_unif,lwd= 2, col = "purple")
-lines(sample_size, Type1_error_beta, lwd= 2,col = "green")
-lines(sample_size, Type1_error_gamma, lwd= 2,col = "pink")
-lines(sample_size, Type1_error_chisq, lwd= 2,col = "cyan")
-lines(sample_size, Type1_error_weibull, lwd= 2,col = "violet")
-abline(h = 0.05)
-title(main = "Type I error of t test.")
-legend("topleft", legend=c("normal", "exponential", "uniform", "beta", "gamma", "chisq", "weibull"),
-       col=c("red","blue", "purple", "green", "pink", "cyan", "violet"), lty =1,cex = 0.5)
-
-# inflation of Type I error rate
-plot(sample_size, inflation_Type1_error_unif, type="l",lwd= 2, col = "red", 
-     ylim = c(-0.05, 0.1),xlab = "Sample Size", ylab = "Power")
-lines(sample_size, inflation_Type1_error_beta, lwd= 2, col = "blue")
-lines(sample_size, inflation_Type1_error_gamma,lwd= 2, col = "green")
-lines(sample_size, inflation_Type1_error_chisq,lwd= 2, col = "pink")
-lines(sample_size, inflation_Type1_error_weibull,lwd= 2, col = "violet")
-abline(h=0)
-title(main = "Inflation of Type 1 error rate")
-legend("topleft", legend=c("expontial", "uniform", "beta", "chisq", "weibull"),
-       col=c("red", "blue", "green", "pink", "violet"), lty =1,cex = 0.5)
-
-#Power of t test
-plot(sample_size, power_t_test_Norm, type="l", lwd= 2, col = "red", 
-     ylim = c(0, 1),xlab = "Sample Size", ylab = "Power")
-lines(sample_size, power_t_test_exp, lwd= 2, col = "blue")
-lines(sample_size, power_t_test_unif,lwd= 2, col = "gold")
-lines(sample_size, power_t_test_beta,lwd= 2, col = "green")
-lines(sample_size, power_t_test_gamma, col = "brown")
-lines(sample_size, power_t_test_chisq, col = "pink")
-lines(sample_size, power_t_test_weibull, col = "violet")
-title(main = "Power of t test")
-legend("topleft", legend=c("normal", "expontial", "uniform", "beta", "gamma"),
-       col=c( "red","blue", "gold", "green", "brown", "pink", "violet"), lty =1,cex = 0.5)
 
 #power loss of t test
 plot(sample_size, powrloss_exp, type="l", lwd= 2, col = "red", 
@@ -219,6 +181,67 @@ title(main = "Power loss of t test")
 legend("topleft", legend=c("expontial", "uniform", "gamma", "beta", "chisq", "weibull"),
        col=c("red", "blue", "green", "purple", "violet"), lty =1,cex = 0.5)
 
+dev.off()
+# ==========================================================================
+png(filename = "Power SW and Power inflation error.png", width = 600, height = 600)
+par(mfrow=c(2,1))
+
+#power of SW test
+plot(sample_size, Power_SW_test_exp, type="l", lwd= 1, col = "red", 
+     ylim = c(0, 1),xlab = "Sample Size", ylab = "Power")
+lines(sample_size, Power_SW_test_unif, lwd= 1, col = "blue")
+lines(sample_size, Power_SW_test_beta,lwd= 1, col = "purple")
+lines(sample_size, Power_SW_test_gamma, lwd= 1,col = "green")
+lines(sample_size, Power_SW_test_chisq, lwd= 1,col = "pink")
+lines(sample_size, Power_SW_test_weibul, lwd= 1,col = "violet")
+title(main = "Power SW test.")
+legend("topleft", legend=c("exponential", "uniform", "beta", "gamma", "chisq", "Weibull"),
+       col=c("red","blue", "purple", "green", "pink", "violet"), lty =1,cex = 0.5)
+
+
+# inflation of Type I error rate
+plot(sample_size, inflation_Type1_error_unif, type="l",lwd= 2, col = "red", 
+     ylim = c(-0.05, 0.1),xlab = "Sample Size", ylab = "Power")
+lines(sample_size, inflation_Type1_error_beta, lwd= 2, col = "blue")
+lines(sample_size, inflation_Type1_error_gamma,lwd= 2, col = "green")
+lines(sample_size, inflation_Type1_error_chisq,lwd= 2, col = "pink")
+lines(sample_size, inflation_Type1_error_weibull,lwd= 2, col = "violet")
+abline(h=0)
+title(main = "Inflation of Type 1 error rate")
+legend("topleft", legend=c("expontial", "uniform", "beta", "chisq", "weibull"),
+       col=c("red", "blue", "green", "pink", "violet"), lty =1,cex = 0.5)
+dev.off()
+# ================================================================
+png(filename = "error and power of t test.png", width = 600, height = 600)
+par(mfrow=c(2,1))
+
+#Type I error rate
+plot(sample_size, Type1_error_Norm, type="l", lwd= 2, col = "red",
+     ylim = c(0, 0.1),xlab = "Sample Size", ylab = "Power")
+lines(sample_size, Type1_error_exp, lwd= 2, col = "blue")
+lines(sample_size, Type1_error_unif,lwd= 2, col = "purple")
+lines(sample_size, Type1_error_beta, lwd= 2,col = "green")
+lines(sample_size, Type1_error_gamma, lwd= 2,col = "pink")
+lines(sample_size, Type1_error_chisq, lwd= 2,col = "cyan")
+lines(sample_size, Type1_error_weibull, lwd= 2,col = "violet")
+abline(h = 0.05)
+title(main = "Type I error of t test.")
+legend("topleft", legend=c("normal", "exponential", "uniform", "beta", "gamma", "chisq", "weibull"),
+       col=c("red","blue", "purple", "green", "pink", "cyan", "violet"), lty =1,cex = 0.5)
+
+
+#Power of t test
+plot(sample_size, power_t_test_Norm, type="l", lwd= 2, col = "red", 
+     ylim = c(0, 1),xlab = "Sample Size", ylab = "Power")
+lines(sample_size, power_t_test_exp, lwd= 2, col = "blue")
+lines(sample_size, power_t_test_unif,lwd= 2, col = "gold")
+lines(sample_size, power_t_test_beta,lwd= 2, col = "green")
+lines(sample_size, power_t_test_gamma, col = "brown")
+lines(sample_size, power_t_test_chisq, col = "pink")
+lines(sample_size, power_t_test_weibull, col = "violet")
+title(main = "Power of t test")
+legend("topleft", legend=c("normal", "expontial", "uniform", "beta", "gamma"),
+       col=c( "red","blue", "gold", "green", "brown", "pink", "violet"), lty =1,cex = 0.5)
 dev.off()
  
 save.image(paste0("two_samples",".RData"))
