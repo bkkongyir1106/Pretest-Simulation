@@ -5,18 +5,18 @@ N <- 1000000
 alpha <- 0.05
 df <- 0.5
 sample_size <- c(10,20,30,40,50)
-Type1_error_Norm <- Type1_error_exp <- Type1_error_unif <- Type1_error_beta <- Type1_error_gamma <- Type1_error_chisq <- Type1_error_weibull<- numeric(length(sample_size))
-inflation_Type1_error_exp <- inflation_Type1_error_unif <- inflation_Type1_error_beta <- inflation_Type1_error_gamma <- inflation_Type1_error_chisq <- inflation_Type1_error_weibull<- numeric(length(sample_size))
-Power_SW_test_exp <- Power_SW_test_unif <- Power_SW_test_beta <- Power_SW_test_gamma <- Power_SW_test_chisq <- Power_SW_test_weibul <- numeric(length(sample_size))
-power_t_test_Norm <- power_t_test_exp <- power_t_test_unif <- power_t_test_gamma <- power_t_test_beta <- power_t_test_chisq <- power_t_test_weibull <- numeric(length(sample_size))
-powrloss_exp <-powrloss_unif  <-powrloss_gamma <-powrloss_beta <-powrloss_chisq <- powrloss_weibull<- numeric(length(sample_size))
+Type1_error_Norm <- Type1_error_exp <- Type1_error_unif <- Type1_error_beta <- Type1_error_gamma <- Type1_error_chisq <- Type1_error_weibull <- Type1_error_logn<- numeric(length(sample_size))
+inflation_Type1_error_exp <- inflation_Type1_error_unif <- inflation_Type1_error_beta <- inflation_Type1_error_gamma <- inflation_Type1_error_chisq <- inflation_Type1_error_weibull <- inflation_Type1_error_logn <- numeric(length(sample_size))
+Power_SW_test_exp <- Power_SW_test_unif <- Power_SW_test_beta <- Power_SW_test_gamma <- Power_SW_test_chisq <- Power_SW_test_weibul<- Power_SW_test_logn <- numeric(length(sample_size))
+power_t_test_Norm <- power_t_test_exp <- power_t_test_unif <- power_t_test_gamma <- power_t_test_beta <- power_t_test_chisq <- power_t_test_weibull <- power_t_test_logn <- numeric(length(sample_size))
+powrloss_exp <-powrloss_unif  <-powrloss_gamma <-powrloss_beta <-powrloss_chisq <- powrloss_weibull <- powrloss_logn <- numeric(length(sample_size))
 for (i in 1 : length(sample_size)) {
   n <- sample_size[i]
   print(n)
   
-  rejectH0_SW_test_exp <- rejectH0_SW_test_unif <- rejectH0_SW_test_beta <- rejectH0_SW_test_gamma <- rejectH0_SW_test_chisq <- rejectH0_SW_test_weibull<- numeric(N)
-  rejectH0_t_test_exp <- rejectH0_t_test_unif <- rejectH0_t_test_beta <- rejectH0_t_test_norm <- rejectH0_t_test_gamma <- rejectH0_t_test_chisq <- rejectH0_t_test_weibull<- numeric(N)
-  powr_t_test_norm <- powr_t_test_exp <- powr_t_test_unif <- powr_t_test_beta <- powr_t_test_gamma <- powr_t_test_chisq <- powr_t_test_weibull <-numeric(N)
+  rejectH0_SW_test_exp <- rejectH0_SW_test_unif <- rejectH0_SW_test_beta <- rejectH0_SW_test_gamma <- rejectH0_SW_test_chisq <- rejectH0_SW_test_weibull<- rejectH0_SW_test_logn<- numeric(N)
+  rejectH0_t_test_exp <- rejectH0_t_test_unif <- rejectH0_t_test_beta <- rejectH0_t_test_norm <- rejectH0_t_test_gamma <- rejectH0_t_test_chisq <- rejectH0_t_test_weibull <- rejectH0_t_test_logn<- numeric(N)
+  powr_t_test_norm <- powr_t_test_exp <- powr_t_test_unif <- powr_t_test_beta <- powr_t_test_gamma <- powr_t_test_chisq <- powr_t_test_weibull<- powr_t_test_logn <-numeric(N)
   for(j in 1 : N){
     
     #========================================
@@ -113,6 +113,22 @@ for (i in 1 : length(sample_size)) {
     if(t.test(w + df)$p.value <= alpha){
       powr_t_test_weibull[j] <- 1
     }#power of t test
+    
+    #========================================
+    #       Lognormal distn                     #
+    # =======================================
+    l <- rlnorm(n, meanlog = 0, sdlog = 0.25)
+   sqrt((exp(0.25^2)-1)*exp(2*0 + 0.25^2))
+    l1 <- (l- exp(0+0.25^2/2))/sqrt((exp(0.25^2)-1)*exp(2*0 + 0.25^2))
+    if(t.test(l1)$p.value <= alpha){
+      rejectH0_t_test_logn[j] <- 1
+    }
+    if(shapiro.test(l1)$p.value <= alpha){
+      rejectH0_SW_test_logn[j] <- 1
+    }
+    if(t.test(l1 + df)$p.value <= alpha){
+      powr_t_test_logn[j] <- 1
+    }#power of t test
   }
   # Type I error
   Type1_error_Norm[i] <- round(mean(rejectH0_t_test_norm), 3)
@@ -122,6 +138,7 @@ for (i in 1 : length(sample_size)) {
   Type1_error_gamma[i] <- round(mean(rejectH0_t_test_gamma), 3)
   Type1_error_chisq[i] <- round(mean(rejectH0_t_test_chisq), 3)
   Type1_error_weibull[i] <- round(mean(rejectH0_t_test_weibull), 3)
+  Type1_error_logn[i] <- round(mean(rejectH0_t_test_logn), 3)
   #inflation of Type I error
   inflation_Type1_error_exp[i] <- Type1_error_exp[i] - Type1_error_Norm[i]
   inflation_Type1_error_unif[i] <- Type1_error_unif[i] - Type1_error_Norm[i]
@@ -129,6 +146,7 @@ for (i in 1 : length(sample_size)) {
   inflation_Type1_error_gamma[i] <- Type1_error_gamma[i] - Type1_error_Norm[i]
   inflation_Type1_error_chisq[i] <- Type1_error_chisq[i] - Type1_error_Norm[i]
   inflation_Type1_error_weibull[i] <- Type1_error_weibull[i] - Type1_error_Norm[i]
+  inflation_Type1_error_logn[i] <- Type1_error_logn[i] - Type1_error_Norm[i]
   #power of SW test
   Power_SW_test_exp[i] <- round(mean(rejectH0_SW_test_exp), 3)
   Power_SW_test_unif[i] <- round(mean(rejectH0_SW_test_unif), 3)
@@ -136,6 +154,7 @@ for (i in 1 : length(sample_size)) {
   Power_SW_test_gamma[i] <- round(mean(rejectH0_SW_test_gamma), 3)
   Power_SW_test_chisq[i] <- round(mean(rejectH0_SW_test_chisq), 3)
   Power_SW_test_weibul[i] <- round(mean(rejectH0_SW_test_weibull), 3)
+  Power_SW_test_logn[i] <- round(mean(rejectH0_SW_test_logn), 3)
   # Power of t test
   power_t_test_Norm[i] <- round(mean(powr_t_test_norm), 3)
   power_t_test_exp[i] <- round(mean(powr_t_test_exp), 3)
@@ -144,6 +163,7 @@ for (i in 1 : length(sample_size)) {
   power_t_test_gamma[i] <- round(mean(powr_t_test_gamma), 3)
   power_t_test_chisq[i] <- round(mean(powr_t_test_chisq), 3)
   power_t_test_weibull[i] <- round(mean(powr_t_test_weibull), 3)
+  power_t_test_logn[i] <- round(mean(powr_t_test_logn), 3)
   #power loss
   powrloss_exp[i] <- power_t_test_Norm[i] - power_t_test_exp[i]
   powrloss_unif[i] <- power_t_test_Norm[i] - power_t_test_unif[i]
@@ -151,6 +171,7 @@ for (i in 1 : length(sample_size)) {
   powrloss_beta[i] <- power_t_test_Norm[i] - power_t_test_gamma[i]
   powrloss_chisq[i] <- power_t_test_Norm[i] - power_t_test_chisq[i]
   powrloss_weibull[i] <- power_t_test_Norm[i] - power_t_test_weibull[i]
+  powrloss_logn[i] <- power_t_test_Norm[i] - power_t_test_logn[i]
 }
 
 par(mfrow=c(2,2))

@@ -1,7 +1,7 @@
 rm(list = ls())
 setwd("D:/OSU/Research_Fall2023/One sample t test")
 set.seed(1)
-N <- 10000
+N <- 100000
 alpha <- 0.05
 df <- 0.5
 sample_size <- c(10,20,30,40,50)
@@ -154,20 +154,21 @@ for (i in 1 : length(sample_size)) {
   powrloss_weibull[i] <- power_t_test_Norm[i] - power_t_test_weibull[i]
 }
 
+png(filename = "two_sample_test.png", width = 600, height = 600)
 par(mfrow=c(2,2))
 #power of SW test
-plot(sample_size, Power_SW_test_exp, type="l", lwd= 2, col = "red", 
+plot(sample_size, Power_SW_test_exp, type="l", lwd= 1, col = "red", 
      ylim = c(0, 1),xlab = "Sample Size", ylab = "Power")
-lines(sample_size, Power_SW_test_unif, lwd= 2, col = "blue")
-lines(sample_size, Power_SW_test_beta,lwd= 2, col = "purple")
-lines(sample_size, Power_SW_test_gamma, lwd= 2,col = "green")
-lines(sample_size, Power_SW_test_chisq, lwd= 2,col = "pink")
-lines(sample_size, Power_SW_test_weibul, lwd= 2,col = "violet")
+lines(sample_size, Power_SW_test_unif, lwd= 1, col = "blue")
+lines(sample_size, Power_SW_test_beta,lwd= 1, col = "purple")
+lines(sample_size, Power_SW_test_gamma, lwd= 1,col = "green")
+lines(sample_size, Power_SW_test_chisq, lwd= 1,col = "pink")
+lines(sample_size, Power_SW_test_weibul, lwd= 1,col = "violet")
 title(main = "Power SW test.")
 legend("topleft", legend=c("exponential", "uniform", "beta", "gamma", "chisq", "Weibull"),
        col=c("red","blue", "purple", "green", "pink", "violet"), lty =1,cex = 0.5)
 #Type I error rate
-plot(sample_size, Type1_error_Norm, type="l", lwd= 2, col = "red", 
+plot(sample_size, Type1_error_Norm, type="l", lwd= 2, col = "red",
      ylim = c(0, 0.1),xlab = "Sample Size", ylab = "Power")
 lines(sample_size, Type1_error_exp, lwd= 2, col = "blue")
 lines(sample_size, Type1_error_unif,lwd= 2, col = "purple")
@@ -219,7 +220,7 @@ legend("topleft", legend=c("expontial", "uniform", "gamma", "beta", "chisq", "we
        col=c("red", "blue", "green", "purple", "violet"), lty =1,cex = 0.5)
 
 dev.off()
-
+ 
 save.image(paste0("two_samples",".RData"))
 
 
