@@ -173,6 +173,7 @@ for (i in 1 : length(sample_size)) {
   powrloss_weibull[i] <- power_t_test_Norm[i] - power_t_test_weibull[i]
   powrloss_logn[i] <- power_t_test_Norm[i] - power_t_test_logn[i]
 }
+save.image(paste0("one_sample",".RData"))
 
 par(mfrow=c(2,2))
 
@@ -227,7 +228,7 @@ legend("topleft", legend=c("expontial", "uniform", "gamma", "beta", "chisq", "we
 
 dev.off()
 
-save.image(paste0("one_sample",".RData"))
+
 
 
 
