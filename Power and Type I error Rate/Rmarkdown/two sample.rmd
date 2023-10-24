@@ -250,7 +250,7 @@ powr_ttest_norm <- powr_ttest_exp <- powr_ttest_unif <- powr_ttest_t <- powr_tte
 }
 ```
 
-### power of SW test
+
 ```{r}
 # power of SW test
 data1 <-c(Power_SW_exp, Power_SW_unif, Power_SW_t,Power_SW_chisq,Power_SW_gamma, Power_SW_t,Power_SW_weibull,Power_SW_logn, Power_SW_contaminate)
@@ -258,7 +258,7 @@ Power_SW_test<-array(data1, dim = c(6, 8), dimnames = list(sample_size,c("exp", 
 Power_SW_test
 ```
 
-### Type I error 
+
 
 ```{r}
 # Type I error
@@ -267,7 +267,7 @@ Type1_error<-array(data2, dim = c(6, 9), dimnames = list(sample_size,c("norm", "
 Type1_error
 ```
 
-### inflation of Type I error
+
 ```{r}
 #inflation of Type I error
 data5 <-c(InflationType1Error_exp, InflationType1Error_unif, InflationType1Error_t, InflationType1Error_chisq, InflationType1Error_gamma, InflationType1Error_weibull, InflationType1Error_logn, InflationType1Error_contaminate)
@@ -275,7 +275,7 @@ inflation_error<-array(data5, dim = c(6, 8), dimnames = list(sample_size,c("exp"
 inflation_error
 ```
 
-### power of t test
+
 ```{r}
 # power of t test
 data3 <-c(Power_ttest_Norm, Power_ttest_exp , Power_ttest_unif, Power_ttest_t, Power_ttest_chisq, Power_ttest_gamma, Power_ttest_weibull, Power_ttest_logn, Power_ttest_contaminate )
@@ -283,7 +283,7 @@ Power_t_test<-array(data3, dim = c(6, 9), dimnames = list(sample_size,c("norm", 
 Power_t_test
 ```
 
-### powerloss of t test
+
 ```{r}
 #powerloss of t test
 data4 <-c(powrloss_exp, powrloss_unif, powrloss_t, powrloss_chisq, powrloss_gamma, powrloss_weibull, powrloss_logn, powrloss_contaminate)

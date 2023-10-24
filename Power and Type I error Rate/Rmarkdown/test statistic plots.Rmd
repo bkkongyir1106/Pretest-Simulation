@@ -114,28 +114,47 @@ save.image(paste0("two_samples_plots",".RData"))
 ```{r}
 df2=8
 # par(mfrow = c(2,2))
-hist(log_statistic, prob = T, main = "Histogram of t test Statistics", sub = "Expoential Dist",
+hist(e_statistic, prob = T, main = "Histogram of t test Statistics", sub = "Expoential Dist",
      xlab = "Value", ylab = "Density", xlim = c(-3, 3))
 curve(dt(x, df2), add = TRUE, col = "blue")
 curve(dnorm(x), add = T, col="red")
 legend("topleft", legend=c("t", "normal"),col=c("blue","red"), lty =1,cex = 0.5)
 
-hist(g_statistic, prob = T, main = "Histogram of t test Statistics", sub = "t Dist",
+hist(t_statistic, prob = T, main = "Histogram of t test Statistics", sub = "t Dist",
      xlab = "Value", ylab = "Density", xlim = c(-3, 3))
 curve(dt(x, df2), add = TRUE, col = "blue")
 curve(dnorm(x), add = T, col="red")
 legend("topleft", legend=c("t", "normal"),col=c("blue","red"), lty =1,cex = 0.5)
 
-hist(k_statistic, prob = T , main = "Histogram of t test Statistics", sub = "uniform Dist",
+hist(u_statistic, prob = T , main = "Histogram of t test Statistics", sub = "uniform Dist",
      xlab = "Value", ylab = "Density", xlim = c(-3, 3))
 curve(dt(x, df2), add = TRUE, col = "blue")
 curve(dnorm(x), add = T, col="red")
 legend("topleft", legend=c("t", "normal"),col=c("blue","red"), lty =1,cex = 0.5)
 
-hist(w_statistic, prob = T , main = "Histogram of t test Statistics", sub = "Chi-Square Dist",
+hist(k_statistic, prob = T , main = "Histogram of t test Statistics", sub = "Chi-Square Dist",
      xlab = "Value", ylab = "Density", xlim = c(-4, 4))
 curve(dt(x, df2), add = TRUE, col = "blue")
 curve(dnorm(x), add = T, col="red")
 legend("topleft", legend=c("t", "normal"),col=c("blue","red"), lty =1,cex = 0.5)
+
+hist(w_statistic, prob = T, main = "Histogram of t test Statistics", sub = "Weibull Dist",
+     xlab = "Value", ylab = "Density", xlim = c(-3, 3))
+curve(dt(x, df2), add = TRUE, col = "blue")
+curve(dnorm(x), add = T, col="red")
+legend("topleft", legend=c("t", "normal"),col=c("blue","red"), lty =1,cex = 0.5)
+
+hist(t_statistic, prob = T, main = "Histogram of t test Statistics", sub = "lognormal Dist",
+     xlab = "Value", ylab = "Density", xlim = c(-3, 3))
+curve(dt(x, df2), add = TRUE, col = "blue")
+curve(dnorm(x), add = T, col="red")
+legend("topleft", legend=c("t", "normal"),col=c("blue","red"), lty =1,cex = 0.5)
+
+hist(g_statistic, prob = T , main = "Histogram of t test Statistics", sub = "Gamma Dist",
+     xlab = "Value", ylab = "Density", xlim = c(-3, 3))
+curve(dt(x, df2), add = TRUE, col = "blue")
+curve(dnorm(x), add = T, col="red")
+legend("topleft", legend=c("t", "normal"),col=c("blue","red"), lty =1,cex = 0.5)
+
 ```
 
