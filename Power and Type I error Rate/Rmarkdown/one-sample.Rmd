@@ -362,7 +362,7 @@ lines(sample_size, powrloss_logn, lwd= 2,col = "orange")
 lines(sample_size, powrloss_contaminate, lwd= 2,col = "purple")
 abline(h = 0)
 title(main = "Power loss of t test.")
-legend("topleft", legend=c( "expontial", "uniform", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate"),
+legend("topleft", legend=c("normal", "expontial", "uniform", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate"),
        col=c( "red","blue", "gold", "green", "pink", "brown", "orange","purple"), lty =1,cex = 0.5)
 ```
 
