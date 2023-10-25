@@ -22,7 +22,7 @@ set.seed(1)
 N <- 5
 alpha <- 0.05
 d <- 0.5
-sample_size <- c(10,20,30,40,50,100)
+sample_size <- c(10,20,30,40,50,50)
 ```
 
 
