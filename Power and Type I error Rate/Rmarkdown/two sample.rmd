@@ -19,10 +19,10 @@ knitr::opts_chunk$set(echo = TRUE)
 rm(list = ls())
 setwd("D:/Research_Fall2023/Pretest-Simulation/Power and Type I error Rate/Rmarkdown")
 set.seed(1)
-N <- 100000
+N <- 10000
 alpha <- 0.05
 d <- 0.5
-sample_size <- c(10,20,30,40,50,100)
+sample_size <- c(10,20,30,40,50)
 ```
 
 
@@ -171,7 +171,7 @@ powr_ttest_norm <- powr_ttest_exp <- powr_ttest_unif <- powr_ttest_t <- powr_tte
     }
     
   # ===================================================================================================
-  # l1 ~lognormal(mu, sigma^2)  E(X) = exp(mu + sigma^2/2) VAR(X) = [exp(sigma^2)-1]exp(2mu + sigma^2)
+  #  X~contaminated   E(X) = 0, VAR(X) = 2^2
   # ===================================================================================================
   
     # Set the probability for the standard normal distribution
@@ -195,7 +195,7 @@ powr_ttest_norm <- powr_ttest_exp <- powr_ttest_unif <- powr_ttest_t <- powr_tte
         if(shapiro.test(contaminate1)$p.value <= alpha/2 | shapiro.test(contaminate2)$p.value <= alpha/2){
           PowrSW_contaminate[j] <- 1
         }
-        if(t.test(contaminate1/2 , contaminate1/2 + d)$p.value <= alpha){
+        if(t.test(contaminate1/2 , contaminate2/2 + d)$p.value <= alpha){
           powr_ttest_contaminate[j] <- 1
         }
     
@@ -254,7 +254,7 @@ powr_ttest_norm <- powr_ttest_exp <- powr_ttest_unif <- powr_ttest_t <- powr_tte
 ```{r}
 # power of SW test
 data1 <-c(Power_SW_exp, Power_SW_unif, Power_SW_t,Power_SW_chisq,Power_SW_gamma, Power_SW_t,Power_SW_weibull,Power_SW_logn, Power_SW_contaminate)
-Power_SW_test<-array(data1, dim = c(6, 8), dimnames = list(sample_size,c("exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate")))
+Power_SW_test<-array(data1, dim = c(5, 8), dimnames = list(sample_size,c("exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate")))
 Power_SW_test
 ```
 
@@ -263,7 +263,7 @@ Power_SW_test
 ```{r}
 # Type I error
 data2 <-c(Type1Error_Norm, Type1Error_exp, Type1Error_unif, Type1Error_t, Type1Error_chisq, Type1Error_gamma , Type1Error_weibull,Type1Error_logn, Type1Error_contaminate)
-Type1_error<-array(data2, dim = c(6, 9), dimnames = list(sample_size,c("norm", "exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate")))
+Type1_error<-array(data2, dim = c(5, 9), dimnames = list(sample_size,c("norm", "exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate")))
 Type1_error
 ```
 
@@ -271,7 +271,7 @@ Type1_error
 ```{r}
 #inflation of Type I error
 data5 <-c(InflationType1Error_exp, InflationType1Error_unif, InflationType1Error_t, InflationType1Error_chisq, InflationType1Error_gamma, InflationType1Error_weibull, InflationType1Error_logn, InflationType1Error_contaminate)
-inflation_error<-array(data5, dim = c(6, 8), dimnames = list(sample_size,c("exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate")))
+inflation_error<-array(data5, dim = c(5, 8), dimnames = list(sample_size,c("exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate")))
 inflation_error
 ```
 
@@ -279,7 +279,7 @@ inflation_error
 ```{r}
 # power of t test
 data3 <-c(Power_ttest_Norm, Power_ttest_exp , Power_ttest_unif, Power_ttest_t, Power_ttest_chisq, Power_ttest_gamma, Power_ttest_weibull, Power_ttest_logn, Power_ttest_contaminate )
-Power_t_test<-array(data3, dim = c(6, 9), dimnames = list(sample_size,c("norm", "exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate")))
+Power_t_test<-array(data3, dim = c(5, 9), dimnames = list(sample_size,c("norm", "exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate")))
 Power_t_test
 ```
 
@@ -287,7 +287,7 @@ Power_t_test
 ```{r}
 #powerloss of t test
 data4 <-c(powrloss_exp, powrloss_unif, powrloss_t, powrloss_chisq, powrloss_gamma, powrloss_weibull, powrloss_logn, powrloss_contaminate)
-Powerloss_t_test<-array(data4, dim = c(6, 8), dimnames = list(sample_size,c("exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate")))
+Powerloss_t_test<-array(data4, dim = c(5, 8), dimnames = list(sample_size,c("exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate")))
 Powerloss_t_test
 ```
 
@@ -307,9 +307,10 @@ lines(sample_size, Power_SW_chisq, lwd= 2,col = "green")
 lines(sample_size, Power_SW_gamma, lwd= 2,col = "pink")
 lines(sample_size, Power_SW_weibull, lwd= 2,col = "brown")
 lines(sample_size, Power_SW_logn, lwd= 2,col = "yellow")
+lines(sample_size, Power_SW_contaminate, lwd= 2,col = "violet")
 title(main = "Power SW test.")
-legend("topleft", legend=c("exponential", "uniform", "t", "chisq", "gamma", "weibull", "lognormal"),
-       col=c("red","blue", "purple", "green", "pink", "brown", "yellow"), lty =1,cex = 0.5)
+legend("bottomright", legend=c("exponential", "uniform", "t", "chisq", "gamma", "weibull", "lognormal", "contaminated"),
+       col=c("red","blue", "purple", "green", "pink", "brown", "yellow", "violet"), lty =1,cex = 0.5)
 ```
 
 
@@ -386,13 +387,4 @@ legend("topleft", legend=c("normal", "expontial", "uniform", "t", "chisq", "gamm
        col=c( "red","blue", "gold", "green", "pink", "brown", "orange","purple"), lty =1,cex = 0.5)
 ```
 
-
-
-```{r}
-#Power loss of t test
-plot(Power_SW_logn,Type1Error_logn, type="l", lwd= 2, col = "red", 
-     ylim = c(0, 1),xlab = "Power of SW test", ylab = "Type I error rate")
-
-title(main = "Utility of SW test.")
-```
 
