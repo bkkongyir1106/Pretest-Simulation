@@ -12,7 +12,7 @@ output:
 
 ```{r}
 rm(list = ls())
-setwd("D:/OSU/Research_Fall2023")
+setwd("D:/Research_Fall2023/Pretest-Simulation/Power and Type I error Rate")
 set.seed(1)
 N <- 100000
 alpha <- 0.05
@@ -272,7 +272,7 @@ Powerloss_t_test
 
 
 ```{r}
-save.image(paste0("two_samples_results",".RData"))
+save.image(paste0("one_samples_results",".RData"))
 ```
 
 
