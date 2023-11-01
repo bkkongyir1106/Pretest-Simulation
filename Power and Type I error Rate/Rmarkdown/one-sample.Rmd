@@ -153,31 +153,36 @@ powr_ttest_norm <- powr_ttest_exp <- powr_ttest_unif <- powr_ttest_t <- powr_tte
     }
     
     # ===================================================================================================
-  #  X~contaminated   E(X) = 0, VAR(X) = 2^2
-  # ===================================================================================================
-  
-    # Set the probability for the standard normal distribution
-    prob_standard_normal <- 0.6
-    contaminate1 <-NULL
-    for (k in 1:n) {
-      if (runif(1) <= prob_standard_normal) {
-        # Sample from the standard normal distribution
-        contaminate1[k] <- rnorm(1, 0, 1)
-      } else {
-        # Sample from the contaminated distribution
-         contaminate1[k]<- rnorm(1, 0, 2)
-      }
-    }
-      if(t.test(contaminate1)$p.value <= alpha){
+    #  X~contaminated   E(X) = 0, VAR(X) = 25
+    # ===================================================================================================
+      # Proportion of samples from the normal distribution
+      prop_normal <- 0.65
+      
+      # Generate samples from the standard normal distribution
+      normal_samples <- rnorm(n * prop_normal)
+      
+      # Generate samples from the non-normal distribution (e.g., Cauchy)
+      nonnormal_samples <- rnorm(n * (1 - prop_normal), 0, 25)
+      
+      # Combine the samples based on the specified proportions
+      contaminated_samples <- c(normal_samples, nonnormal_samples)
+      
+      # Shuffle the data to randomize the order
+      contaminated_samples <- sample(contaminated_samples)
+      
+    if(t.test(contaminated_samples)$p.value <= alpha){
           error_ttest_contaminate[j] <- 1
         }
-        if(shapiro.test(contaminate1)$p.value <= alpha){
+        if(shapiro.test(contaminated_samples)$p.value <= alpha){
           PowrSW_contaminate[j] <- 1
         }
-        if(t.test(contaminate1/2 + d)$p.value <= alpha){
+        if(t.test(contaminated_samples/5 + d)$p.value <= alpha){
           powr_ttest_contaminate[j] <- 1
         }
+      
  }
+
+
   ##Type I error
   Type1Error_Norm[i] <- round(mean(error_ttest_norm), 3)
   Type1Error_exp[i] <- round(mean(error_ttest_exp), 3)
@@ -352,7 +357,7 @@ legend("topleft", legend=c("normal", "expontial", "uniform", "t", "chisq", "gamm
 ```{r}
 #Power loss of t test
 plot(sample_size, powrloss_exp, type="l", lwd= 2, col = "red", 
-     ylim = c(-0.4, 0.5),xlab = "Sample Size", ylab = "Power")
+     ylim = c(-0.4, 1),xlab = "Sample Size", ylab = "Power")
 lines(sample_size, powrloss_unif, lwd= 2, col = "blue")
 lines(sample_size, powrloss_t,lwd= 2, col = "gold")
 lines(sample_size, powrloss_chisq, lwd= 2,col = "green")
@@ -362,12 +367,12 @@ lines(sample_size, powrloss_logn, lwd= 2,col = "orange")
 lines(sample_size, powrloss_contaminate, lwd= 2,col = "purple")
 abline(h = 0)
 title(main = "Power loss of t test.")
-legend("topleft", legend=c("normal", "expontial", "uniform", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate"),
+legend("topright", legend=c("expontial", "uniform", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate"),
        col=c( "red","blue", "gold", "green", "pink", "brown", "orange","purple"), lty =1,cex = 0.5)
 ```
 
 
-### Utility of SW test
+### Utility of SW test(Lognormal Distribution)
 ```{r}
 
 ## add extra space to right margin of plot within frame
@@ -400,6 +405,198 @@ mtext("Sample Size",side=1,col="black",line=2.5)
 
 ## Add Legend
 legend("right",legend=c("Power of SW test","Power loss of t test", "Inflation of Type I error"),
+  text.col=c("black","red", "blue"),pch=c(16,15, 11),col=c("black","red", "blue"))
+
+```
+
+
+
+### Utility of SW test(Weibull Distribution)
+```{r}
+
+## add extra space to right margin of plot within frame
+par(mar=c(5, 4, 4, 6) + 0.1)
+
+## Plot first set of data and draw its axis
+plot(sample_size, Power_SW_weibull, pch=16, axes=FALSE, ylim=c(-0.2,1), xlab="", ylab="", 
+   type="b",col="black", main="Utility of Shapiro Wilk test")
+axis(2, ylim=c(0,1),col="black",las=1)  ## las=1 makes horizontal labels
+mtext("Power of SW test",side=2,line=2.5)
+box()
+
+## Allow a second plot on the same graph
+par(new=TRUE)
+
+## Plot the second plot and put axis scale on right
+plot(sample_size, powrloss_weibull, pch=15,  xlab="", ylab="", ylim=c(-0.2,0.5), 
+    axes=FALSE, type="b", col="red")
+mtext("Power loss of t test",side=4,col="red",line=4) 
+axis(4, ylim=c(0,0.5), col="red",col.axis="red",las=1)
+
+lines(sample_size, InflationType1Error_weibull, pch=11,  xlab="", ylab="", ylim=c(-0.2,0.5), 
+     type="b", col="blue")
+## a little farther out (line=4) to make room for labels
+axis(4, ylim=c(0,0.5), col="red",col.axis="red",las=1)
+
+## Draw the time axis
+axis(1,pretty(range(sample_size),10))
+mtext("Sample Size",side=1,col="black",line=2.5)  
+
+## Add Legend
+legend("right", legend=c("Power of SW test","Power loss of t test", "Inflation of Type I error"),
+  text.col=c("black","red", "blue"),pch=c(16,15, 11),col=c("black","red", "blue"))
+
+```
+
+
+### Utility of SW test(Gamma Distribution)
+```{r}
+
+## add extra space to right margin of plot within frame
+par(mar=c(5, 4, 4, 6) + 0.1)
+
+## Plot first set of data and draw its axis
+plot(sample_size, Power_SW_gamma, pch=16, axes=FALSE, ylim=c(-0.1,1), xlab="", ylab="", 
+   type="b",col="black", main="Utility of Shapiro Wilk test")
+axis(2, ylim=c(0,1),col="black",las=1)  ## las=1 makes horizontal labels
+mtext("Power of SW test",side=2,line=2.5)
+box()
+
+## Allow a second plot on the same graph
+par(new=TRUE)
+
+## Plot the second plot and put axis scale on right
+plot(sample_size, powrloss_gamma, pch=15,  xlab="", ylab="", ylim=c(-0.1,0.5), 
+    axes=FALSE, type="b", col="red")
+mtext("Power loss of t test",side=4,col="red",line=4) 
+axis(4, ylim=c(0,0.5), col="red",col.axis="red",las=1)
+
+lines(sample_size, InflationType1Error_gamma, pch=11,  xlab="", ylab="", ylim=c(-0.1,0.5), 
+     type="b", col="blue")
+## a little farther out (line=4) to make room for labels
+axis(4, ylim=c(0,0.5), col="red",col.axis="red",las=1)
+
+## Draw the time axis
+axis(1,pretty(range(sample_size),10))
+mtext("Sample Size",side=1,col="black",line=2.5)  
+
+## Add Legend
+legend("right", legend=c("Power of SW test","Power loss of t test", "Inflation of Type I error"),
+  text.col=c("black","red", "blue"),pch=c(16,15, 11),col=c("black","red", "blue"))
+
+```
+
+
+### Utility of SW test(Chi-Square Distribution)
+```{r}
+
+## add extra space to right margin of plot within frame
+par(mar=c(5, 4, 4, 6) + 0.1)
+
+## Plot first set of data and draw its axis
+plot(sample_size, Power_SW_chisq, pch=16, axes=FALSE, ylim=c(-0.1,1), xlab="", ylab="", 
+   type="b",col="black", main="Utility of Shapiro Wilk test")
+axis(2, ylim=c(0,1),col="black",las=1)  ## las=1 makes horizontal labels
+mtext("Power of SW test",side=2,line=2.5)
+box()
+
+## Allow a second plot on the same graph
+par(new=TRUE)
+
+## Plot the second plot and put axis scale on right
+plot(sample_size, powrloss_chisq, pch=15,  xlab="", ylab="", ylim=c(-0.1,0.5), 
+    axes=FALSE, type="b", col="red")
+mtext("Power loss of t test",side=4,col="red",line=4) 
+axis(4, ylim=c(0,0.5), col="red",col.axis="red",las=1)
+
+lines(sample_size, InflationType1Error_chisq, pch=11,  xlab="", ylab="", ylim=c(-0.1,0.5), 
+     type="b", col="blue")
+## a little farther out (line=4) to make room for labels
+axis(4, ylim=c(0,0.5), col="red",col.axis="red",las=1)
+
+## Draw the time axis
+axis(1,pretty(range(sample_size),10))
+mtext("Sample Size",side=1,col="black",line=2.5)  
+
+## Add Legend
+legend("right", legend=c("Power of SW test","Power loss of t test", "Inflation of Type I error"),
+  text.col=c("black","red", "blue"),pch=c(16,15, 11),col=c("black","red", "blue"))
+
+```
+
+
+
+### Utility of SW test(exponential Distribution)
+```{r}
+
+## add extra space to right margin of plot within frame
+par(mar=c(5, 4, 4, 6) + 0.1)
+
+## Plot first set of data and draw its axis
+plot(sample_size, Power_SW_exp, pch=16, axes=FALSE, ylim=c(-0.1,1), xlab="", ylab="", 
+   type="b",col="black", main="Utility of Shapiro Wilk test")
+axis(2, ylim=c(0,1),col="black",las=1)  ## las=1 makes horizontal labels
+mtext("Power of SW test",side=2,line=2.5)
+box()
+
+## Allow a second plot on the same graph
+par(new=TRUE)
+
+## Plot the second plot and put axis scale on right
+plot(sample_size, powrloss_exp, pch=15,  xlab="", ylab="", ylim=c(-0.1,0.5), 
+    axes=FALSE, type="b", col="red")
+mtext("Power loss of t test",side=4,col="red",line=4) 
+axis(4, ylim=c(0,0.5), col="red",col.axis="red",las=1)
+
+lines(sample_size, InflationType1Error_exp, pch=11,  xlab="", ylab="", ylim=c(-0.1,0.5), 
+     type="b", col="blue")
+## a little farther out (line=4) to make room for labels
+axis(4, ylim=c(0,0.5), col="red",col.axis="red",las=1)
+
+## Draw the time axis
+axis(1,pretty(range(sample_size),10))
+mtext("Sample Size",side=1,col="black",line=2.5)  
+
+## Add Legend
+legend("right", legend=c("Power of SW test","Power loss of t test", "Inflation of Type I error"),
+  text.col=c("black","red", "blue"),pch=c(16,15, 11),col=c("black","red", "blue"))
+
+```
+
+
+### Utility of SW test(uniform Distribution)
+```{r}
+
+## add extra space to right margin of plot within frame
+par(mar=c(5, 4, 4, 6) + 0.1)
+
+## Plot first set of data and draw its axis
+plot(sample_size, Power_SW_unif, pch=16, axes=FALSE, ylim=c(-0.1,1), xlab="", ylab="", 
+   type="b",col="black", main="Utility of Shapiro Wilk test")
+axis(2, ylim=c(0,1),col="black",las=1)  ## las=1 makes horizontal labels
+mtext("Power of SW test",side=2,line=2.5)
+box()
+
+## Allow a second plot on the same graph
+par(new=TRUE)
+
+## Plot the second plot and put axis scale on right
+plot(sample_size, powrloss_unif, pch=15,  xlab="", ylab="", ylim=c(-0.1,0.5), 
+    axes=FALSE, type="b", col="red")
+mtext("Power loss of t test",side=4,col="red",line=4) 
+axis(4, ylim=c(0,0.5), col="red",col.axis="red",las=1)
+
+lines(sample_size, InflationType1Error_unif, pch=11,  xlab="", ylab="", ylim=c(-0.1,0.5), 
+     type="b", col="blue")
+## a little farther out (line=4) to make room for labels
+axis(4, ylim=c(0,0.5), col="red",col.axis="red",las=1)
+
+## Draw the time axis
+axis(1,pretty(range(sample_size),10))
+mtext("Sample Size",side=1,col="black",line=2.5)  
+
+## Add Legend
+legend("right", legend=c("Power of SW test","Power loss of t test", "Inflation of Type I error"),
   text.col=c("black","red", "blue"),pch=c(16,15, 11),col=c("black","red", "blue"))
 
 ```
