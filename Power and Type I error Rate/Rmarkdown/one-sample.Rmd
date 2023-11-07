@@ -12,7 +12,7 @@ output:
 
 ```{r}
 rm(list = ls())
-setwd("D:/Research_Fall2023/Pretest-Simulation/Power and Type I error Rate")
+setwd("D:/Research_Fall2023/Pretest-Simulation/Power and Type I error Rate/Results")
 set.seed(1)
 N <- 100000
 alpha <- 0.05
