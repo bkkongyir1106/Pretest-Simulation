@@ -23,15 +23,15 @@ sample_size <- c(10,20,30,40,50,60)
 
 ```{r}
 #power of SW test
-Power_SW_exp <-Power_SW_unif <- Power_SW_t <- Power_SW_chisq <- Power_SW_gamma <- Power_SW_weibull <- Power_SW_logn <- Power_SW_contaminate<- numeric(length(sample_size))
+Power_SW_exp <-Power_SW_unif <- Power_SW_t <- Power_SW_chisq <- Power_SW_gamma <- Power_SW_weibull <- Power_SW_logn <- Power_SW_contaminate <- Power_SW_q<- numeric(length(sample_size))
 #Type I error
-Type1Error_Norm <- Type1Error_exp <-Type1Error_unif <- Type1Error_t <- Type1Error_chisq <- Type1Error_gamma <- Type1Error_weibull <- Type1Error_logn <-Type1Error_contaminate<- numeric(length(sample_size))
+Type1Error_Norm <- Type1Error_exp <-Type1Error_unif <- Type1Error_t <- Type1Error_chisq <- Type1Error_gamma <- Type1Error_weibull <- Type1Error_logn <-Type1Error_contaminate <- Type1Error_q<- numeric(length(sample_size))
 #inflation of Type I error
-InflationType1Error_exp <-InflationType1Error_unif <- InflationType1Error_t <- InflationType1Error_chisq <- InflationType1Error_gamma <- InflationType1Error_weibull <- InflationType1Error_logn <- InflationType1Error_contaminate <- numeric(length(sample_size))
+InflationType1Error_exp <-InflationType1Error_unif <- InflationType1Error_t <- InflationType1Error_chisq <- InflationType1Error_gamma <- InflationType1Error_weibull <- InflationType1Error_logn <- InflationType1Error_contaminate <- InflationType1Error_q<- numeric(length(sample_size))
 #Power of t test
-Power_ttest_Norm <- Power_ttest_exp <-Power_ttest_unif <- Power_ttest_t <- Power_ttest_chisq <- Power_ttest_gamma <- Power_ttest_weibull <- Power_ttest_logn <- Power_ttest_contaminate <- numeric(length(sample_size))
+Power_ttest_Norm <- Power_ttest_exp <-Power_ttest_unif <- Power_ttest_t <- Power_ttest_chisq <- Power_ttest_gamma <- Power_ttest_weibull <- Power_ttest_logn <- Power_ttest_contaminate <- Power_ttest_q<- numeric(length(sample_size))
 #powerloss
-powrloss_exp <-powrloss_unif  <-powrloss_gamma <-powrloss_beta <-powrloss_chisq <-powrloss_t <- powrloss_weibull <- powrloss_logn <- powrloss_contaminate<- numeric(length(sample_size))
+powrloss_exp <-powrloss_unif  <-powrloss_gamma <-powrloss_beta <-powrloss_chisq <-powrloss_t <- powrloss_weibull <- powrloss_logn <- powrloss_contaminate <-powrloss_q<- numeric(length(sample_size))
 
 ```
 
@@ -40,9 +40,9 @@ powrloss_exp <-powrloss_unif  <-powrloss_gamma <-powrloss_beta <-powrloss_chisq 
 for( i in 1 : length(sample_size)){
   n <- sample_size[i]
 print(n)
-PowrSW_exp <- PowrSW_unif <- PowrSW_t <- PowrSW_chisq <- PowrSW_gamma <- PowrSW_weibull <- PowrSW_logn <- PowrSW_contaminate<- numeric(N)
-error_ttest_norm <- error_ttest_exp <- error_ttest_unif <- error_ttest_t <- error_ttest_chisq <- error_ttest_gamma <- error_ttest_weibull<- error_ttest_logn <- error_ttest_contaminate<- numeric(N)
-powr_ttest_norm <- powr_ttest_exp <- powr_ttest_unif <- powr_ttest_t <- powr_ttest_chisq <- powr_ttest_gamma <- powr_ttest_weibull <- powr_ttest_logn<- powr_ttest_contaminate <- numeric(N)
+PowrSW_exp <- PowrSW_unif <- PowrSW_t <- PowrSW_chisq <- PowrSW_gamma <- PowrSW_weibull <- PowrSW_logn <- PowrSW_contaminate <- PowrSW_q<- numeric(N)
+error_ttest_norm <- error_ttest_exp <- error_ttest_unif <- error_ttest_t <- error_ttest_chisq <- error_ttest_gamma <- error_ttest_weibull<- error_ttest_logn <- error_ttest_contaminate <- error_ttest_q<- numeric(N)
+powr_ttest_norm <- powr_ttest_exp <- powr_ttest_unif <- powr_ttest_t <- powr_ttest_chisq <- powr_ttest_gamma <- powr_ttest_weibull <- powr_ttest_logn<- powr_ttest_contaminate <- powr_ttest_q<- numeric(N)
 
  for(j in 1 : N){
    # normal distn
@@ -155,29 +155,36 @@ powr_ttest_norm <- powr_ttest_exp <- powr_ttest_unif <- powr_ttest_t <- powr_tte
     # ===================================================================================================
     #  X~contaminated   E(X) = 0, VAR(X) = 25
     # ===================================================================================================
-      # Proportion of samples from the normal distribution
-      prop_normal <- 0.65
+      b=rbinom(n,1,0.65)
+      cont=b*rnorm(n,0,1)+(1-b)*rnorm(n,0,5)
       
-      # Generate samples from the standard normal distribution
-      normal_samples <- rnorm(n * prop_normal)
-      
-      # Generate samples from the non-normal distribution (e.g., Cauchy)
-      nonnormal_samples <- rnorm(n * (1 - prop_normal), 0, 25)
-      
-      # Combine the samples based on the specified proportions
-      contaminated_samples <- c(normal_samples, nonnormal_samples)
-      
-      # Shuffle the data to randomize the order
-      contaminated_samples <- sample(contaminated_samples)
-      
-    if(t.test(contaminated_samples)$p.value <= alpha){
+    if(t.test(cont)$p.value <= alpha){
           error_ttest_contaminate[j] <- 1
         }
-        if(shapiro.test(contaminated_samples)$p.value <= alpha){
+        if(shapiro.test(cont)$p.value <= alpha){
           PowrSW_contaminate[j] <- 1
         }
-        if(t.test(contaminated_samples/5 + d)$p.value <= alpha){
+        if(t.test(cont/5 + d)$p.value <= alpha){
           powr_ttest_contaminate[j] <- 1
+        }
+      
+    # ===================================================================================================
+    #  h and g distribution 
+    # ===================================================================================================
+      g = 0.2 ; h = 0.4
+       q <- (exp(g*rnorm(n)) - 1)/g*exp(0.5*h*(rnorm(n))^2)
+      
+       mean_q <- (exp(g^2/(2-2*h)-1))/(g*(1-h)^0.5)
+       var_q <- (1-2*exp(g^2/(2-4*h)) + exp(2*g^2/(1-2*h)))/(g^2*(1-2*h)^0.5) - mean_q^2
+       
+    if(t.test((q - mean_q)/sqrt(var_q))$p.value <= alpha){
+          error_ttest_q[j] <- 1
+        }
+        if(shapiro.test(q)$p.value <= alpha){
+          PowrSW_q[j] <- 1
+        }
+        if(t.test((q - mean_q)/sqrt(var_q) + d)$p.value <= alpha){
+          powr_ttest_q[j] <- 1
         }
       
  }
@@ -193,6 +200,7 @@ powr_ttest_norm <- powr_ttest_exp <- powr_ttest_unif <- powr_ttest_t <- powr_tte
   Type1Error_weibull[i] <- round(mean(error_ttest_weibull), 3)
   Type1Error_logn[i] <- round(mean(error_ttest_logn), 3)
   Type1Error_contaminate[i] <- round(mean(error_ttest_contaminate), 3)
+  Type1Error_q[i] <- round(mean(error_ttest_q), 3)
   #inflation of Type I error
   InflationType1Error_exp[i] <- Type1Error_exp[i] - Type1Error_Norm[i]
   InflationType1Error_unif[i] <- Type1Error_unif[i] - Type1Error_Norm[i]
@@ -202,6 +210,7 @@ powr_ttest_norm <- powr_ttest_exp <- powr_ttest_unif <- powr_ttest_t <- powr_tte
   InflationType1Error_weibull[i] <- Type1Error_weibull[i] - Type1Error_Norm[i]
   InflationType1Error_logn[i] <- Type1Error_logn[i] - Type1Error_Norm[i]
   InflationType1Error_contaminate[i] <- Type1Error_contaminate[i] - Type1Error_Norm[i]
+  InflationType1Error_q[i] <- Type1Error_q[i] - Type1Error_Norm[i]
   #power of SW test
   Power_SW_exp[i] <- round(mean(PowrSW_exp), 3)
   Power_SW_unif[i] <- round(mean(PowrSW_unif), 3)
@@ -211,6 +220,7 @@ powr_ttest_norm <- powr_ttest_exp <- powr_ttest_unif <- powr_ttest_t <- powr_tte
   Power_SW_weibull[i] <- round(mean(PowrSW_weibull), 3)
   Power_SW_logn[i] <- round(mean(PowrSW_logn), 3)
   Power_SW_contaminate[i] <- round(mean(PowrSW_contaminate), 3)
+  Power_SW_q[i] <- round(mean(PowrSW_q), 3)
   # Power of t test
   Power_ttest_Norm[i] <- round(mean(powr_ttest_norm), 3)
   Power_ttest_exp[i] <- round(mean(powr_ttest_exp), 3)
@@ -221,6 +231,7 @@ powr_ttest_norm <- powr_ttest_exp <- powr_ttest_unif <- powr_ttest_t <- powr_tte
   Power_ttest_weibull[i] <- round(mean(powr_ttest_weibull), 3)
   Power_ttest_logn[i] <- round(mean(powr_ttest_logn), 3)
   Power_ttest_contaminate[i] <- round(mean(powr_ttest_contaminate), 3)
+  Power_ttest_q[i] <- round(mean(powr_ttest_q), 3)
   #Powerloss of t test
   powrloss_exp[i] <- Power_ttest_Norm[i] - Power_ttest_exp[i]
   powrloss_unif[i] <- Power_ttest_Norm[i] - Power_ttest_unif[i]
@@ -230,14 +241,15 @@ powr_ttest_norm <- powr_ttest_exp <- powr_ttest_unif <- powr_ttest_t <- powr_tte
   powrloss_weibull[i] <- Power_ttest_Norm[i] - Power_ttest_weibull[i]
   powrloss_logn[i] <- Power_ttest_Norm[i] - Power_ttest_logn[i]
   powrloss_contaminate[i] <- Power_ttest_Norm[i] - Power_ttest_contaminate[i]
+  powrloss_q[i] <- Power_ttest_Norm[i] - Power_ttest_q[i]
 }
 ```
 ### power of SW test
 
 ```{r}
 # power of SW test
-data1 <-c(Power_SW_exp, Power_SW_unif, Power_SW_t,Power_SW_chisq,Power_SW_gamma, Power_SW_t,Power_SW_weibull,Power_SW_logn, Power_SW_contaminate)
-Power_SW_test<-array(data1, dim = c(6, 8), dimnames = list(sample_size,c("exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate")))
+data1 <-c(Power_SW_exp, Power_SW_unif, Power_SW_t,Power_SW_chisq,Power_SW_gamma, Power_SW_t,Power_SW_weibull,Power_SW_logn, Power_SW_contaminate, Power_SW_q)
+Power_SW_test<-array(data1, dim = c(6, 9), dimnames = list(sample_size,c("exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate", "g and h")))
 Power_SW_test
 ```
 
@@ -245,8 +257,8 @@ Power_SW_test
 
 ```{r}
 # Type I error
-data2 <-c(Type1Error_Norm, Type1Error_exp, Type1Error_unif, Type1Error_t, Type1Error_chisq, Type1Error_gamma , Type1Error_weibull,Type1Error_logn, Type1Error_contaminate)
-Type1_error<-array(data2, dim = c(6, 9), dimnames = list(sample_size,c("norm", "exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate")))
+data2 <-c(Type1Error_Norm, Type1Error_exp, Type1Error_unif, Type1Error_t, Type1Error_chisq, Type1Error_gamma , Type1Error_weibull,Type1Error_logn, Type1Error_contaminate, Type1Error_q)
+Type1_error<-array(data2, dim = c(6, 10), dimnames = list(sample_size,c("norm", "exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate", "g and h")))
 Type1_error
 ```
 
@@ -254,24 +266,24 @@ Type1_error
 
 ```{r}
 #inflation of Type I error
-data5 <-c(InflationType1Error_exp, InflationType1Error_unif, InflationType1Error_t, InflationType1Error_chisq, InflationType1Error_gamma, InflationType1Error_weibull, InflationType1Error_logn, InflationType1Error_contaminate)
-inflation_error<-array(data5, dim = c(6, 8), dimnames = list(sample_size,c("exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate")))
+data5 <-c(InflationType1Error_exp, InflationType1Error_unif, InflationType1Error_t, InflationType1Error_chisq, InflationType1Error_gamma, InflationType1Error_weibull, InflationType1Error_logn, InflationType1Error_contaminate, InflationType1Error_q)
+inflation_error<-array(data5, dim = c(6, 9), dimnames = list(sample_size,c("exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate", "g and h")))
 inflation_error
 ```
 ### power of t test
 
 ```{r}
 # power of t test
-data3 <-c(Power_ttest_Norm, Power_ttest_exp , Power_ttest_unif, Power_ttest_t, Power_ttest_chisq, Power_ttest_gamma, Power_ttest_weibull, Power_ttest_logn, Power_ttest_contaminate )
-Power_t_test<-array(data3, dim = c(6, 9), dimnames = list(sample_size,c("norm", "exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate")))
+data3 <-c(Power_ttest_Norm, Power_ttest_exp , Power_ttest_unif, Power_ttest_t, Power_ttest_chisq, Power_ttest_gamma, Power_ttest_weibull, Power_ttest_logn, Power_ttest_contaminate, Power_ttest_q )
+Power_t_test<-array(data3, dim = c(6, 10), dimnames = list(sample_size,c("norm", "exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate", "g and h")))
 Power_t_test
 ```
 
 ### powerloss of t test
 ```{r}
 #powerloss of t test
-data4 <-c(powrloss_exp, powrloss_unif, powrloss_t, powrloss_chisq, powrloss_gamma, powrloss_weibull, powrloss_logn, powrloss_contaminate)
-Powerloss_t_test<-array(data4, dim = c(6, 8), dimnames = list(sample_size,c("exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate")))
+data4 <-c(powrloss_exp, powrloss_unif, powrloss_t, powrloss_chisq, powrloss_gamma, powrloss_weibull, powrloss_logn, powrloss_contaminate, powrloss_q)
+Powerloss_t_test<-array(data4, dim = c(6, 9), dimnames = list(sample_size,c("exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate", "g and h")))
 Powerloss_t_test
 ```
 
@@ -292,9 +304,10 @@ lines(sample_size, Power_SW_gamma, lwd= 2,col = "pink")
 lines(sample_size, Power_SW_weibull, lwd= 2,col = "brown")
 lines(sample_size, Power_SW_logn, lwd= 2,col = "yellow")
 lines(sample_size, Power_SW_contaminate, lwd= 2,col = "violet")
+lines(sample_size, Power_SW_q, lwd= 2,col = "cyan")
 title(main = "Power SW test.")
-legend("bottomright", legend=c("exponential", "uniform", "t", "chisq", "gamma", "weibull", "lognormal", "contaminated"),
-       col=c("red","blue", "purple", "green", "pink", "brown", "yellow", "violet"), lty =1,cex = 0.5)
+legend("bottomright", legend=c("exponential", "uniform", "t", "chisq", "gamma", "weibull", "lognormal", "contaminated", "g and h"),
+       col=c("red","blue", "purple", "green", "pink", "brown", "yellow", "violet", "cyan"), lty =1,cex = 0.5)
 ```
 
 
@@ -330,9 +343,10 @@ lines(sample_size, Power_ttest_gamma, col = "orange")
 lines(sample_size, Power_ttest_weibull, col = "violet")
 lines(sample_size, Power_ttest_logn, col = "yellow")
 lines(sample_size, Power_ttest_contaminate, col = "purple")
+lines(sample_size, Power_ttest_q, col = "cyan")
 title(main = "Power of t test")
-legend("topleft", legend=c("normal", "expontial", "uniform", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate"),
-       col=c( "red","blue", "gold", "green", "brown", "orange", "violet", "yellow", "purple"), lty =1,cex = 0.5)
+legend("bottomright", legend=c("exponential", "uniform", "t", "chisq", "gamma", "weibull", "lognormal", "contaminated", "g and h"),
+       col=c("red","blue", "purple", "green", "pink", "brown", "yellow", "violet", "cyan"), lty =1,cex = 0.5)
 ```
 
 
@@ -347,10 +361,11 @@ lines(sample_size, InflationType1Error_gamma, lwd= 2,col = "pink")
 lines(sample_size, InflationType1Error_weibull, lwd= 2,col = "brown")
 lines(sample_size, InflationType1Error_logn, lwd= 2,col = "orange")
 lines(sample_size, InflationType1Error_contaminate, lwd= 2,col = "violet")
+lines(sample_size, InflationType1Error_q, lwd= 2,col = "cyan")
 abline(h = 0)
 title(main = "Inflation of Type I error rate.")
-legend("topleft", legend=c("normal", "expontial", "uniform", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate"),
-       col=c( "red","blue", "gold", "green", "pink", "brown", "orange", "violet"), lty =1,cex = 0.5)
+legend("topleft", legend=c("normal", "expontial", "uniform", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate", "g and h"),
+       col=c( "red","blue", "gold", "green", "pink", "brown", "orange", "violet", "cyan"), lty =1,cex = 0.5)
 ```
 
 
@@ -365,10 +380,11 @@ lines(sample_size, powrloss_gamma, lwd= 2,col = "pink")
 lines(sample_size, powrloss_weibull, lwd= 2,col = "brown")
 lines(sample_size, powrloss_logn, lwd= 2,col = "orange")
 lines(sample_size, powrloss_contaminate, lwd= 2,col = "purple")
+lines(sample_size, powrloss_q, lwd= 2,col = "cyan")
 abline(h = 0)
 title(main = "Power loss of t test.")
-legend("topright", legend=c("expontial", "uniform", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate"),
-       col=c( "red","blue", "gold", "green", "pink", "brown", "orange","purple"), lty =1,cex = 0.5)
+legend("topright", legend=c("expontial", "uniform", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate", "g and h"),
+       col=c( "red","blue", "gold", "green", "pink", "brown", "orange","purple", "cyan"), lty =1,cex = 0.5)
 ```
 
 
