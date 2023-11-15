@@ -1,0 +1,144 @@
+---
+title: "Histograms of t test statistics"
+author: "Benedict Kongyir"
+date: "`r format(Sys.time(), '%m/%d/%Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+rm(list = ls())
+setwd("D:/Research_Fall2023/Pretest-Simulation/Power and Type I error Rate/Rmarkdown")
+set.seed(1)
+N <- 100000
+alpha <- 0.05
+d <- 0.5
+n <- 10
+```
+
+
+```{r}
+norm_statistic <- log_statistic <-t_statistic <- u_statistic<-e_statistic <- k_statistic <-g_statistic <- w_statistic <- NULL
+ for(j in 1 : N){
+   # normal distn
+    n1 <- rnorm(n, mean = 0, sd = 1)
+    
+    norm_statistic[j] <- t.test(n1)$statistic
+    
+    # ===============================================================================================
+    # e ~exp(theta),  E(X) = theta and VAR(X) = theta^2
+    # ===============================================================================================
+    
+    e1 <- rexp(n, rate = 1)
+    e_statistic[j] <- t.test(e1 - 1 + d)$statistic
+    
+    # ===============================================================================================
+    # u1 ~U(a, b),  E(X) = (a + b)/2 and VAR(X) = [(b-a)^2]/12
+    # ===============================================================================================
+    u1 <- runif(n, min = 0, max = 1)
+    
+    u_statistic[j] <- t.test((u1-0.5)/sqrt(1/12) + d)$statistic
+    
+    # ===============================================================================================
+    # t1 ~t_v,  E(X) = 0 for v >1 and VAR(X) = v/(v-2)
+    # ===============================================================================================
+    t1 <-rt(n, df = 3) 
+    
+    t_statistic[j] <- t.test((t1)/sqrt(3) + d)$statistic
+    
+    # ===============================================================================================
+    # k1 ~X_k,  E(X) = k and VAR(X) = 2k
+    # ===============================================================================================
+    k1 <-rchisq(n, df = 7) 
+    
+    k_statistic[j] <- t.test((k1 - 7)/sqrt(14) + d)$statistic
+    
+    # ===============================================================================================
+    # g1 ~gamma(alpha, beta), where beta = 1/theta so E(X) = alpha/theta and VAR(X) = alpha/(theta)^2
+    # ===============================================================================================
+    g1 <- rgamma(n, shape = 3, rate = 0.1) 
+    
+    g_statistic[j] <- t.test((g1-30)/sqrt(300) + d)$statistic
+    
+    # ===============================================================================================
+    # w1 ~Weibull(shape, scale)  E(X) = scale Gamma(1 + 1/shape) and 
+    # VAR(X) = scale^2[Gamma(1 + 2/shape) - (Gamma(1 + 1/shape))^2]
+    # ===============================================================================================
+    w1 <- rweibull(n, shape = 1, scale = 2) 
+    u <- (w1-2*gamma(2))/sqrt(4*(gamma(3) - gamma(2)))
+    
+    
+    w_statistic[j] <- t.test(u + d)$statistic
+      
+    # ===================================================================================================
+    # l1 ~lognormal(mu, sigma^2)  E(X) = exp(mu + sigma^2/2) VAR(X) = [exp(sigma^2)-1]exp(2mu + sigma^2)
+    # ===================================================================================================
+    l1 <- rlnorm(n, meanlog = 0, sdlog = 1)
+    z1 <- (l1- exp(0+1/2))/sqrt(sqrt((exp(1)-1)*exp(2*0 + 1)))
+    
+    log_statistic[j] <- t.test(z1 + d)$statistic
+    
+  
+}
+```
+
+
+```{r}
+save.image(paste0("one_samples_plots",".RData"))
+```
+
+
+```{r}
+df2=n
+# par(mfrow = c(2,2))
+hist(e_statistic, prob = T,  main = "Histogram of t test Statistics", sub = "Exponential Dist",
+     xlab = "Value", ylab = "Density", ylim = c(0, 0.5))
+curve(dt(x, df2), add = TRUE, col = "red")
+legend("topleft", legend="t density curve", col="red", lty =1,cex = 0.5)
+
+hist(norm_statistic, prob = T,  main = "Histogram of t test Statistics", sub = "Normal Dist",
+     xlab = "Value", ylab = "Density", ylim = c(0, 0.5))
+curve(dt(x, df2), add = TRUE, col = "red")
+legend("topleft", legend="t density curve", col="red", lty =1,cex = 0.5)
+
+hist(t_statistic, prob = T, main = "Histogram of t test Statistics", sub = "t Dist",
+     xlab = "Value", ylab = "Density", ylim = c(0, 0.5))
+curve(dt(x, df2), add = TRUE, col = "red")
+legend("topleft", legend="t density curve",col="red", lty =1,cex = 0.5)
+
+hist(u_statistic, prob = T , main = "Histogram of t test Statistics", sub = "uniform Dist",
+     xlab = "Value", ylab = "Density",  ylim = c(0, 0.5))
+curve(dt(x, df2), add = TRUE, col = "red")
+legend("topleft", legend = "t",col="red", lty =1,cex = 0.5)
+
+hist(k_statistic, prob = T , main = "Histogram of t test Statistics", sub = "Chi-Square Dist",
+     xlab = "Value", ylab = "Density", ylim = c(0, 0.5))
+curve(dt(x, df2), add = TRUE, col = "red")
+legend("topleft", legend = "t",col="red", lty =1,cex = 0.5)
+
+hist(w_statistic, prob = T, main = "Histogram of t test Statistics", sub = "Weibull Dist",
+     xlab = "Value", ylab = "Density", ylim = c(0, 0.5))
+curve(dt(x, df2), add = TRUE, col = "red")
+legend("topleft", legend="t", col="red",  lty =1,cex = 0.5)
+
+hist(t_statistic, prob = T, main = "Histogram of t test Statistics", sub = "lognormal Dist",
+     xlab = "Value", ylab = "Density", ylim = c(0, 0.5))
+curve(dt(x, df2), add = TRUE, col = "red")
+legend("topleft", legend = "t",col= "red", lty =1,cex = 0.5)
+
+hist(g_statistic, prob = T , main = "Histogram of t test Statistics", sub = "Gamma Dist",
+     xlab = "Value", ylab = "Density", ylim = c(0, 0.5))
+curve(dt(x, df2), add = TRUE, col = "red")
+legend("topleft", legend = "t",col="red",  lty =1,cex = 0.5)
+
+```
+
