@@ -14,7 +14,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-### One sample case
+# One sample case
 
 ```{r}
 rm(list = ls())
@@ -90,7 +90,6 @@ norm_statistic <- log_statistic <-t_statistic <- u_statistic<-e_statistic <- k_s
     
     log_statistic[j] <- t.test(z1)$statistic
     
-  
 }
 ```
 
@@ -99,6 +98,8 @@ norm_statistic <- log_statistic <-t_statistic <- u_statistic<-e_statistic <- k_s
 save.image(paste0("one_samples_plots",".RData"))
 ```
 
+### normal Distribution
+The distribution of the t test statistic for samples taken from a normal distribution approximately follows the t distribution as show in the plot below.
 ```{r}
 df = 2*n - 2
 z <- seq(from = -3, to = 3, by = 0.01)
@@ -111,7 +112,11 @@ lines(density(norm_statistic), lwd = 2)
 abline(v=qt(0.025, df = df), col = "blue")
 abline(v=qt(0.975, df = df), col = "blue")
 legend("topright",  legend=c("t density", "true density"),col=c( "red","black"), lty =1 ,cex = 0.5)
+```
 
+### Exponential Distribution
+The distribution of the t test statistic for samples taken from exponential distribution deviates from the t distribution. It has a fatter tail to the left and slimmer tail to the right as show in the plot below.
+```{r}
 # Exponential Distribution
 #hist(e_statistic, prob = T, ylim = c(0, 0.4), xlim = c(-8, 8), main = " ", sub = " ")
 plot(z, dt(z, df = n-1), col = "red",type = "l", lwd = 2, main = " ", sub = " " , xlab = " ",  ylab = "Density")
@@ -121,6 +126,11 @@ abline(v=qt(0.025, df = df), col = "blue")
 abline(v=qt(0.975, df = df), col = "blue")
 legend("topright", legend=c("t density", "true density"),col=c( "red","black"), lty =1,cex = 0.5)
 
+```
+
+### t Distribution
+The distribution of the t test statistic for samples taken from t distribution is approximately follows the t distribution except that it has a flatter top. The tails are similar to that of the t distribution as show in the plot below.
+```{r}
 # t Distribution
 #hist(t_statistic, prob = T, ylim = c(0, 0.4), xlim = c(-8, 8), main = " ", sub = " ")
 plot(z, dt(z, df = n-1), col = "red", type = "l", lwd = 2, main = " ", sub = " " , xlab = " ",  ylab = "Density")
@@ -130,6 +140,11 @@ abline(v=qt(0.025, df = df), col = "blue")
 abline(v=qt(0.975, df = df), col = "blue")
 legend("topright", legend=c("t density", "true density"),col=c( "red","black"), lty =1,cex = 0.5)
 
+```
+
+### Uniform Distribution
+The distribution of the t test statistic for samples taken from t distribution is approximately follows the t distribution. The tails are similar to that of the t distribution as show in the plot below.
+```{r}
 # uniform Distribution
 #hist(u_statistic, prob = T, ylim = c(0, 0.4), xlim = c(-8, 8), main = " ", sub = " ")
 
@@ -140,6 +155,12 @@ abline(v=qt(0.025, df = df), col = "blue")
 abline(v=qt(0.975, df = df), col = "blue")
 legend("topright", legend=c("t density", "true density"),col=c( "red","black"), lty =1,cex = 0.5)
 
+```
+
+
+### chi-squared Distribution
+The distribution of the t test statistic for samples taken from Chi-Squared distribution deviates from the t distribution. It has a fatter tail to the left and slimmer tail to the right as show in the plot below.
+```{r}
 
 # chi-squared Distribution
 #hist(k_statistic, prob = T, ylim = c(0, 0.4), xlim = c(-8, 8), main = " ", sub = " ")
@@ -151,6 +172,11 @@ abline(v=qt(0.025, df = df), col = "blue")
 abline(v=qt(0.975, df = df ), col = "blue")
 legend("topright", legend=c("t density", "true density"),col=c( "red","black"), lty =1,cex = 0.5)
 
+```
+
+### Weibull Distribution
+The distribution of the t test statistic for samples taken from Weibull distribution deviates from the t distribution. It has a fatter tail to the left and slimmer tail to the right as show in the plot below.
+```{r}
 # weibull Distribution
 #hist(w_statistic, prob = T, ylim = c(0, 0.4), xlim = c(-8, 8), main = " ", sub = " ")
 
@@ -161,6 +187,12 @@ abline(v=qt(0.025, df = df ), col = "blue")
 abline(v=qt(0.975, df = df ), col = "blue")
 legend("topright", legend=c("t density", "true density"),col=c( "red","black"), lty =1,cex = 0.5)
 
+```
+
+
+### Gamma Distribution
+The distribution of the t test statistic for samples taken from Gamma distribution deviates from the t distribution. It has a fatter tail to the left and slimmer tail to the right as show in the plot below.
+```{r}
 # gamma Distribution
 #hist(g_statistic, prob = T, ylim = c(0, 0.4), xlim = c(-8, 8), main = " ", sub = " ")
 plot(z, dt(z, df = n-1), col = "red" , type = "l", lwd = 2, main = " ", sub = " " , xlab = " ",  ylab = "Density")
@@ -170,6 +202,12 @@ abline(v=qt(0.025, df = df), col = "blue")
 abline(v=qt(0.975, df = df), col = "blue")
 legend("topright", legend=c("t density", "true density"),col=c( "red","black"), lty =1,cex = 0.5)
 
+```
+
+
+### Lognormal Distribution
+The distribution of the t test statistic for samples taken from Log normal distribution deviates much from the t distribution. It has a fatter tail to the left and slimmer tail to the right as show in the plot below.
+```{r}
 # lognormal Distribution
 #hist(log_statistic, prob = T, ylim = c(0, 0.4), xlim = c(-8, 8), main = " ", sub = " ")
 
