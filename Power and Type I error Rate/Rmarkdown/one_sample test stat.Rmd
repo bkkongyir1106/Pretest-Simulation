@@ -66,7 +66,7 @@ norm_statistic <- log_statistic <-t_statistic <- u_statistic<-e_statistic <- k_s
     k_statistic[j] <- t.test((k1 - 7)/sqrt(14))$statistic
     
     # ===============================================================================================
-    # g1 ~gamma(alpha, beta), where beta = 1/theta so E(X) = alpha/theta and VAR(X) = alpha/(theta)^2
+    # g1 ~gamma(alpha, beta), where beta = 1/theta so E(X) = shape/rate and VAR(X) = shape/(rate)^2
     # ===============================================================================================
     g1 <- rgamma(n, shape = 3, rate = 0.1) 
     
@@ -107,11 +107,11 @@ z <- seq(from = -3, to = 3, by = 0.01)
 # normal Distribution
 #hist(norm_statistic, prob = T, ylim = c(0, 0.4), xlim = c(-8, 8), main = " ", sub = " ")
 plot(z, dt(z, df = n-1), col = "red", type = "l", xlab = " ",  ylab = "Density",  lwd = 2, main = " ", sub = " ")
-title(main = "Histogram of t test Statistics", sub = "normal Dist")
+title(main = "Density plots of t_18 and N(0,1)", sub = "normal Dist")
 lines(density(norm_statistic), lwd = 2)
 abline(v=qt(0.025, df = df), col = "blue")
 abline(v=qt(0.975, df = df), col = "blue")
-legend("topright",  legend=c("t density", "true density"),col=c( "red","black"), lty =1 ,cex = 0.5)
+legend("topright",  legend=c("t_18", "normal(0,1)"),col=c( "red","black"), lty =1 ,cex = 0.5)
 ```
 
 ### Exponential Distribution
