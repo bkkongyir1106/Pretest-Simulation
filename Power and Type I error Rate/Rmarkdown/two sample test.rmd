@@ -53,6 +53,7 @@ powr_ttest_norm <- powr_ttest_exp <- powr_ttest_unif <- powr_ttest_t <- powr_tte
    # normal distn
     n1 <- rnorm(n, mean = 0, sd = 1)
     n2 <- rnorm(n, mean = 0, sd = 1)
+    
     if(t.test(n1, n2)$p.value <= alpha){
       error_ttest_norm[j] <- 1
     }
