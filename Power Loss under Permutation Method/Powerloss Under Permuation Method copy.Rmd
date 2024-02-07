@@ -133,7 +133,7 @@ for (i in 1:N) {
   gamma.permuted_statistics[i] <- calculate_test_statistic(permuted_g1, permuted_g2)
   
 }
-# Calculate the pvalue of test
+# Calculate the power of test
 n.perm.test_p_value[k] <- round(mean(abs(n.permuted_statistics) >= abs(n.observed_statistic)), 3) 
 e.perm.test_p_value[k] <- round(mean(abs(e.permuted_statistics) >= abs(e.observed_statistic)), 3)
 t.perm.test_p_value[k] <- round(mean(abs(t.permuted_statistics) >= abs(t.observed_statistic)), 3)
