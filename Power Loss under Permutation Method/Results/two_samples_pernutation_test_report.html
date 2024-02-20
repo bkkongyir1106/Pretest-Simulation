@@ -11,9 +11,9 @@
 
 <meta name="author" content="Benedict Kongyir" />
 
-<meta name="date" content="2024-02-07" />
+<meta name="date" content="2024-02-19" />
 
-<title>Power loss of by permutation test approach</title>
+<title>Power of two sample location test using Permutation method</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -1567,304 +1567,55 @@ border-radius: 0px;
 
 
 
-<h1 class="title toc-ignore">Power loss of by permutation test
-approach</h1>
+<h1 class="title toc-ignore">Power of two sample location test using
+Permutation method</h1>
 <h4 class="author">Benedict Kongyir</h4>
-<h4 class="date">02/07/2024</h4>
+<h4 class="date">02/19/2024</h4>
 
 </div>
 
 
-<pre class="r"><code>power_t_test_normal &lt;- power_t_test_exp &lt;- power_t_test_t &lt;- power_t_test_logn &lt;-power_t_test_chisq &lt;- power_t_test_weibull &lt;- power_t_test_beta &lt;- power_t_test_gamma&lt;- numeric(length(n.vec))
-
-for(k in 1 : length(n.vec)){
-  n = n.vec[k]
-  powr_ttest_n &lt;-powr_ttest_e &lt;- powr_ttest_t &lt;- powr_ttest_logn &lt;- powr_ttest_gamma &lt;- powr_ttest_chisq &lt;- powr_ttest_weibull &lt;- powr_ttest_beta &lt;- numeric(N)
-    for(j in 1 : N){
-      # normal distn
-      n1 &lt;- rnorm(n, mean = 0, sd = 1)
-      n2 &lt;- rnorm(n, mean = 0, sd = 1) + d
-      if(t.test(n1, n2, var.equal = F)$p.value &lt; alpha){
-        powr_ttest_n[j] &lt;- 1
-      }
-      # exp distn
-      e1 &lt;- rexp(n, rate = 1)
-      e2 &lt;- rexp(n, rate = 1) + d
-      if(t.test(e1, e2, var.equal = F)$p.value &lt; alpha){
-        powr_ttest_e[j] &lt;- 1
-      }
-     # t distn
-      t1 &lt;-rt(n, df = 3) 
-      t2 &lt;-rt(n, df = 3) + d
-      if(t.test((t1)/sqrt(3), (t2)/sqrt(3), var.equal = F)$p.value &lt;= alpha){
-        powr_ttest_t[j] &lt;- 1
-      }
-      # lognormal distn
-    l1 &lt;- rlnorm(n, meanlog = 0, sdlog = 1)
-    l2 &lt;- rlnorm(n, meanlog = 0, sdlog = 1) 
-  
-    z1 &lt;- (l1- exp(0+1/2))/sqrt(sqrt((exp(1)-1)*exp(2*0 + 1)))
-    z2 &lt;- (l2- exp(0+1/2))/sqrt(sqrt((exp(1)-1)*exp(2*0 + 1))) + d
-    if(t.test(z1, z2, var.equal = F)$p.value &lt;= alpha){
-      powr_ttest_logn[j] &lt;- 1
-    }
-    
-    # gamma distn
-    g1 &lt;- rgamma(n, shape = 3, rate = 0.1) 
-    g2 &lt;- rgamma(n, shape = 3, rate = 0.1) + d
-    
-    if(t.test((g1-30)/sqrt(300), (g2-30)/sqrt(300) ,var.equal = F)$p.value &lt;= alpha){
-      powr_ttest_gamma[j] &lt;- 1
-    }
-    # Chi-squared
-    k1 &lt;-rchisq(n, df = 7) 
-    k2 &lt;-rchisq(n, df = 7) 
-    if(t.test((k1 - 7)/sqrt(14), (k2 - 7)/sqrt(14) + d, var.equal = F)$p.value &lt;= alpha){
-      powr_ttest_chisq[j] &lt;- 1
-    }
-    #Weibull
-    weibul1 &lt;- rweibull(n, shape = 1, scale = 2) 
-    weibul2 &lt;- rweibull(n, shape = 1, scale = 2)
-      
-    w1 &lt;- (weibul1-2*gamma(2))/sqrt(4*(gamma(3) - gamma(2)))
-    w2 &lt;- (weibul2-2*gamma(2))/sqrt(4*(gamma(3) - gamma(2)))
-    }
-    if(t.test(w1 , w2 + d, var.equal = F)$p.value &lt;= alpha){
-      powr_ttest_weibull[j] &lt;- 1
-    }
-  
-    # Beta distn
-    shape1 = 2; shape2 = 3
-    beta1 &lt;- rbeta(n, shape1, shape2 )
-    beta2 &lt;- rbeta(n, shape1, shape2)
-     b1&lt;- (beta1 - shape1/(shape1 + shape2))/((shape1*shape2)/((shape1 + shape2)^2)*(shape1 + shape2 + 1))
-     b2 &lt;- (beta2 - shape1/(shape1 + shape2))/((shape1*shape2)/((shape1 + shape2)^2)*(shape1 + shape2 + 1))
-     if(t.test(b1, b2 + d, var.equal = F)$p.value &lt;= alpha){
-      powr_ttest_beta[j] &lt;- 1
-    }
-    
-power_t_test_normal[k] &lt;-round(mean(powr_ttest_n),3)
-power_t_test_exp[k] &lt;-round(mean(powr_ttest_e),3)
-power_t_test_t[k] &lt;-round(mean(powr_ttest_t),3)
-power_t_test_logn[k] &lt;-round(mean(powr_ttest_logn),3)
-power_t_test_gamma[k] &lt;-round(mean(powr_ttest_gamma),3)
-power_t_test_chisq[k] &lt;-round(mean(powr_ttest_chisq),3)
-power_t_test_weibull[k] &lt;-round(mean(powr_ttest_weibull),3)
-power_t_test_beta[k] &lt;-round(mean(powr_ttest_beta),3)
-
-}</code></pre>
-<pre class="r"><code>power_perm_test_exp &lt;- power_perm_test_t &lt;- power_perm_test_logn &lt;- power_perm_test_gamma &lt;- power_perm_test_chisq &lt;- power_perm_test_weibul &lt;- power_perm_test_beta&lt;- numeric(length(n.vec))
-for(k in 1 : length(n.vec)){
-    n &lt;- n.vec[k]
-    print(n)
-    # exp distn
-    e1 &lt;- rexp(n, rate = 1)
-    e2 &lt;- rexp(n, rate = 1) + d
-    permuted_data_exp &lt;- c(e1,e2)
-    
-    # t distn
-    t1 &lt;-rt(n, df = 3)/sqrt(3) 
-    t2 &lt;-rt(n, df = 3)/sqrt(3) + d
-    permuted_data_t &lt;- c(t1,t2)
-    
-    # lognormal
-    l1 &lt;- rlnorm(n, meanlog = 0, sdlog = 1)
-    l2 &lt;- rlnorm(n, meanlog = 0, sdlog = 1) 
-    z1 &lt;- (l1- exp(0+1/2))/sqrt(sqrt((exp(1)-1)*exp(2*0 + 1)))
-    z2 &lt;- (l2- exp(0+1/2))/sqrt(sqrt((exp(1)-1)*exp(2*0 + 1))) + d
-    permuted_data_logn &lt;- c(z1,z2)
-    # gamma disn
-    g1 &lt;- (rgamma(n, shape = 3, rate = 0.1) - 30)/sqrt(300)
-    g2 &lt;- (rgamma(n, shape = 3, rate = 0.1) - 30)/sqrt(300) + d
-    permuted_data_gamma &lt;- c(g1, g2)
-
-    # Chi-squared
-    k1 &lt;-(rchisq(n, df = 7) - 7)/sqrt(4)
-    k2 &lt;-(rchisq(n, df = 7) - 7)/sqrt(4) + d
-    permuted_data_chisq &lt;- c(k1,k2)
-    
-    #Weibull
-    weibul1 &lt;- rweibull(n, shape = 1, scale = 2) 
-    weibul2 &lt;- rweibull(n, shape = 1, scale = 2)
-    w1 &lt;- (weibul1-2*gamma(2))/sqrt(4*(gamma(3) - gamma(2)))
-    w2 &lt;- (weibul2-2*gamma(2))/sqrt(4*(gamma(3) - gamma(2))) + d
-    permuted_data_weibul &lt;- c(w1,w2)
-    
-    # beta distn
-    shape1 = 2; shape2 = 3
-    beta1 &lt;- rbeta(n, shape1, shape2 )
-    beta2 &lt;- rbeta(n, shape1, shape2)
-     b1 &lt;- (beta1 - shape1/(shape1 + shape2))/((shape1*shape2)/((shape1 + shape2)^2)*(shape1 + shape2 + 1))
-     b2 &lt;- (beta2 - shape1/(shape1 + shape2))/((shape1*shape2)/((shape1 + shape2)^2)*(shape1 + shape2 + 1))
-    permuted_data_beta &lt;- c(b1,b2)
-    # Function to calculate the test statistic (difference of means)
-    calculate_test_statistic &lt;- function(x, y) {
-      return((mean(x) - mean(y))/sqrt(var(x)/length(x) + var(y)/length(y)))
-    }
-    
-pwer_exp &lt;- pwer_t &lt;- pwer_logn &lt;- pwer_gamma &lt;- pwer_chisq &lt;- pwer_weibul &lt;- pwer_beta&lt;- rep(0, N)
-perm.test_p_value_exp &lt;- perm.test_p_value_t &lt;- perm.test_p_value_logn &lt;- perm.test_p_value_gamma &lt;- 
-  perm.test_p_value_chisq &lt;- perm.test_p_value_weibul &lt;- perm.test_p_value_beta &lt;- rep(0, N)
-for(j in 1 : N){
-  permuted_statistics_exp &lt;- permuted_statistics_t &lt;- permuted_statistics_logn &lt;- permuted_statistics_gamma &lt;- 
-    permuted_statistics_chisq &lt;- permuted_statistics_weibul &lt;- permuted_statistics_beta &lt;- rep(0, P)
-  for(i in 1 : P){
-      permuted_data_exp &lt;- sample(permuted_data_exp)
-      permuted_data_t &lt;- sample(permuted_data_t)
-      permuted_data_logn &lt;- sample(permuted_data_logn)
-      permuted_data_gamma &lt;- sample(permuted_data_gamma)
-      permuted_data_chisq &lt;- sample(permuted_data_chisq)
-      permuted_data_weibul &lt;- sample(permuted_data_weibul)
-      permuted_data_beta &lt;- sample(permuted_data_beta)
-      # Calculate the test statistic for the permuted data
-      # exp
-      permuted_exp1 &lt;- permuted_data_exp[1:length(e1)]
-      permuted_exp2 &lt;- permuted_data_exp[(length(e1) + 1):(length(e1) + length(e2))]
-      permuted_statistics_exp[i] &lt;- calculate_test_statistic(permuted_exp1, permuted_exp2)
-      
-      # t distn
-      permuted_t1 &lt;- permuted_data_t[1:length(t1)]
-      permuted_t2 &lt;- permuted_data_t[(length(t1) + 1):(length(t1) + length(t2))]
-      permuted_statistics_t[i] &lt;- calculate_test_statistic(permuted_t1, permuted_t2)
-      
-      # logn distn
-      permuted_logn1 &lt;- permuted_data_logn[1:length(z1)]
-      permuted_logn2 &lt;- permuted_data_logn[(length(z1) + 1):(length(z1) + length(z2))]
-      permuted_statistics_logn[i] &lt;- calculate_test_statistic(permuted_logn1, permuted_logn2)
-      
-      # gamma distn
-      permuted_gamma1 &lt;- permuted_data_gamma[1:length(g1)]
-      permuted_gamma2 &lt;- permuted_data_gamma[(length(g1) + 1):(length(g1) + length(g2))]
-      permuted_statistics_gamma[i] &lt;- calculate_test_statistic(permuted_gamma1, permuted_gamma2)
-      
-      # chisq distn
-      permuted_chisq1 &lt;- permuted_data_chisq[1:length(k1)]
-      permuted_chisq2 &lt;- permuted_data_chisq[(length(k1) + 1):(length(k1) + length(k2))]
-      permuted_statistics_chisq[i] &lt;- calculate_test_statistic(permuted_chisq1, permuted_chisq2)
-      
-      # weibul distn
-      permuted_weibul1 &lt;- permuted_data_weibul[1:length(w1)]
-      permuted_weibul2&lt;- permuted_data_weibul[(length(w1) + 1):(length(w1) + length(w2))]
-      permuted_statistics_weibul[i] &lt;- calculate_test_statistic(permuted_weibul1, permuted_weibul2)
-      
-      # beta distn
-      permuted_beta1 &lt;- permuted_data_beta[1:length(g1)]
-      permuted_beta2 &lt;- permuted_data_beta[(length(g1) + 1):(length(w1) + length(w2))]
-      permuted_statistics_beta[i] &lt;- calculate_test_statistic(permuted_beta1, permuted_beta2)
-}
-
-    # Observed test statistic
-    observed_statistic_exp &lt;- calculate_test_statistic(e1, e2)
-    observed_statistic_t &lt;- calculate_test_statistic(t1, t2)
-    observed_statistic_logn &lt;- calculate_test_statistic(z1, z2)
-    observed_statistic_gamma &lt;- calculate_test_statistic(g1, g2)
-    observed_statistic_chisq &lt;- calculate_test_statistic(k1, k2)
-    observed_statistic_weibul &lt;- calculate_test_statistic(w1, w2)
-    observed_statistic_beta &lt;- calculate_test_statistic(b1, b2)
-    
-# Calculate the pvalue of test
-#exp distn
-perm.test_p_value_exp[j] &lt;- round(mean(abs(permuted_statistics_exp) &gt;= abs(observed_statistic_exp)), 5)
-if(perm.test_p_value_exp[j] &lt; alpha){
-  pwer_exp[j] &lt;- 1
-}
-# t distn
-perm.test_p_value_t[j] &lt;- round(mean(abs(permuted_statistics_t) &gt;= abs(observed_statistic_t)), 5) 
-if(perm.test_p_value_t[j] &lt; alpha){
-  pwer_t[j] &lt;- 1
-}
-# logn distn
-perm.test_p_value_logn[j] &lt;- round(mean(abs(permuted_statistics_logn) &gt;= abs(observed_statistic_logn)), 5)
-if(perm.test_p_value_logn[j] &lt; alpha){
-  pwer_logn[j] &lt;- 1
-}
-# gamma distn
-perm.test_p_value_gamma[j] &lt;- round(mean(abs(permuted_statistics_gamma) &gt;= abs(observed_statistic_gamma)), 5) 
-if(perm.test_p_value_gamma[j] &lt; alpha){
-  pwer_gamma[j] &lt;- 1
-}
-# chisq distn
-perm.test_p_value_chisq[j] &lt;- round(mean(abs(permuted_statistics_chisq) &gt;= abs(observed_statistic_chisq)), 5) 
-if(perm.test_p_value_chisq[j] &lt; alpha){
-  pwer_chisq[j] &lt;- 1
-}
-# weibul distn
-perm.test_p_value_weibul[j] &lt;- round(mean(abs(permuted_statistics_weibul) &gt;= abs(observed_statistic_weibul)), 5)
-if(perm.test_p_value_weibul[j] &lt; alpha){
-  pwer_weibul[j] &lt;- 1
-}
-# beta distn
-perm.test_p_value_beta[j] &lt;- round(mean(abs(permuted_statistics_beta) &gt;= abs(observed_statistic_beta)), 5) 
-if(perm.test_p_value_beta[j] &lt; alpha){
-  pwer_beta[j] &lt;- 1
-}
-
-power_perm_test_exp[k] &lt;- round(mean(pwer_exp), 5)
-power_perm_test_t[k] &lt;- round(mean(pwer_t), 5)
-power_perm_test_logn[k] &lt;- round(mean(pwer_logn), 5)
-power_perm_test_gamma[k] &lt;- round(mean(pwer_gamma), 5)
-power_perm_test_chisq[k] &lt;- round(mean(pwer_chisq), 5)
-power_perm_test_weibul[k] &lt;- round(mean(pwer_weibul), 5)
-power_perm_test_beta[k] &lt;- round(mean(pwer_beta), 5)
-
-}
-}</code></pre>
-<pre><code>## [1] 10
-## [1] 20
-## [1] 30
-## [1] 40
-## [1] 50</code></pre>
-<pre class="r"><code># Power loss under permutation test
-power_loss_exp &lt;- power_perm_test_exp - power_t_test_exp
-power_loss_t &lt;- power_perm_test_t - power_t_test_t
-power_loss_logn &lt;- power_perm_test_logn - power_t_test_logn
-power_loss_gamma &lt;- power_perm_test_gamma - power_t_test_gamma
-power_loss_chisq &lt;- power_perm_test_chisq - power_t_test_chisq
-power_loss_weibul &lt;- power_perm_test_weibul - power_t_test_weibull
-power_loss_beta &lt;- power_perm_test_beta - power_t_test_beta</code></pre>
 <div id="power-under-t-test" class="section level3" number="0.0.1">
 <h3><span class="header-section-number">0.0.1</span> Power under t
 test</h3>
 <pre class="r"><code># power under t test
-power_t&lt;-c(power_t_test_normal, power_t_test_exp, power_t_test_t,  power_t_test_logn, power_t_test_gamma, power_t_test_chisq, power_t_test_weibull, power_t_test_beta)
-power_table_t&lt;-array(power_t, dim = c(5, 8), dimnames = list(n.vec,
-      c(&quot;norm_t&quot;, &quot;exp_t&quot;, &quot;t distn_t&quot;, &quot;lognormal_t&quot;, &quot;gamma_t&quot;, &quot;chisq&quot;, &quot;weibul&quot;, &quot;beta&quot;)))
+power_t&lt;-c(power_t_test_normal, power_t_test_exp, power_t_test_t, power_t_test_chisq, power_t_test_gamma, power_t_test_weibul, power_t_test_logn)
+power_table_t&lt;-array(power_t, dim = c(5, 7), dimnames = list(sample_size,c(&quot;norm_t&quot;, &quot;exp_t&quot;, &quot;t distn_t&quot;,&quot;chisq&quot;, &quot;Gamma&quot;, &quot;Weibull&quot;, &quot;Lognormal&quot;)))
 power_table_t</code></pre>
-<pre><code>##    norm_t exp_t t distn_t lognormal_t gamma_t chisq weibul beta
-## 10   0.24  0.19      0.06        0.25    0.05  0.14      0 0.01
-## 20   0.38  0.42      0.21        0.32    0.06  0.32      0 0.01
-## 30   0.55  0.52      0.28        0.30    0.03  0.48      0 0.01
-## 40   0.65  0.55      0.29        0.41    0.02  0.62      0 0.01
-## 50   0.71  0.80      0.36        0.43    0.08  0.70      0 0.01</code></pre>
+<pre><code>##    norm_t exp_t t distn_t chisq Gamma Weibull Lognormal
+## 10  0.178 0.221     0.246 0.201 0.201   0.217     0.336
+## 20  0.336 0.379     0.429 0.361 0.345   0.384     0.489
+## 30  0.479 0.504     0.566 0.492 0.472   0.499     0.601
+## 40  0.594 0.626     0.665 0.611 0.600   0.616     0.676
+## 50  0.695 0.711     0.741 0.705 0.700   0.699     0.754</code></pre>
 </div>
 <div id="power-under-permutation-test" class="section level3" number="0.0.2">
 <h3><span class="header-section-number">0.0.2</span> Power under
 permutation test</h3>
 <pre class="r"><code># power under permutation test
-power_perm&lt;-c(power_perm_test_exp, power_perm_test_t, power_perm_test_logn,  power_perm_test_gamma, power_perm_test_chisq, power_perm_test_weibul, power_perm_test_beta)
-power_table_perm&lt;-array(power_perm, dim = c(5, 7), dimnames = list(n.vec,
-      c(&quot;exp_perm&quot;, &quot;t_perm&quot;,  &quot;lognormal_perm&quot;, &quot;gamma_perm&quot;, &quot;chisq&quot;, &quot;weibul&quot;, &quot;beta&quot;)))
+power_perm&lt;-c(power_perm_test_norm, power_perm_test_exp, power_perm_test_t,  power_perm_test_chisq, power_perm_test_gamma, power_perm_test_weibul, power_perm_test_logn)
+power_table_perm&lt;-array(power_perm, dim = c(5, 7), dimnames = list(sample_size, c(&quot;Normal&quot;, &quot;exp_perm&quot;, &quot;t_perm&quot;, &quot;chisq&quot;, &quot;Gamma&quot;, &quot;Weibull&quot;, &quot;Lognormal&quot;)))
 power_table_perm</code></pre>
-<pre><code>##    exp_perm t_perm lognormal_perm gamma_perm chisq weibul beta
-## 10        1   0.07              1       0.60  0.00   0.00    0
-## 20        1   0.00              0       0.06  0.00   0.37    0
-## 30        0   0.00              0       1.00  0.00   1.00    0
-## 40        1   1.00              1       1.00  0.00   0.00    0
-## 50        1   0.00              1       1.00  0.03   1.00    0</code></pre>
+<pre><code>##    Normal exp_perm t_perm  chisq  Gamma Weibull Lognormal
+## 10 0.1897   0.2325 0.2721 0.2194 0.2046  0.2547    0.4317
+## 20 0.3460   0.3816 0.4462 0.3675 0.3514  0.3879    0.5699
+## 30 0.4811   0.5092 0.5738 0.5026 0.4913  0.5115    0.6775
+## 40 0.6092   0.6122 0.6789 0.6102 0.6042  0.6287    0.7446
+## 50 0.6896   0.7157 0.7525 0.7041 0.6972  0.7134    0.8009</code></pre>
 </div>
 <div id="power-loss" class="section level3" number="0.0.3">
 <h3><span class="header-section-number">0.0.3</span> Power loss</h3>
 <pre class="r"><code># power loss
-powerloss_data&lt;-c(power_loss_exp,power_loss_t, power_loss_logn,power_loss_gamma,power_loss_chisq, power_loss_weibul, power_loss_beta)
-powerloss_table&lt;-array(powerloss_data, dim = c(5, 7), dimnames = list(n.vec,
-      c(&quot;exponential&quot;, &quot;t distn&quot;, &quot;lognormal&quot;, &quot;gamma&quot;, &quot;chisq&quot;, &quot;weibul&quot;, &quot;beta&quot;)))
+powerloss_data&lt;-c(power_loss_norm, power_loss_exp,power_loss_t, power_loss_chisq, power_loss_gamma, power_loss_weibul, power_loss_logn)
+powerloss_table&lt;-array(powerloss_data, dim = c(5, 7), dimnames = list(sample_size, c(&quot;Normal&quot;, &quot;exp_perm&quot;, &quot;t_perm&quot;, &quot;chisq&quot;, &quot;Gamma&quot;, &quot;Weibull&quot;, &quot;Lognormal&quot;)))
 powerloss_table</code></pre>
-<pre><code>##    exponential t distn lognormal gamma chisq weibul  beta
-## 10        0.81    0.01      0.75  0.55 -0.14   0.00 -0.01
-## 20        0.58   -0.21     -0.32  0.00 -0.32   0.37 -0.01
-## 30       -0.52   -0.28     -0.30  0.97 -0.48   1.00 -0.01
-## 40        0.45    0.71      0.59  0.98 -0.62   0.00 -0.01
-## 50        0.20   -0.36      0.57  0.92 -0.67   1.00 -0.01</code></pre>
+<pre><code>##     Normal exp_perm t_perm   chisq   Gamma Weibull Lognormal
+## 10  0.0117   0.0115 0.0261  0.0184  0.0036  0.0377    0.0957
+## 20  0.0100   0.0026 0.0172  0.0065  0.0064  0.0039    0.0809
+## 30  0.0021   0.0052 0.0078  0.0106  0.0193  0.0125    0.0765
+## 40  0.0152  -0.0138 0.0139 -0.0008  0.0042  0.0127    0.0686
+## 50 -0.0054   0.0047 0.0115 -0.0009 -0.0028  0.0144    0.0469</code></pre>
+<pre class="r"><code>save.image(paste0(&quot;new_perm_result&quot;,&quot;.RData&quot;))</code></pre>
 </div>
 
 

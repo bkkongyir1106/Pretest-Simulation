@@ -1,0 +1,16 @@
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Power Loss under Permutation Method/RData/result2.0.RData")
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Power Loss under Permutation Method/RData/result2.0.RData")
+# power under t testpower_t<-c(power_t_test_normal, power_t_test_exp, power_t_test_t, power_t_test_chisq,            power_t_test_gamma, power_t_test_weibul, power_t_test_logn)power_table_t<-array(power_t, dim = c(5, 7), dimnames = list(sample_size,c("norm_t",                     "exp_t", "t distn_t","chisq", "Gamma", "Weibull", "Lognormal")))print(power_table_t)# power under permutation testpower_perm<-c(power_perm_test_norm, power_perm_test_exp, power_perm_test_t,  power_perm_test_chisq,               power_perm_test_gamma, power_perm_test_weibul, power_perm_test_logn)power_table_perm<-array(power_perm, dim = c(5, 7), dimnames = list(sample_size, c("Normal",                           "exp_perm", "t_perm", "chisq", "Gamma", "Weibull", "Lognormal")))print(power_table_perm)# power losspowerloss_data<-c(power_loss_norm, power_loss_exp,power_loss_t, power_loss_chisq,                   power_loss_gamma, power_loss_weibul, power_loss_logn)powerloss_table<-array(powerloss_data, dim = c(5, 7), dimnames = list(sample_size, c("Normal", "exp_perm",                                                 "t_perm", "chisq", "Gamma", "Weibull", "Lognormal")))print(powerloss_table)
+X = 5
+power_t<-c(power_t_test_normal, power_t_test_exp, power_t_test_t, power_t_test_chisq,
+power_t<-c(power_t_test_normal, power_t_test_exp, power_t_test_t, power_t_test_chisq,
+power_t<-c(power_t_test_normal, power_t_test_exp, power_t_test_t, power_t_test_chisq,
+power_t<-c(power_t_test_normal, power_t_test_exp, power_t_test_t, power_t_test_chisq,
+power_t<-c(power_t_test_normal, power_t_test_exp, power_t_test_t, power_t_test_chisq,
+power_t<-c(power_t_test_normal, power_t_test_exp, power_t_test_t, power_t_test_chisq,
+power_t<-c(power_t_test_normal, power_t_test_exp, power_t_test_t, power_t_test_chisq,
+power_t<-c(power_t_test_normal, power_t_test_exp, power_t_test_t, power_t_test_chisq,
+power_t<-c(power_t_test_normal, power_t_test_exp, power_t_test_t, power_t_test_chisq,
+power_t<-c(power_t_test_normal, power_t_test_exp, power_t_test_t, power_t_test_chisq,
+power_t<-c(power_t_test_normal, power_t_test_exp, power_t_test_t, power_t_test_chisq,
+power_t<-c(power_t_test_normal, power_t_test_exp, power_t_test_t, power_t_test_chisq,
