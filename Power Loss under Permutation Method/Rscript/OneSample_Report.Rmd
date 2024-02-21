@@ -1,0 +1,55 @@
+---
+title: "Powerloss of One Sample test under Permutation Method"
+author: "Benedict Kongyir"
+date: "`r format(Sys.time(), '%m/%d/%Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Power Loss under Permutation Method/Results")
+```
+
+
+```{r}
+rm(list = ls())
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Power Loss under Permutation Method/RData/OneSample.RData")
+```
+
+
+
+### Power under t test
+```{r}
+
+# power under t test
+power_t<-c(power_t_test_normal, power_t_test_exp, power_t_test_t, power_t_test_chisq, power_t_test_weibul, power_t_test_logn)
+power_table_t<-array(power_t, dim = c(5, 6), dimnames = list(sample_size,c("norm_t", "exp_t", "t distn_t","chisq",  "Weibull", "Lognormal")))
+power_table_t
+
+```
+
+
+### Power under permutation test
+```{r}
+# power under permutation test
+power_perm<-c(power_perm_test_norm, power_perm_test_exp, power_perm_test_t,  power_perm_test_chisq,  power_perm_test_weibul, power_perm_test_logn)
+power_table_perm<-array(power_perm, dim = c(5, 6), dimnames = list(sample_size, c("Normal", "exp_perm", "t_perm", "chisq", "Weibull", "Lognormal")))
+power_table_perm
+
+```
+
+### Power loss
+```{r}
+# power loss
+powerloss_data<-c(powerloss_norm, powerloss_exp,powerloss_t, powerloss_chisq, powerloss_weibul, powerloss_logn)
+powerloss_table<-array(powerloss_data, dim = c(5, 6), dimnames = list(sample_size, c("Normal", "exp_perm", "t_perm", "chisq",  "Weibull", "Lognormal")))
+powerloss_table
+
+```
+
+
