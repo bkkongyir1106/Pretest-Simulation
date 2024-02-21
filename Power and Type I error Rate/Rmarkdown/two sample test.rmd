@@ -136,7 +136,7 @@ powr_ttest_norm <- powr_ttest_exp <- powr_ttest_unif <- powr_ttest_t <- powr_tte
       powr_ttest_gamma[j] <- 1
     }
     # ===============================================================================================
-    # w1 ~Weibull(shape, scale)  E(X) = scale Gamma(1 + 1/shape) and 
+    # w1 ~Weibull(shape, scale)  E(X) = scale * Gamma(1 + 1/shape) and 
     # VAR(X) = scale^2[Gamma(1 + 2/shape) - (Gamma(1 + 1/shape))^2]
     # ===============================================================================================
     w1 <- rweibull(n, shape = 1, scale = 2) 

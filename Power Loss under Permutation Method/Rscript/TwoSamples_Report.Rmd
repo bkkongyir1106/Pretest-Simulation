@@ -12,7 +12,11 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-load("/Users/benedictkongyir/Downloads/result2.0.RData")
+setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Power Loss under Permutation Method/Results")
+```
+
+```{r}
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Power Loss under Permutation Method/RData/TwoSamples.RData")
 ```
 
 
@@ -44,11 +48,3 @@ powerloss_table<-array(powerloss_data, dim = c(5, 7), dimnames = list(sample_siz
 powerloss_table
 
 ```
-
-```{r}
-
-save.image(paste0("new_perm_result",".RData"))
-
-```
-
-

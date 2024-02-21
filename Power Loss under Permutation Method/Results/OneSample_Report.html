@@ -11,9 +11,9 @@
 
 <meta name="author" content="Benedict Kongyir" />
 
-<meta name="date" content="2024-02-19" />
+<meta name="date" content="2024-02-20" />
 
-<title>Power of two sample location test using Permutation method</title>
+<title>Powerloss of One Sample test under Permutation Method</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -1567,55 +1567,56 @@ border-radius: 0px;
 
 
 
-<h1 class="title toc-ignore">Power of two sample location test using
-Permutation method</h1>
+<h1 class="title toc-ignore">Powerloss of One Sample test under
+Permutation Method</h1>
 <h4 class="author">Benedict Kongyir</h4>
-<h4 class="date">02/19/2024</h4>
+<h4 class="date">02/20/2024</h4>
 
 </div>
 
 
+<pre class="r"><code>rm(list = ls())
+load(&quot;/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Power Loss under Permutation Method/RData/OneSample.RData&quot;)</code></pre>
 <div id="power-under-t-test" class="section level3" number="0.0.1">
 <h3><span class="header-section-number">0.0.1</span> Power under t
 test</h3>
 <pre class="r"><code># power under t test
-power_t&lt;-c(power_t_test_normal, power_t_test_exp, power_t_test_t, power_t_test_chisq, power_t_test_gamma, power_t_test_weibul, power_t_test_logn)
-power_table_t&lt;-array(power_t, dim = c(5, 7), dimnames = list(sample_size,c(&quot;norm_t&quot;, &quot;exp_t&quot;, &quot;t distn_t&quot;,&quot;chisq&quot;, &quot;Gamma&quot;, &quot;Weibull&quot;, &quot;Lognormal&quot;)))
+power_t&lt;-c(power_t_test_normal, power_t_test_exp, power_t_test_t, power_t_test_chisq, power_t_test_weibul, power_t_test_logn)
+power_table_t&lt;-array(power_t, dim = c(5, 6), dimnames = list(sample_size,c(&quot;norm_t&quot;, &quot;exp_t&quot;, &quot;t distn_t&quot;,&quot;chisq&quot;,  &quot;Weibull&quot;, &quot;Lognormal&quot;)))
 power_table_t</code></pre>
-<pre><code>##    norm_t exp_t t distn_t chisq Gamma Weibull Lognormal
-## 10  0.178 0.221     0.246 0.201 0.201   0.217     0.336
-## 20  0.336 0.379     0.429 0.361 0.345   0.384     0.489
-## 30  0.479 0.504     0.566 0.492 0.472   0.499     0.601
-## 40  0.594 0.626     0.665 0.611 0.600   0.616     0.676
-## 50  0.695 0.711     0.741 0.705 0.700   0.699     0.754</code></pre>
+<pre><code>##    norm_t exp_t t distn_t chisq Weibull Lognormal
+## 10  0.292 0.197     0.432 0.205   0.208     0.366
+## 20  0.555 0.612     0.677 0.592   0.648     0.842
+## 30  0.757 0.858     0.814 0.835   0.874     0.962
+## 40  0.876 0.953     0.892 0.943   0.963     0.989
+## 50  0.936 0.989     0.930 0.978   0.990     0.996</code></pre>
 </div>
 <div id="power-under-permutation-test" class="section level3" number="0.0.2">
 <h3><span class="header-section-number">0.0.2</span> Power under
 permutation test</h3>
 <pre class="r"><code># power under permutation test
-power_perm&lt;-c(power_perm_test_norm, power_perm_test_exp, power_perm_test_t,  power_perm_test_chisq, power_perm_test_gamma, power_perm_test_weibul, power_perm_test_logn)
-power_table_perm&lt;-array(power_perm, dim = c(5, 7), dimnames = list(sample_size, c(&quot;Normal&quot;, &quot;exp_perm&quot;, &quot;t_perm&quot;, &quot;chisq&quot;, &quot;Gamma&quot;, &quot;Weibull&quot;, &quot;Lognormal&quot;)))
+power_perm&lt;-c(power_perm_test_norm, power_perm_test_exp, power_perm_test_t,  power_perm_test_chisq,  power_perm_test_weibul, power_perm_test_logn)
+power_table_perm&lt;-array(power_perm, dim = c(5, 6), dimnames = list(sample_size, c(&quot;Normal&quot;, &quot;exp_perm&quot;, &quot;t_perm&quot;, &quot;chisq&quot;, &quot;Weibull&quot;, &quot;Lognormal&quot;)))
 power_table_perm</code></pre>
-<pre><code>##    Normal exp_perm t_perm  chisq  Gamma Weibull Lognormal
-## 10 0.1897   0.2325 0.2721 0.2194 0.2046  0.2547    0.4317
-## 20 0.3460   0.3816 0.4462 0.3675 0.3514  0.3879    0.5699
-## 30 0.4811   0.5092 0.5738 0.5026 0.4913  0.5115    0.6775
-## 40 0.6092   0.6122 0.6789 0.6102 0.6042  0.6287    0.7446
-## 50 0.6896   0.7157 0.7525 0.7041 0.6972  0.7134    0.8009</code></pre>
+<pre><code>##    Normal exp_perm t_perm  chisq Weibull Lognormal
+## 10 0.2773   0.2396 0.4573 0.2312  0.2513    0.5566
+## 20 0.5706   0.6499 0.6952 0.6290  0.6878    0.9606
+## 30 0.7474   0.8778 0.8268 0.8452  0.9011    0.9981
+## 40 0.8699   0.9598 0.8965 0.9426  0.9699    0.9999
+## 50 0.9374   0.9882 0.9369 0.9824  0.9929    1.0000</code></pre>
 </div>
 <div id="power-loss" class="section level3" number="0.0.3">
 <h3><span class="header-section-number">0.0.3</span> Power loss</h3>
 <pre class="r"><code># power loss
-powerloss_data&lt;-c(power_loss_norm, power_loss_exp,power_loss_t, power_loss_chisq, power_loss_gamma, power_loss_weibul, power_loss_logn)
-powerloss_table&lt;-array(powerloss_data, dim = c(5, 7), dimnames = list(sample_size, c(&quot;Normal&quot;, &quot;exp_perm&quot;, &quot;t_perm&quot;, &quot;chisq&quot;, &quot;Gamma&quot;, &quot;Weibull&quot;, &quot;Lognormal&quot;)))
+powerloss_data&lt;-c(powerloss_norm, powerloss_exp,powerloss_t, powerloss_chisq, powerloss_weibul, powerloss_logn)
+powerloss_table&lt;-array(powerloss_data, dim = c(5, 6), dimnames = list(sample_size, c(&quot;Normal&quot;, &quot;exp_perm&quot;, &quot;t_perm&quot;, &quot;chisq&quot;,  &quot;Weibull&quot;, &quot;Lognormal&quot;)))
 powerloss_table</code></pre>
-<pre><code>##     Normal exp_perm t_perm   chisq   Gamma Weibull Lognormal
-## 10  0.0117   0.0115 0.0261  0.0184  0.0036  0.0377    0.0957
-## 20  0.0100   0.0026 0.0172  0.0065  0.0064  0.0039    0.0809
-## 30  0.0021   0.0052 0.0078  0.0106  0.0193  0.0125    0.0765
-## 40  0.0152  -0.0138 0.0139 -0.0008  0.0042  0.0127    0.0686
-## 50 -0.0054   0.0047 0.0115 -0.0009 -0.0028  0.0144    0.0469</code></pre>
-<pre class="r"><code>save.image(paste0(&quot;new_perm_result&quot;,&quot;.RData&quot;))</code></pre>
+<pre><code>##     Normal exp_perm t_perm   chisq Weibull Lognormal
+## 10 -0.0147   0.0426 0.0253  0.0262  0.0433    0.1906
+## 20  0.0156   0.0379 0.0182  0.0370  0.0398    0.1186
+## 30 -0.0096   0.0198 0.0128  0.0102  0.0271    0.0361
+## 40 -0.0061   0.0068 0.0045 -0.0004  0.0069    0.0109
+## 50  0.0014  -0.0008 0.0069  0.0044  0.0029    0.0040</code></pre>
 </div>
 
 
