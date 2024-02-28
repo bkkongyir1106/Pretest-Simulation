@@ -11,9 +11,9 @@
 
 <meta name="author" content="Benedict Kongyir" />
 
-<meta name="date" content="2024-02-20" />
+<meta name="date" content="2024-02-28" />
 
-<title>Power of two sample location test using Permutation method</title>
+<title>Probability of Type I error Rates</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -1567,55 +1567,87 @@ border-radius: 0px;
 
 
 
-<h1 class="title toc-ignore">Power of two sample location test using
-Permutation method</h1>
+<h1 class="title toc-ignore">Probability of Type I error Rates</h1>
 <h4 class="author">Benedict Kongyir</h4>
-<h4 class="date">02/20/2024</h4>
+<h4 class="date">02/28/2024</h4>
 
 </div>
 
 
-<pre class="r"><code>load(&quot;/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Power Loss under Permutation Method/RData/TwoSamples.RData&quot;)</code></pre>
-<div id="power-under-t-test" class="section level3" number="0.0.1">
-<h3><span class="header-section-number">0.0.1</span> Power under t
-test</h3>
-<pre class="r"><code># power under t test
-power_t&lt;-c(power_t_test_normal, power_t_test_exp, power_t_test_t, power_t_test_chisq, power_t_test_gamma, power_t_test_weibul, power_t_test_logn)
-power_table_t&lt;-array(power_t, dim = c(5, 7), dimnames = list(sample_size,c(&quot;norm_t&quot;, &quot;exp_t&quot;, &quot;t distn_t&quot;,&quot;chisq&quot;, &quot;Gamma&quot;, &quot;Weibull&quot;, &quot;Lognormal&quot;)))
-power_table_t</code></pre>
-<pre><code>##    norm_t exp_t t distn_t chisq Gamma Weibull Lognormal
-## 10  0.178 0.221     0.246 0.201 0.201   0.217     0.336
-## 20  0.336 0.379     0.429 0.361 0.345   0.384     0.489
-## 30  0.479 0.504     0.566 0.492 0.472   0.499     0.601
-## 40  0.594 0.626     0.665 0.611 0.600   0.616     0.676
-## 50  0.695 0.711     0.741 0.705 0.700   0.699     0.754</code></pre>
-</div>
-<div id="power-under-permutation-test" class="section level3" number="0.0.2">
-<h3><span class="header-section-number">0.0.2</span> Power under
-permutation test</h3>
-<pre class="r"><code># power under permutation test
-power_perm&lt;-c(power_perm_test_norm, power_perm_test_exp, power_perm_test_t,  power_perm_test_chisq, power_perm_test_gamma, power_perm_test_weibul, power_perm_test_logn)
-power_table_perm&lt;-array(power_perm, dim = c(5, 7), dimnames = list(sample_size, c(&quot;Normal&quot;, &quot;exp_perm&quot;, &quot;t_perm&quot;, &quot;chisq&quot;, &quot;Gamma&quot;, &quot;Weibull&quot;, &quot;Lognormal&quot;)))
-power_table_perm</code></pre>
-<pre><code>##    Normal exp_perm t_perm  chisq  Gamma Weibull Lognormal
-## 10 0.1897   0.2325 0.2721 0.2194 0.2046  0.2547    0.4317
-## 20 0.3460   0.3816 0.4462 0.3675 0.3514  0.3879    0.5699
-## 30 0.4811   0.5092 0.5738 0.5026 0.4913  0.5115    0.6775
-## 40 0.6092   0.6122 0.6789 0.6102 0.6042  0.6287    0.7446
-## 50 0.6896   0.7157 0.7525 0.7041 0.6972  0.7134    0.8009</code></pre>
-</div>
-<div id="power-loss" class="section level3" number="0.0.3">
-<h3><span class="header-section-number">0.0.3</span> Power loss</h3>
-<pre class="r"><code># power loss
-powerloss_data&lt;-c(power_loss_norm, power_loss_exp,power_loss_t, power_loss_chisq, power_loss_gamma, power_loss_weibul, power_loss_logn)
-powerloss_table&lt;-array(powerloss_data, dim = c(5, 7), dimnames = list(sample_size, c(&quot;Normal&quot;, &quot;exp_perm&quot;, &quot;t_perm&quot;, &quot;chisq&quot;, &quot;Gamma&quot;, &quot;Weibull&quot;, &quot;Lognormal&quot;)))
-powerloss_table</code></pre>
-<pre><code>##     Normal exp_perm t_perm   chisq   Gamma Weibull Lognormal
-## 10  0.0117   0.0115 0.0261  0.0184  0.0036  0.0377    0.0957
-## 20  0.0100   0.0026 0.0172  0.0065  0.0064  0.0039    0.0809
-## 30  0.0021   0.0052 0.0078  0.0106  0.0193  0.0125    0.0765
-## 40  0.0152  -0.0138 0.0139 -0.0008  0.0042  0.0127    0.0686
-## 50 -0.0054   0.0047 0.0115 -0.0009 -0.0028  0.0144    0.0469</code></pre>
+<pre class="r"><code>setwd(&quot;/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Permutation functions&quot;)
+suppressMessages({
+  source(&quot;OneSample functions.R&quot;)
+})</code></pre>
+<pre class="r"><code>N &lt;- 1e4; alpha &lt;- 0.05
+dist_sum &lt;- c(&quot;Std Normal&quot;, &quot;t&quot;, &quot;Exp&quot;, &quot;Chi-Square&quot;, &quot;Gamma&quot;, &quot;Weibull&quot;, 
+              &quot;LogNormal&quot;, &quot;Contaminated&quot;)
+nvec &lt;- c(8, 10, 15, 20, 50, 80)
+alpha_vec &lt;- c(0.01, 0.05, 0.1)
+set.seed(33)
+
+powervec &lt;- numeric(length(nvec) * length(dist_sum) * length(alpha_vec))
+TypeI_error &lt;- array(powervec, dim = c(6, 8, 3), 
+                                  dimnames = list(nvec, dist_sum, alpha_vec))
+system.time({
+  for (i in 1:length(nvec)){
+    n &lt;- nvec[i]
+    print(n)
+    for (m in 1:length(alpha_vec)) {
+      alpha &lt;- alpha_vec[m]
+      for (j in 1:length(dist_sum)) {
+        dist &lt;- dist_sum[j]
+        pval &lt;- numeric(N)
+        for (k in 1:N) {
+          x &lt;- generate_data(n, dist)  
+          pval[k] &lt;- t.test(x)$p.value
+        }
+        TypeI_error[i, j, m] &lt;- mean(pval &lt; alpha)
+      }
+    }
+  }
+  
+})</code></pre>
+<pre><code>## [1] 8
+## [1] 10
+## [1] 15
+## [1] 20
+## [1] 50
+## [1] 80</code></pre>
+<pre><code>##    user  system elapsed 
+##  37.444   0.143  38.297</code></pre>
+<div id="probability-of-type-i-error-rates" class="section level3" number="0.0.1">
+<h3><span class="header-section-number">0.0.1</span> Probability of Type
+I error Rates</h3>
+<pre class="r"><code>TypeI_error</code></pre>
+<pre><code>## , , 0.01
+## 
+##    Std Normal      t    Exp Chi-Square  Gamma Weibull LogNormal Contaminated
+## 8      0.0082 0.0091 0.0457     0.0362 0.0230  0.0458    0.0957       0.0001
+## 10     0.0104 0.0086 0.0461     0.0333 0.0224  0.0421    0.0919       0.0046
+## 15     0.0098 0.0076 0.0393     0.0322 0.0194  0.0349    0.0784       0.0053
+## 20     0.0100 0.0082 0.0307     0.0257 0.0193  0.0322    0.0737       0.0087
+## 50     0.0092 0.0098 0.0211     0.0196 0.0170  0.0199    0.0514       0.0109
+## 80     0.0104 0.0097 0.0178     0.0180 0.0133  0.0147    0.0412       0.0091
+## 
+## , , 0.05
+## 
+##    Std Normal      t    Exp Chi-Square  Gamma Weibull LogNormal Contaminated
+## 8      0.0488 0.0444 0.1018     0.0879 0.0643  0.1041    0.1669       0.0347
+## 10     0.0518 0.0469 0.0988     0.0866 0.0677  0.0974    0.1629       0.0412
+## 15     0.0476 0.0463 0.0851     0.0743 0.0629  0.0844    0.1439       0.0475
+## 20     0.0499 0.0517 0.0802     0.0727 0.0580  0.0834    0.1317       0.0451
+## 50     0.0493 0.0510 0.0680     0.0586 0.0532  0.0625    0.0981       0.0515
+## 80     0.0521 0.0480 0.0577     0.0538 0.0567  0.0566    0.0849       0.0507
+## 
+## , , 0.1
+## 
+##    Std Normal      t    Exp Chi-Square  Gamma Weibull LogNormal Contaminated
+## 8      0.1045 0.0975 0.1511     0.1348 0.1207  0.1471    0.2119       0.0955
+## 10     0.0994 0.0959 0.1441     0.1330 0.1157  0.1430    0.2190       0.1006
+## 15     0.1053 0.0970 0.1322     0.1225 0.1105  0.1267    0.1905       0.0964
+## 20     0.1012 0.1008 0.1301     0.1233 0.1105  0.1260    0.1784       0.1025
+## 50     0.1001 0.1013 0.1153     0.1142 0.0994  0.1118    0.1495       0.1015
+## 80     0.1002 0.0973 0.1093     0.1066 0.1096  0.1017    0.1375       0.1001</code></pre>
 </div>
 
 

@@ -1,6 +1,0 @@
-load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Power Loss under Permutation Method/powerloss_perm.test.RData")
-load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Power Loss under Permutation Method/result.RData")
-power_table_t
-load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Power Loss under Permutation Method/result.RData")
-load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Power Loss under Permutation Method/perm_result.RData")
-load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Power Loss under Permutation Method/new_perm_result.RData")
