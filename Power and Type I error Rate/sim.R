@@ -1,5 +1,5 @@
 
-num.sim <- 1e5
+num.sim <- 1e3
 n <- 10
 df <- 5
 deltavec <- c(0, 1 ,2, 3)

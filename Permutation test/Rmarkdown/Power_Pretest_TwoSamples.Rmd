@@ -1,0 +1,105 @@
+---
+title: "Type I error Inflation Rate of One Sample test"
+author: "Benedict Kongyir"
+date: "`r format(Sys.time(), '%m/%d/%Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+setwd("/Users/benedictkongyir/Desktop/OSU/Research/Permutation Test/New Simulations/R scripts")
+load("/Users/benedictkongyir/Desktop/OSU/Research/Permutation Test/New Simulations/Rmarkdown/Power_pretes_TwoSamples.RData")
+load("/Users/benedictkongyir/Desktop/OSU/Research/Permutation Test/New Simulations/Rmarkdown/TwoSamples_powerloss.RData")
+```
+
+
+```{r}
+data_powertest <-data.frame(power_pretest)
+data_powerloss <-data.frame(powerloss)
+```
+
+### Power of SW test for different distributions
+```{r}
+par(mar = c(4.5, 4.1, 4.1, 8.0), xpd = TRUE)
+plot(nvec, data_powertest$Exponential.SW, type="l", lwd= 2, col = "red", 
+     ylim = c(0.0, 1.0),xlab = "Sample Size", ylab = "Power")
+lines(nvec, data_powertest$Laplace.SW, lwd= 2, col = "blue")
+lines(nvec, data_powertest$Chi.Square.SW,lwd= 2, col = "gold")
+lines(nvec, data_powertest$Gamma.SW,lwd= 2, col = "green")
+lines(nvec, data_powertest$Weibull.SW, col = "coral4")
+lines(nvec, data_powertest$t, col = "orange")
+lines(nvec, data_powertest$LogNormal.SW, col = "deeppink")
+lines(nvec, data_powertest$Standard.Normal.SW, col = "yellow")
+lines(nvec, data_powertest$Contaminated.SW, col = "purple")
+lines(nvec, data_powertest$Uniform.SW, col = "cyan")
+title(main = "Power of SW test Under Different Distribution")
+legend("topright", inset = c(-0.3, 0), legend=c("Exp", "Laplace", "Chisq", "Gamma", "Weibull", "t", "LogNormal","Std Normal", "contaminate", "Uniform"),
+       col=c( "red","blue", "gold", "green", "coral4", "orange", "deeppink", "yellow", "purple", "cyan"), lty =1,cex = 0.8, title = "Distribution")
+```
+
+### Comparison of Power of Different Normality Tests
+```{r}
+par(mar = c(5.0, 4.0, 4.0, 6.5), xpd = TRUE)
+plot(nvec, data_powertest$Exponential.KS, type="l", lwd= 2, col = "red", 
+     ylim = c(0.0, 1.0),xlab = "Sample Size", ylab = "Power")
+lines(nvec, data_powertest$Exponential.SW, lwd= 2, col = "blue")
+lines(nvec, data_powertest$Exponential.JB,lwd= 2, col = "gold")
+lines(nvec, data_powertest$Exponential.DAP,lwd= 2, col = "green")
+lines(nvec, data_powertest$Exponential.AD, col = "coral4")
+lines(nvec, data_powertest$Exponential.SF, col = "deeppink")
+title(main = "Comparison of Power of Different Normality Tests")
+legend("topright", inset = c(-0.2, 0), legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
+       col=c( "red","blue", "gold", "green", "coral4", "deeppink"), lty =1,cex = 0.8, title = "Test Method")
+```
+
+### Utility of SW test
+```{r}
+## add extra space to right margin of plot within frame
+par(mar = c(6.8, 4.1, 3.1, 5.1), xpd = TRUE)
+plot(nvec, data_powertest$Exponential.SW, axes=FALSE, ylim=c(-0.2,1), xlab="", ylab="", 
+   type="b",col="black", main="Utility of Shapiro Wilk test")
+axis(2, ylim=c(0,1),col="black",las=1)  
+mtext("Power of SW test",side=2,line=2.5)
+lines(nvec, data_powertest$Weibull.KS,   xlab="", ylab="", ylim=c(-0.2,1.0), 
+     type="b", col="red")
+lines(nvec, data_powertest$Chi.Square.SW,   xlab="", ylab="", ylim=c(-0.2,1.0), 
+     type="b", col="green")
+lines(nvec, data_powertest$Gamma.SW,   xlab="", ylab="", ylim=c(-0.2,1.0), 
+     type="b", col="blue")
+box()
+par(new=TRUE)
+
+## Plot the second plot and put axis scale on right
+plot(nvec, data_powerloss$Exponential.0.5,  xlab="", ylab="", ylim=c(-0.2,0.5), 
+    axes=FALSE, type="b", col="black")
+mtext("Power loss of t test",side=4,col="black",line=4) 
+axis(4, ylim=c(0,0.5), col="black",col.axis="black",las=1)
+lines(nvec, data_powerloss$Weibull.0.5,   xlab="", ylab="", ylim=c(-0.2,0.5), 
+     type="b", col="red")
+lines(nvec, data_powerloss$Chi.Square.0.5,   xlab="", ylab="", ylim=c(-0.2,0.5), 
+     type="b", col="green")
+lines(nvec, data_powerloss$Gamma.0.5,   xlab="", ylab="", ylim=c(-0.2,0.5), 
+     type="b", col="blue")
+## a little farther out (line=4) to make room for labels
+axis(4, ylim=c(0,0.2), col="red",col.axis="red",las=1)
+
+## Draw the time axis
+axis(1,pretty(range(sample_size),10))
+mtext("Sample Size",side=1,col="black",line=2.5)  
+## Add Legend
+legend("bottom", inset = c(0, -0.4), legend=c("exp","Weibul", "Chisq", "LapLace", "LogNorm", "Gamma"),
+  col=c("black","red", "green", "blue"), lty = 5, horiz = TRUE)
+```
+
+
+
+

@@ -1,0 +1,419 @@
+---
+title: "Power and Type I error of Two Sample t test"
+author: "Benedict Kongyir"
+date: "`r format(Sys.time(), '%m/%d/%Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+rm(list = ls())
+setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Power and Type I error Rate/Rmarkdown")
+set.seed(1)
+N <- 1e5
+alpha <- 0.05
+d <- 0.5
+sample_size <- c(10,20,30,40,50)
+```
+
+
+```{r}
+#power of SW test
+Power_SW_exp <-Power_SW_unif <- Power_SW_t <- Power_SW_chisq <- Power_SW_gamma <- Power_SW_weibull <- Power_SW_logn <- Power_SW_beta <- Power_SW_contaminate<- numeric(length(sample_size))
+#Type I error
+Type1Error_Norm <- Type1Error_exp <-Type1Error_unif <- Type1Error_t <- Type1Error_chisq <- Type1Error_gamma <- Type1Error_weibull <- Type1Error_logn <- Type1Error_beta <-Type1Error_contaminate<- numeric(length(sample_size))
+#inflation of Type I error
+InflationType1Error_exp <-InflationType1Error_unif <- InflationType1Error_t <- InflationType1Error_chisq <- InflationType1Error_gamma <- InflationType1Error_weibull <- InflationType1Error_logn <- InflationType1Error_beta <- InflationType1Error_contaminate <- numeric(length(sample_size))
+#Power of t test
+Power_ttest_Norm <- Power_ttest_exp <-Power_ttest_unif <- Power_ttest_t <- Power_ttest_chisq <- Power_ttest_gamma <- Power_ttest_weibull <- Power_ttest_logn <- Power_ttest_beta <- Power_ttest_contaminate <- numeric(length(sample_size))
+#powerloss
+powrloss_exp <-powrloss_unif  <-powrloss_gamma <-powrloss_beta <-powrloss_chisq <-powrloss_t <- powrloss_weibull <- powrloss_logn <- powrloss_beta<- powrloss_contaminate<- numeric(length(sample_size))
+
+```
+
+
+```{r}
+for( i in 1 : length(sample_size)){
+  n <- sample_size[i]
+print(n)
+PowrSW_exp <- PowrSW_unif <- PowrSW_t <- PowrSW_chisq <- PowrSW_gamma <- PowrSW_weibull <- PowrSW_logn <- PowrSW_beta <- PowrSW_contaminate<- numeric(N)
+error_ttest_norm <- error_ttest_exp <- error_ttest_unif <- error_ttest_t <- error_ttest_chisq <- error_ttest_gamma <- error_ttest_weibull<- error_ttest_logn <- error_ttest_beta<- error_ttest_contaminate<- numeric(N)
+powr_ttest_norm <- powr_ttest_exp <- powr_ttest_unif <- powr_ttest_t <- powr_ttest_chisq <- powr_ttest_gamma <- powr_ttest_weibull <- powr_ttest_logn<- powr_ttest_beta <- powr_ttest_contaminate <- numeric(N)
+
+ for(j in 1 : N){
+   # normal distn
+    n1 <- rnorm(n, mean = 0, sd = 1)
+    n2 <- rnorm(n, mean = 0, sd = 1)
+    
+    if(t.test(n1, n2)$p.value <= alpha){
+      error_ttest_norm[j] <- 1
+    }
+    if(t.test(n1, n2 + d)$p.value <= alpha){
+      powr_ttest_norm[j] <- 1
+    }
+    # ===============================================================================================
+    # e ~exp(theta),  E(X) = theta and VAR(X) = theta^2
+    # ===============================================================================================
+    e1 <- rexp(n, rate = 1)
+    e2 <- rexp(n, rate = 1)
+   
+    if(t.test(e1 - 1, e2 - 1)$p.value <= alpha){
+      error_ttest_exp[j] <- 1
+    }
+    if(shapiro.test(e1)$p.value <= alpha/2 | shapiro.test(e2)$p.value <= alpha/2){
+      PowrSW_exp[j] <- 1
+    }
+    if(t.test(e1 -1, e2 - 1 + d)$p.value <= alpha){
+      powr_ttest_exp[j] <- 1
+    }
+    # ===============================================================================================
+    # u1 ~U(a, b),  E(X) = (a + b)/2 and VAR(X) = [(b-a)^2]/12
+    # ===============================================================================================
+    u1 <- runif(n, min = 0, max = 1)
+    u2 <- runif(n, min = 0, max = 1)
+      
+    if(t.test((u1-0.5)/sqrt(1/12),  (u2-0.5)/sqrt(1/12))$p.value <= alpha){
+      error_ttest_unif[j] <- 1
+    } 
+    if(shapiro.test(u1)$p.value <= alpha/2 | shapiro.test(u2)$p.value <= alpha/2){
+      PowrSW_unif[j] <- 1
+    }
+    if(t.test((u1-0.5)/sqrt(1/12), (u2-0.5)/sqrt(1/12) + d)$p.value <= alpha){
+      powr_ttest_unif[j] <- 1
+    }
+    # ===============================================================================================
+    # t1 ~t_v,  E(X) = 0 for v >1 and VAR(X) = v/(v-2)
+    # ===============================================================================================
+    t1 <-rt(n, df = 3) 
+    t2 <-rt(n, df = 3) 
+    
+    if(t.test((t1)/sqrt(3), (t2)/sqrt(3))$p.value <= alpha){
+      error_ttest_t[j] <- 1
+    }
+    if(shapiro.test(t1)$p.value <= alpha/2 | shapiro.test(t2)$p.value <= alpha/2){
+      PowrSW_t[j] <- 1
+    }
+    if(t.test((t1)/sqrt(3), (t2)/sqrt(3) + d)$p.value <= alpha){
+      powr_ttest_t[j] <- 1
+    }
+    # ===============================================================================================
+    # k1 ~X_k,  E(X) = k and VAR(X) = 2k
+    # ===============================================================================================
+    k1 <-rchisq(n, df = 7) 
+    k2 <-rchisq(n, df = 7) 
+      
+    if(t.test((k1 - 7)/sqrt(14), (k2 - 7)/sqrt(14))$p.value <= alpha){
+      error_ttest_chisq[j] <- 1
+    }
+    if(shapiro.test(k1)$p.value <= alpha/2 | shapiro.test(k2)$p.value <= alpha/2){
+      PowrSW_chisq[j] <- 1
+    }
+    if(t.test((k1 - 7)/sqrt(14), (k2 - 7)/sqrt(14) + d)$p.value <= alpha){
+      powr_ttest_chisq[j] <- 1
+    }
+    # ===============================================================================================
+    # g1 ~gamma(alpha, beta), where beta = 1/theta so E(X) = alpha/theta and VAR(X) = alpha/(theta)^2
+    # ===============================================================================================
+    g1 <- rgamma(n, shape = 3, rate = 0.1) 
+    g2 <- rgamma(n, shape = 3, rate = 0.1)
+    
+    if(t.test((g1-30)/sqrt(300), (g2-30)/sqrt(300))$p.value <= alpha){
+      error_ttest_gamma[j] <- 1
+    }
+    if(shapiro.test(g1)$p.value <= alpha/2 | shapiro.test(g2)$p.value <= alpha/2){
+      PowrSW_gamma[j] <- 1
+    }
+    if(t.test((g1-30)/sqrt(300), (g2-30)/sqrt(300) + d)$p.value <= alpha){
+      powr_ttest_gamma[j] <- 1
+    }
+    # ===============================================================================================
+    # w1 ~Weibull(shape, scale)  E(X) = scale * Gamma(1 + 1/shape) and 
+    # VAR(X) = scale^2[Gamma(1 + 2/shape) - (Gamma(1 + 1/shape))^2]
+    # ===============================================================================================
+    w1 <- rweibull(n, shape = 1, scale = 2) 
+    w2 <- rweibull(n, shape = 1, scale = 2)
+      
+    u <- (w1-2*gamma(2))/sqrt(4*(gamma(3) - gamma(2)))
+    w <- (w2-2*gamma(2))/sqrt(4*(gamma(3) - gamma(2)))
+    if(t.test(u, w)$p.value <= alpha){
+      error_ttest_weibull[j] <- 1
+    }
+    if(shapiro.test(w1)$p.value <= alpha/2 | shapiro.test(w2)$p.value <= alpha/2){
+      PowrSW_weibull[j] <- 1
+    }
+    if(t.test(u , w + d)$p.value <= alpha){
+      powr_ttest_weibull[j] <- 1
+    }
+    # ===================================================================================================
+    # l1 ~lognormal(mu, sigma^2)  E(X) = exp(mu + sigma^2/2) VAR(X) = [exp(sigma^2)-1]exp(2mu + sigma^2)
+    # ===================================================================================================
+    l1 <- rlnorm(n, meanlog = 0, sdlog = 1)
+    l2 <- rlnorm(n, meanlog = 0, sdlog = 1)
+  
+    z1 <- (l1- exp(0+1/2))/sqrt(sqrt((exp(1)-1)*exp(2*0 + 1)))
+    z2 <- (l2- exp(0+1/2))/sqrt(sqrt((exp(1)-1)*exp(2*0 + 1)))
+    if(t.test(z1, z2)$p.value <= alpha){
+      error_ttest_logn[j] <- 1
+    }
+    if(shapiro.test(l1)$p.value <= alpha/2 | shapiro.test(l2)$p.value <= alpha/2){
+      PowrSW_logn[j] <- 1
+    }
+    if(t.test(z1, z2 + d)$p.value <= alpha){
+      powr_ttest_logn[j] <- 1
+    }
+    
+    # ===================================================================================================
+    # x ~Beta(a, b)  E(X) = a/(a + b) VAR(X) = ab/[(a + b)^2(a + b +1)]
+    # ===================================================================================================
+    n = 10; shape1 = 2; shape2 = 3
+    beta1 <- rbeta(n, shape1, shape2 )
+    beta2 <- rbeta(n, shape1, shape2)
+     b1<- (beta1 - shape1/(shape1 + shape2))/((shape1*shape2)/((shape1 + shape2)^2)*(shape1 + shape2 + 1))
+     b2 <- (beta2 - shape1/(shape1 + shape2))/((shape1*shape2)/((shape1 + shape2)^2)*(shape1 + shape2 + 1))
+    if(t.test(b1, b2)$p.value <= alpha){
+      error_ttest_beta[j] <- 1
+    }
+    if(shapiro.test(b1)$p.value <= alpha/2 | shapiro.test(b2)$p.value <= alpha/2){
+      PowrSW_beta[j] <- 1
+    }
+    if(t.test(b1, b2 + d)$p.value <= alpha){
+      powr_ttest_beta[j] <- 1
+    }
+    
+  # ===================================================================================================
+  #  X~contaminated   E(X) = 0, VAR(X) = 2^2
+  # ===================================================================================================
+  
+    # Set the probability for the standard normal distribution
+    prob_standard_normal <- 0.6
+    contaminate1 <-NULL
+    contaminate2 <-NULL
+    for (k in 1:n) {
+      if (runif(1) <= prob_standard_normal) {
+        # Sample from the standard normal distribution
+        contaminate1[k] <- rnorm(1, 0, 1)
+        contaminate2[k] <- rnorm(1, 0, 1)
+      } else {
+        # Sample from the contaminated distribution
+         contaminate1[k]<- rnorm(1, 0, 2)
+         contaminate2[k]<- rnorm(1, 0, 2)
+      }
+    }
+      if(t.test(contaminate1, contaminate2)$p.value <= alpha){
+          error_ttest_contaminate[j] <- 1
+        }
+        if(shapiro.test(contaminate1)$p.value <= alpha/2 | shapiro.test(contaminate2)$p.value <= alpha/2){
+          PowrSW_contaminate[j] <- 1
+        }
+        if(t.test(contaminate1/2 , contaminate2/2 + d)$p.value <= alpha){
+          powr_ttest_contaminate[j] <- 1
+        }
+    
+ }
+  #Type I error
+  Type1Error_Norm[i] <- round(mean(error_ttest_norm), 3)
+  Type1Error_exp[i] <- round(mean(error_ttest_exp), 3)
+  Type1Error_unif[i] <- round(mean(error_ttest_unif), 3)
+  Type1Error_t[i] <- round(mean(error_ttest_t), 3)
+  Type1Error_chisq[i] <- round(mean(error_ttest_chisq), 3)
+  Type1Error_gamma[i] <- round(mean(error_ttest_gamma), 3)
+  Type1Error_weibull[i] <- round(mean(error_ttest_weibull), 3)
+  Type1Error_logn[i] <- round(mean(error_ttest_logn), 3)
+  Type1Error_beta[i] <- round(mean(error_ttest_beta), 3)
+  Type1Error_contaminate[i] <- round(mean(error_ttest_contaminate), 3)
+  #inflation of Type I error
+  InflationType1Error_exp[i] <- Type1Error_exp[i] - Type1Error_Norm[i]
+  InflationType1Error_unif[i] <- Type1Error_unif[i] - Type1Error_Norm[i]
+  InflationType1Error_t[i] <- Type1Error_t[i] - Type1Error_Norm[i]
+  InflationType1Error_chisq[i] <- Type1Error_chisq[i] - Type1Error_Norm[i]
+  InflationType1Error_gamma[i] <- Type1Error_gamma[i] - Type1Error_Norm[i]
+  InflationType1Error_weibull[i] <- Type1Error_weibull[i] - Type1Error_Norm[i]
+  InflationType1Error_logn[i] <- Type1Error_logn[i] - Type1Error_Norm[i]
+  InflationType1Error_beta[i] <- Type1Error_beta[i] - Type1Error_Norm[i]
+  InflationType1Error_contaminate[i] <- Type1Error_contaminate[i] - Type1Error_Norm[i]
+  #power of SW test
+  Power_SW_exp[i] <- round(mean(PowrSW_exp), 3)
+  Power_SW_unif[i] <- round(mean(PowrSW_unif), 3)
+  Power_SW_t[i] <- round(mean(PowrSW_t), 3)
+  Power_SW_chisq[i] <- round(mean(PowrSW_chisq), 3)
+  Power_SW_gamma[i] <- round(mean(PowrSW_gamma), 3)
+  Power_SW_weibull[i] <- round(mean(PowrSW_weibull), 3)
+  Power_SW_logn[i] <- round(mean(PowrSW_logn), 3)
+  Power_SW_beta[i] <- round(mean(PowrSW_beta), 3)
+  Power_SW_contaminate[i] <- round(mean(PowrSW_contaminate), 3)
+  # Power of t test
+  Power_ttest_Norm[i] <- round(mean(powr_ttest_norm), 3)
+  Power_ttest_exp[i] <- round(mean(powr_ttest_exp), 3)
+  Power_ttest_unif[i] <- round(mean(powr_ttest_unif), 3)
+  Power_ttest_t[i] <- round(mean(powr_ttest_t), 3)
+  Power_ttest_chisq[i] <- round(mean(powr_ttest_chisq), 3)
+  Power_ttest_gamma[i] <- round(mean(powr_ttest_gamma), 3)
+  Power_ttest_weibull[i] <- round(mean(powr_ttest_weibull), 3)
+  Power_ttest_logn[i] <- round(mean(powr_ttest_logn), 3)
+  Power_ttest_beta[i] <- round(mean(powr_ttest_beta), 3)
+  Power_ttest_contaminate[i] <- round(mean(powr_ttest_contaminate), 3)
+  #Powerloss of t test
+  powrloss_exp[i] <- Power_ttest_Norm[i] - Power_ttest_exp[i]
+  powrloss_unif[i] <- Power_ttest_Norm[i] - Power_ttest_unif[i]
+  powrloss_t[i] <- Power_ttest_Norm[i] - Power_ttest_t[i]
+  powrloss_chisq[i] <- Power_ttest_Norm[i] - Power_ttest_chisq[i]
+  powrloss_gamma[i] <- Power_ttest_Norm[i] - Power_ttest_gamma[i]
+  powrloss_weibull[i] <- Power_ttest_Norm[i] - Power_ttest_weibull[i]
+  powrloss_logn[i] <- Power_ttest_Norm[i] - Power_ttest_logn[i]
+  powrloss_beta[i] <- Power_ttest_Norm[i] - Power_ttest_beta[i]
+  powrloss_contaminate[i] <- Power_ttest_Norm[i] - Power_ttest_contaminate[i]
+}
+```
+
+###  power of SW test
+```{r}
+# power of SW test
+data1 <-c(Power_SW_exp, Power_SW_unif, Power_SW_t,Power_SW_chisq,Power_SW_gamma, Power_SW_t,Power_SW_weibull,Power_SW_logn, Power_SW_beta, Power_SW_contaminate)
+Power_SW_test<-array(data1, dim = c(5, 9), dimnames = list(sample_size,c("exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "beta", "contaminate")))
+Power_SW_test
+```
+
+
+### Type I error
+```{r}
+# Type I error
+data2 <-c(Type1Error_Norm, Type1Error_exp, Type1Error_unif, Type1Error_t, Type1Error_chisq, Type1Error_gamma , Type1Error_weibull,Type1Error_logn, Type1Error_beta, Type1Error_contaminate)
+Type1_error<-array(data2, dim = c(5, 10), dimnames = list(sample_size,c("norm", "exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "beta", "contaminate")))
+Type1_error
+```
+
+### Inflation of Type I error
+```{r}
+#inflation of Type I error
+data5 <-c(InflationType1Error_exp, InflationType1Error_unif, InflationType1Error_t, InflationType1Error_chisq, InflationType1Error_gamma, InflationType1Error_weibull, InflationType1Error_logn, InflationType1Error_beta,  InflationType1Error_contaminate)
+inflation_error<-array(data5, dim = c(5, 9), dimnames = list(sample_size,c("exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "beta", "contaminate")))
+inflation_error
+```
+
+### power of t test
+```{r}
+# power of t test
+data3 <-c(Power_ttest_Norm, Power_ttest_exp , Power_ttest_unif, Power_ttest_t, Power_ttest_chisq, Power_ttest_gamma, Power_ttest_weibull, Power_ttest_logn, Power_ttest_beta, Power_ttest_contaminate )
+Power_t_test<-array(data3, dim = c(5, 10), dimnames = list(sample_size,c("norm", "exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "beta", "contaminate")))
+Power_t_test
+```
+
+### powerloss of t test
+```{r}
+#powerloss of t test
+data4 <-c(powrloss_exp, powrloss_unif, powrloss_t, powrloss_chisq, powrloss_gamma, powrloss_weibull, powrloss_logn, powrloss_beta, powrloss_contaminate)
+Powerloss_t_test<-array(data4, dim = c(5, 9), dimnames = list(sample_size,c("exp", "unif", "t", "chisq", "gamma", "weibull", "lognormal", "beta", "contaminate")))
+Powerloss_t_test
+```
+
+
+```{r}
+save.image(paste0("two_samples_results",".RData"))
+```
+
+
+```{r}
+#power of SW test
+plot(sample_size, Power_SW_exp, type="l", lwd= 2, col = "red", 
+     ylim = c(0, 1),xlab = "Sample Size", ylab = "Power")
+lines(sample_size, Power_SW_unif, lwd= 2, col = "blue")
+lines(sample_size, Power_SW_t,lwd= 2, col = "purple")
+lines(sample_size, Power_SW_chisq, lwd= 2,col = "green")
+lines(sample_size, Power_SW_gamma, lwd= 2,col = "pink")
+lines(sample_size, Power_SW_weibull, lwd= 2,col = "brown")
+lines(sample_size, Power_SW_logn, lwd= 2,col = "yellow")
+lines(sample_size, Power_SW_contaminate, lwd= 2,col = "violet")
+lines(sample_size, Power_SW_beta, lwd= 2,col = "orange")
+title(main = "Power SW test.")
+legend("bottomright", legend=c("exponential", "uniform", "t", "chisq", "gamma", "weibull", "lognormal", "contaminated", "beta"),
+       col=c("red","blue", "purple", "green", "pink", "brown", "yellow", "violet", "orange"), lty =1,cex = 0.5)
+```
+
+
+
+```{r}
+# Type I error rates
+plot(sample_size, Type1Error_Norm, type="l", lwd= 2, col = "red", 
+     ylim = c(0.0, 0.1),xlab = "Sample Size", ylab = "Type I error rate")
+lines(sample_size, Type1Error_exp, lwd= 2, col = "blue")
+lines(sample_size, Type1Error_unif,lwd= 2, col = "gold")
+lines(sample_size, Type1Error_t,lwd= 2, col = "green")
+lines(sample_size, Type1Error_chisq, col = "brown")
+lines(sample_size, Type1Error_gamma, col = "orange")
+lines(sample_size, Type1Error_weibull, col = "violet")
+lines(sample_size, Type1Error_logn, col = "yellow")
+lines(sample_size, Type1Error_contaminate, col = "purple")
+lines(sample_size, Type1Error_beta, col = "cyan")
+abline(h = 0.05)
+title(main = "Type I error of t test")
+legend("topleft", legend=c("normal", "expontial", "uniform", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate", "beta"),
+       col=c( "red","blue", "gold", "green", "brown", "orange", "violet", "yellow", "purple", "cyan"), lty =1,cex = 0.5)
+```
+
+
+```{r}
+#Power of t test
+plot(sample_size, Power_ttest_Norm, type="l", lwd= 2, col = "red", 
+     ylim = c(0, 1),xlab = "Sample Size", ylab = "Power")
+lines(sample_size, Power_ttest_exp, lwd= 2, col = "blue")
+lines(sample_size, Power_ttest_unif,lwd= 2, col = "gold")
+lines(sample_size, Power_ttest_t,lwd= 2, col = "green")
+lines(sample_size, Power_ttest_chisq, col = "brown")
+lines(sample_size, Power_ttest_gamma, col = "orange")
+lines(sample_size, Power_ttest_weibull, col = "violet")
+lines(sample_size, Power_ttest_logn, col = "yellow")
+lines(sample_size, Power_ttest_contaminate, col = "purple")
+lines(sample_size, Power_ttest_beta, col = "cyan")
+title(main = "Power of t test")
+legend("topleft", legend=c("normal", "expontial", "uniform", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate", "beta"),
+       col=c( "red","blue", "gold", "green", "brown", "orange", "violet", "yellow", "purple", "cyan"), lty =1,cex = 0.5)
+```
+
+
+```{r}
+#inflation of Type I error rate
+plot(sample_size, InflationType1Error_exp, type="l", lwd= 2, col = "red", 
+     ylim = c(-0.05, 0.1),xlab = "Sample Size", ylab = "Type I error")
+lines(sample_size, InflationType1Error_unif, lwd= 2, col = "blue")
+lines(sample_size, InflationType1Error_t,lwd= 2, col = "gold")
+lines(sample_size, InflationType1Error_chisq, lwd= 2,col = "green")
+lines(sample_size, InflationType1Error_gamma, lwd= 2,col = "pink")
+lines(sample_size, InflationType1Error_weibull, lwd= 2,col = "brown")
+lines(sample_size, InflationType1Error_logn, lwd= 2,col = "orange")
+lines(sample_size, InflationType1Error_contaminate, lwd= 2,col = "violet")
+lines(sample_size, InflationType1Error_beta, lwd= 2,col = "cyan")
+abline(h = 0)
+title(main = "Inflation of Type I error rate.")
+legend("topleft", legend=c("normal", "expontial", "uniform", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate", "beta"),
+       col=c( "red","blue", "gold", "green", "pink", "brown", "orange", "violet", "cyan"), lty =1,cex = 0.5)
+```
+
+
+```{r}
+#Power loss of t test
+plot(sample_size, powrloss_exp, type="l", lwd= 2, col = "red", 
+     ylim = c(-0.5, 0.5),xlab = "Sample Size", ylab = "Power")
+lines(sample_size, powrloss_unif, lwd= 2, col = "blue")
+lines(sample_size, powrloss_t,lwd= 2, col = "gold")
+lines(sample_size, powrloss_chisq, lwd= 2,col = "green")
+lines(sample_size, powrloss_gamma, lwd= 2,col = "pink")
+lines(sample_size, powrloss_weibull, lwd= 2,col = "brown")
+lines(sample_size, powrloss_logn, lwd= 2,col = "orange")
+lines(sample_size, powrloss_contaminate, lwd= 2,col = "purple")
+lines(sample_size, powrloss_beta, lwd= 2,col = "cyan")
+abline(h = 0)
+title(main = "Power loss of t test.")
+legend("topleft", legend=c("normal", "expontial", "uniform", "t", "chisq", "gamma", "weibull", "lognormal", "contaminate", "beta"),
+       col=c( "red","blue", "gold", "green", "pink", "brown", "orange","purple", "cyan"), lty =1,cex = 0.5)
+```
+
+

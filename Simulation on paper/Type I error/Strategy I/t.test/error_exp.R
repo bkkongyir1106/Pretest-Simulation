@@ -13,19 +13,15 @@ for( i in 1 : length(sample_size)){
   print(n)
   
   for( j in 1 : length(shapiro_alpha)){
-    
     pre_alpha <- shapiro_alpha[j]
-    print(pre_alpha)
-    
     t_reject_h0 <-0
     sample_passed <- 0
     while(sample_passed < N){
-      
       x1 <- rexp(n, rate = 1)
       x2 <- rexp(n, rate = 1)
       
       if(shapiro.test(x1)$p.value > pre_alpha & shapiro.test(x2)$p.value > pre_alpha){
-        sample_passed <- sample_passed +1
+        sample_passed <- sample_passed + 1
         if(t.test(x1,x2)$p.value < alpha){
           t_reject_h0 <- t_reject_h0 + 1 
           
