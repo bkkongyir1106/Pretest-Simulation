@@ -1,5 +1,5 @@
 ---
-title: "Type I error Inflation Rate of One Sample test"
+title: "Utility of Normality test in Two Samples test"
 author: "Benedict Kongyir"
 date: "`r format(Sys.time(), '%m/%d/%Y')`"
 output: 

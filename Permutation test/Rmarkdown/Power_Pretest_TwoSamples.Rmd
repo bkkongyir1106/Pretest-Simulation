@@ -1,5 +1,5 @@
 ---
-title: "Type I error Inflation Rate of One Sample test"
+title: "Utility of Normality test in Two Samples test"
 author: "Benedict Kongyir"
 date: "`r format(Sys.time(), '%m/%d/%Y')`"
 output: 
@@ -20,6 +20,7 @@ setwd("/Users/benedictkongyir/Desktop/OSU/Research/Permutation Test/New Simulati
 load("/Users/benedictkongyir/Desktop/OSU/Research/Permutation Test/New Simulations/Rmarkdown/Power_pretes_TwoSamples.RData")
 load("/Users/benedictkongyir/Desktop/OSU/Research/Permutation Test/New Simulations/Rmarkdown/TwoSamples_powerloss.RData")
 ```
+
 
 
 ```{r}
