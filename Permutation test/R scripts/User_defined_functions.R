@@ -37,8 +37,8 @@ generate_data <- function(n, dist){
    
     if(dist == "Contaminated"){
       br <- rbinom(n , size = 1 , prob = 0.7)
-      sd_br <- sqrt(1 + br * 25)
-      x <- rnorm(n, mean = 0, sd = sd_br)/sqrt(25)
+      sd_br <- sqrt(1 + br * 24)
+      x <- rnorm(n, mean = 0, sd = sd_br)/sqrt(0.3 + 0.7*24)
     }
   return(x)
 }
