@@ -39,4 +39,4 @@ system.time({
 })
 
 power_pretest
-save.image(paste0("Power_pretes_TwoSamples",".RData"))
+save.image(paste0("Power_pretest_TwoSamples",".RData"))
