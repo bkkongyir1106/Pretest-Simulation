@@ -1,10 +1,10 @@
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS %%%%%%%%%%%%%%%%%%%%%%%%%----
 rm(list = ls())
-source("/home/kongyir/spring2024/User_defined_functions.R")
-source("/home/kongyir/spring2024/utility.R")
+# source("/home/kongyir/spring2024/User_defined_functions.R")
+# source("/home/kongyir/spring2024/utility.R")
 
-# source("~/Desktop/OSU/Research/Permutation Test/New Simulations/cluster/parallel_sim/User_defined_functions.R")
-# source("~/Desktop/OSU/Research/Permutation Test/New Simulations/cluster/parallel_sim/utility.R")
+source("~/Desktop/OSU/Research/Permutation Test/New Simulations/cluster/parallel_sim/User_defined_functions.R")
+source("~/Desktop/OSU/Research/Permutation Test/New Simulations/cluster/parallel_sim/utility.R")
 # Function to calculate the test statistic (difference of means)
 calculate_test_statistic <- function(x, y) {
   return((mean(x) - mean(y))/sqrt(var(x)/length(x) + var(y)/length(y)))
@@ -41,11 +41,11 @@ close_cluster <- function(cl) {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PERFORM SIMULATIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%----
 ## Set up
 {
-  N <- 1e4; P <- 1e4; alpha <- 0.05
+  N <- 1e3; P <- 1e4; alpha <- 0.05
   dist_sum <- c("Standard Normal", "Uniform", "t", "Exponential", "Laplace", 
                 "Chi-Square", "Gamma", "Weibull", "LogNormal", "Contaminated")
   nvec <- c(8, 10, 15, 20, 30, 50) 
-  d.vec <- c(0.25, 0.5 , 0.75)
+  d.vec <- c(0.25, 0.5)
   #set.seed(33)
 }
 # Parallelized simulation setup
