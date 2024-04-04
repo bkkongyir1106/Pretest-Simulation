@@ -19,25 +19,55 @@ knitr::opts_chunk$set(echo = TRUE, fig.height = 6.5, fig.width = 8)
 rm(list = ls())
 #setwd("/Users/benedictkongyir/Desktop/OSU/Research/Permutation Test/New Simulations/cluster/Results")
 load("/Users/benedictkongyir/Desktop/OSU/Research/Permutation Test/New Simulations/cluster/Parrel_sim_RData/TwoSamples_power_norm_par.RData")
-load("/Users/benedictkongyir/Desktop/OSU/Research/Permutation Test/New Simulations/cluster/Parrel_sim_RData/TwoSamples_powerloss_par.RData")
+load("/Users/benedictkongyir/Desktop/OSU/Research/Permutation Test/New Simulations/RData/TwoSamples_powerloss_par.RData")
 ```
 
 
 
 ```{r}
-data_powertest <-data.frame(power_norm.test_par)[-1,]
+data_powertest <-data.frame(power_norm.test_par)
 data_powerloss <-data.frame(power_loss_par)
-#data.combine <- data.frame(data_powertest, data_powerloss)
-#nvec = nvec[-1]
-#data_powerloss = data_powerloss[-1,]
+
+# power of SW test
+data_normality <-data.frame(power_norm.test_par[, , 2])
+
+# power loss at 5% sig level
+data_powrloss <-data.frame(power_loss_par)
+
+Expected_powerloss<-data_powrloss * (1 - data_normality)
 ```
 
  
+### Expected Power loss
+
+\[\text{Let PL } = \text{Power loss of the t test}\\
+\Psi = \text{Probability of failling to reject the Normality test.}\\
+\implies E[PL] = PL\times \Psi\]
+```{r}
+par(mar = c(9, 4, 4, 1), xpd = TRUE)
+plot(nvec, Expected_powerloss$Exponential, type="l", lwd= 2, col = "red", 
+     ylim = c(-0.01, 0.04), xlim = range(nvec), xlab = "Sample Size", ylab = "Expected Power Loss")
+lines(nvec, Expected_powerloss$Laplace, lwd= 2, col = "blue")
+lines(nvec, Expected_powerloss$Chi.Square,lwd= 2, col = "darkgrey")
+lines(nvec, Expected_powerloss$Gamma,lwd= 2, col = "green")
+lines(nvec, Expected_powerloss$Weibull, col = "coral4")
+lines(nvec, Expected_powerloss$t, col = "orange")
+lines(nvec, Expected_powerloss$LogNormal, col = "deeppink")
+lines(nvec,Expected_powerloss$Standard.Normal, col = "black")
+lines(nvec, Expected_powerloss$Contaminated, col = "purple")
+lines(nvec, Expected_powerloss$Uniform, col = "cyan")
+abline(h = 0, lwd = 2, col = "black", xpd = F)
+title(main = "Expected Power loss")
+legend("bottom", inset = c(0, -0.4), legend=c("Exp", "Laplace", "Chisq", "Gamma", "Weibull", "t", "LogNormal","Std Normal", "contaminate", "Uniform"), ncol = 5,
+       col=c( "red","blue", "darkgrey", "green", "coral4", "orange", "deeppink", "black", "purple", "cyan"), lty =1,cex = 0.8, title = "Distribution")
+```
+
+
 
 ### Type I error for Different Normality Tests
 
 ```{r}
-par(mar = c(5.0, 4.0, 4.0, 6.5), xpd = TRUE)
+par(mar = c(8, 4, 4, 1), xpd = TRUE)
 plot(nvec, data_powertest$Standard.Normal.KS, type="l", lwd= 2, col = "red", 
      ylim = c(0.0, 0.1),xlab = "Sample Size", ylab = "Type I error")
 lines(nvec, data_powertest$Standard.Normal.SW, lwd= 2, col = "blue")
@@ -45,8 +75,9 @@ lines(nvec, data_powertest$Standard.Normal.JB,lwd= 2, col = "gold")
 lines(nvec, data_powertest$Standard.Normal.DAP,lwd= 2, col = "green")
 lines(nvec, data_powertest$Standard.Normal.AD, col = "coral4")
 lines(nvec, data_powertest$Standard.Normal.SF, col = "deeppink")
+abline(h = 0.05, lwd = 2, col = "black", xpd = F)
 title(main = "Normal Distribution")
-legend("topright", inset = c(-0.2, 0), legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
+legend("bottom", inset = c(0, -0.35),ncol = 6, legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
        col=c( "red","blue", "gold", "green", "coral4", "deeppink"), lty =1,cex = 0.8, title = "Test Method")
 ```
 
@@ -55,7 +86,7 @@ legend("topright", inset = c(-0.2, 0), legend=c("KS", "SW", "JB", "DAP", "AD", "
 ### Power Normality Tests for t
 
 ```{r}
-par(mar = c(5.0, 4.0, 4.0, 6.5), xpd = TRUE)
+par(mar = c(8, 4, 4, 1), xpd = TRUE)
 plot(nvec, data_powertest$t.KS, type="l", lwd= 2, col = "red", 
      ylim = c(0.0, 1.0),xlab = "Sample Size", ylab = "Power")
 lines(nvec, data_powertest$t.SW, lwd= 2, col = "blue")
@@ -64,7 +95,7 @@ lines(nvec, data_powertest$t.DAP,lwd= 2, col = "green")
 lines(nvec, data_powertest$t.AD, col = "coral4")
 lines(nvec, data_powertest$t.SF, col = "deeppink")
 title(main = "t Distribution")
-legend("topright", inset = c(-0.2, 0), legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
+legend("bottom", inset = c(0, -0.35),ncol = 6, legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
        col=c( "red","blue", "gold", "green", "coral4", "deeppink"), lty =1,cex = 0.8, title = "Test Method")
 ```
 
@@ -72,7 +103,7 @@ legend("topright", inset = c(-0.2, 0), legend=c("KS", "SW", "JB", "DAP", "AD", "
 ### Power of Normality Tests for Uniform
 
 ```{r}
-par(mar = c(5.0, 4.0, 4.0, 6.5), xpd = TRUE)
+par(mar = c(8, 4, 4, 1), xpd = TRUE)
 plot(nvec, data_powertest$Uniform.KS, type="l", lwd= 2, col = "red", 
      ylim = c(0.0, 1.0),xlab = "Sample Size", ylab = "Power")
 lines(nvec, data_powertest$Uniform.SW, lwd= 2, col = "blue")
@@ -81,13 +112,13 @@ lines(nvec, data_powertest$Uniform.DAP,lwd= 2, col = "green")
 lines(nvec, data_powertest$Uniform.AD, col = "coral4")
 lines(nvec, data_powertest$Uniform.SF, col = "deeppink")
 title(main = "Uniform Distribution")
-legend("topright", inset = c(-0.2, 0), legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
+legend("bottom", inset = c(0, -0.35),ncol = 6, legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
        col=c( "red","blue", "gold", "green", "coral4", "deeppink"), lty =1,cex = 0.8, title = "Test Method")
 ```
 
 ### Power of Different Normality Tests for Contaminated
 ```{r}
-par(mar = c(5.0, 4.0, 4.0, 6.5), xpd = TRUE)
+par(mar = c(8, 4, 4, 1), xpd = TRUE)
 plot(nvec, data_powertest$Contaminated.KS, type="l", lwd= 2, col = "red", 
      ylim = c(0.0, 1.0),xlab = "Sample Size", ylab = "Power")
 lines(nvec, data_powertest$Contaminated.SW, lwd= 2, col = "blue")
@@ -96,14 +127,14 @@ lines(nvec, data_powertest$Contaminated.DAP,lwd= 2, col = "green")
 lines(nvec, data_powertest$Contaminated.AD, col = "coral4")
 lines(nvec, data_powertest$Contaminated.SF, col = "deeppink")
 title(main = "Contaminated Distribution")
-legend("topright", inset = c(-0.2, 0), legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
+legend("bottom", inset = c(0, -0.35),ncol = 6, legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
        col=c( "red","blue", "gold", "green", "coral4", "deeppink"), lty =1,cex = 0.8, title = "Test Method")
 ```
 
 
 ### Power of Different Normality Tests for Laplace
 ```{r}
-par(mar = c(5.0, 4.0, 4.0, 6.5), xpd = TRUE)
+par(mar = c(8, 4, 4, 1), xpd = TRUE)
 plot(nvec, data_powertest$Laplace.KS, type="l", lwd= 2, col = "red", 
      ylim = c(0.0, 1.0),xlab = "Sample Size", ylab = "Power")
 lines(nvec, data_powertest$Laplace.SW, lwd= 2, col = "blue")
@@ -112,14 +143,14 @@ lines(nvec, data_powertest$Laplace.DAP,lwd= 2, col = "green")
 lines(nvec, data_powertest$Laplace.AD, col = "coral4")
 lines(nvec, data_powertest$Laplace.SF, col = "deeppink")
 title(main = "Laplace Distribution")
-legend("topright", inset = c(-0.2, 0), legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
+legend("bottom", inset = c(0, -0.35),ncol = 6, legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
        col=c( "red","blue", "gold", "green", "coral4", "deeppink"), lty =1,cex = 0.8, title = "Test Method")
 ```
 
 
 ### Power of Different Normality Tests for Chi-Square
 ```{r}
-par(mar = c(5.0, 4.0, 4.0, 6.5), xpd = TRUE)
+par(mar = c(8, 4, 4, 1), xpd = TRUE)
 plot(nvec, data_powertest$Chi.Square.KS, type="l", lwd= 2, col = "red", 
      ylim = c(0.0, 1.0),xlab = "Sample Size", ylab = "Power")
 lines(nvec, data_powertest$Chi.Square.SW, lwd= 2, col = "blue")
@@ -128,14 +159,14 @@ lines(nvec, data_powertest$Chi.Square.DAP,lwd= 2, col = "green")
 lines(nvec, data_powertest$Chi.Square.AD, col = "coral4")
 lines(nvec, data_powertest$Chi.Square.SF, col = "deeppink")
 title(main = "Chi-Square Distribution")
-legend("topright", inset = c(-0.2, 0), legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
+legend("bottom", inset = c(0, -0.35),ncol = 6, legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
        col=c( "red","blue", "gold", "green", "coral4", "deeppink"), lty =1,cex = 0.8, title = "Test Method")
 ```
 
 
 ### Power of Different Normality Tests for Gamma
 ```{r}
-par(mar = c(5.0, 4.0, 4.0, 6.5), xpd = TRUE)
+par(mar = c(8, 4, 4, 1), xpd = TRUE)
 plot(nvec, data_powertest$Gamma.KS, type="l", lwd= 2, col = "red", 
      ylim = c(0.0, 1.0),xlab = "Sample Size", ylab = "Power")
 lines(nvec, data_powertest$Gamma.SW, lwd= 2, col = "blue")
@@ -144,14 +175,14 @@ lines(nvec, data_powertest$Gamma.DAP,lwd= 2, col = "green")
 lines(nvec, data_powertest$Gamma.AD, col = "coral4")
 lines(nvec, data_powertest$Gamma.SF, col = "deeppink")
 title(main = "Gamma Distribution")
-legend("topright", inset = c(-0.2, 0), legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
+legend("bottom", inset = c(0, -0.35),ncol = 6, legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
        col=c( "red","blue", "gold", "green", "coral4", "deeppink"), lty =1,cex = 0.8, title = "Test Method")
 ```
 
 
 ### Power of Different Normality Tests for Exponential 
 ```{r}
-par(mar = c(5.0, 4.0, 4.0, 6.5), xpd = TRUE)
+par(mar = c(8, 4, 4, 1), xpd = TRUE)
 plot(nvec, data_powertest$Exponential.KS, type="l", lwd= 2, col = "red", 
      ylim = c(0.0, 1.0),xlab = "Sample Size", ylab = "Power")
 lines(nvec, data_powertest$Exponential.SW, lwd= 2, col = "blue")
@@ -160,7 +191,7 @@ lines(nvec, data_powertest$Exponential.DAP,lwd= 2, col = "green")
 lines(nvec, data_powertest$Exponential.AD, col = "coral4")
 lines(nvec, data_powertest$Exponential.SF, col = "deeppink")
 title(main = "Exponential Distribution")
-legend("topright", inset = c(-0.2, 0), legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
+legend("bottom", inset = c(0, -0.35),ncol = 6, legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
        col=c( "red","blue", "gold", "green", "coral4", "deeppink"), lty =1,cex = 0.8, title = "Test Method")
 ```
 
@@ -168,7 +199,7 @@ legend("topright", inset = c(-0.2, 0), legend=c("KS", "SW", "JB", "DAP", "AD", "
 
 ### Power of Different Normality Tests for Weibull
 ```{r}
-par(mar = c(5.0, 4.0, 4.0, 6.5), xpd = TRUE)
+par(mar = c(8, 4, 4, 1), xpd = TRUE)
 plot(nvec, data_powertest$Weibull.KS, type="l", lwd= 2, col = "red", 
      ylim = c(0.0, 1.0),xlab = "Sample Size", ylab = "Power")
 lines(nvec, data_powertest$Weibull.SW, lwd= 2, col = "blue")
@@ -177,7 +208,7 @@ lines(nvec, data_powertest$Weibull.DAP,lwd= 2, col = "green")
 lines(nvec, data_powertest$Weibull.AD, col = "coral4")
 lines(nvec, data_powertest$Weibull.SF, col = "deeppink")
 title(main = "Weibull Distribution")
-legend("topright", inset = c(-0.2, 0), legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
+legend("bottom", inset = c(0, -0.35),ncol = 6, legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
        col=c( "red","blue", "gold", "green", "coral4", "deeppink"), lty =1,cex = 0.8, title = "Test Method")
 ```
 
@@ -185,7 +216,7 @@ legend("topright", inset = c(-0.2, 0), legend=c("KS", "SW", "JB", "DAP", "AD", "
 
 ### Power of Different Normality Tests for LogNormal
 ```{r}
-par(mar = c(5.0, 4.0, 4.0, 6.5), xpd = TRUE)
+par(mar = c(8, 4, 4, 1), xpd = TRUE)
 plot(nvec, data_powertest$LogNormal.KS, type="l", lwd= 2, col = "red", 
      ylim = c(0.0, 1.0),xlab = "Sample Size", ylab = "Power")
 lines(nvec, data_powertest$LogNormal.SW, lwd= 2, col = "blue")
@@ -194,7 +225,7 @@ lines(nvec, data_powertest$LogNormal.DAP,lwd= 2, col = "green")
 lines(nvec, data_powertest$LogNormal.AD, col = "coral4")
 lines(nvec, data_powertest$LogNormal.SF, col = "deeppink")
 title(main = "LogNormal Distribution")
-legend("topright", inset = c(-0.2, 0), legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
+legend("bottom", inset = c(0, -0.35),ncol = 6, legend=c("KS", "SW", "JB", "DAP", "AD", "SF"),
        col=c( "red","blue", "gold", "green", "coral4", "deeppink"), lty =1,cex = 0.8, title = "Test Method")
 ```
 
@@ -203,11 +234,11 @@ legend("topright", inset = c(-0.2, 0), legend=c("KS", "SW", "JB", "DAP", "AD", "
 
 #### Symmetric distributions
 
-The power to detect departures from normality is less for all the different normality test methods for samples coming from symmetric distribution like the uniform, t, Laplace and contaminated distributions as shown in the plots above especially for smaller sample sizes. Jaque-Bera, Shapiro-Wilk, Shapiro-Francia test and the Aderson-Darling test are the best test for samples from t, uniform, Laplace and contaminated distributions receptively. This shows the deficiency in the various existing normality methods to detect departures from normality for samples coming from the symmetric distribution especially for smaller sample sizes.
+The power to detect departures from normality is less for all the different normality test methods for samples coming from symmetric distribution like the uniform, t, Laplace and contaminated distributions as shown in the plots above especially for smaller sample sizes. Jaque-Bera, Shapiro-Wilk, Shapiro-Francia test and the Aderson-Darling test are the best test for samples from t, uniform, Laplace and contaminated distributions receptively.
 
 #### Asymmetric distributions
 
-For Asymmetry distributions such as Chi-Square, Exponential, Gamma, Weibull, and LogNormal distributions, the power to detect departures from normality is generally high with the Shapiro-Wilk test method being the best for all distributions.
+For Asymmetry distributions such as Chi-Square, Exponential, Gamma, Weibull, and LogNormal distributions, the power to detect departures from normality is generally high with the Shapiro-Wilk test method being the best for most of the distributions.
 The above observations further emphasize the luck of a single best test method under all scenarios.
 
 
@@ -224,18 +255,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$Exponential.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of SW test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 
 ```
 
@@ -254,18 +285,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$LogNormal.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of SW test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -283,18 +314,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$Chi.Square.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of SW test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -313,18 +344,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$Weibull.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of SW test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -344,18 +375,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$Gamma.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of SW test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -374,18 +405,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$Standard.Normal.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of SW test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -404,18 +435,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$t.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of SW test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -433,18 +464,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$Uniform.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of SW test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -461,18 +492,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$Exponential.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of KS test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 
 ```
 
@@ -491,18 +522,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$LogNormal.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of KS test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -520,18 +551,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$Chi.Square.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of KS test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -550,18 +581,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$Weibull.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of KS test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -581,18 +612,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$Gamma.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of KS test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -611,18 +642,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$Standard.Normal.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of KS test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -641,18 +672,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$t.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of KS test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -670,18 +701,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$Uniform.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of KS test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -699,12 +730,12 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$Exponential.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
@@ -729,18 +760,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$LogNormal.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of JB test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -758,18 +789,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$Chi.Square.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of JB test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -788,18 +819,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$Weibull.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of JB test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -811,7 +842,7 @@ legend("bottom", inset = c(0, -0.3), legend=c("power of JB test","powerloss of t
 ## add extra space to right margin of plot within frame
 par(mar = c(9, 4.1, 3.1, 6.5), xpd = TRUE)
 plot(nvec, data_powertest$Gamma.JB, axes=FALSE, ylim=c(0,1), xlab="", ylab="", 
-   type="o", lwd = 2, col="black", main="Utility of JB test ... LogNormal Samples")
+   type="o", lwd = 2, col="black", main="Utility of JB test ... Gamma Samples")
 axis(2, ylim=c(0,1),col="black",las=1)  
 mtext("Power of JB test",side=2,line=2.5)
 box()
@@ -819,18 +850,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$Gamma.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of JB test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -849,18 +880,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$Standard.Normal.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of JB test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -879,18 +910,18 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$t.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of JB test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```
 
 
@@ -908,16 +939,16 @@ par(new=TRUE)
 
 ## Plot the second plot and put axis scale on right
 plot(nvec, data_powerloss$Uniform.0.5,  xlab="", ylab="", ylim=c(-0.01,0.1), 
-    axes=FALSE, type="l", lty = 2, lwd = 2, col="red")
+    axes=FALSE, type="l", lty = 1, lwd = 2, col="red")
 mtext("Power loss of t test",side=4,col="black",line=4) 
 axis(4, ylim=c(0,0.5), col="red",col.axis="black",las=1)
 ## a little farther out (line=4) to make room for labels
 axis(4, ylim=c(0,0.2), col="blue",col.axis="blue",las=1)
-
+abline(h = 0.0, lwd = 2, col = "blue", xpd = F)
 ## Draw the time axis
 axis(1,pretty(range(nvec),10))
 mtext("Sample Size",side=1,col="black",line=2.5)  
 ## Add Legend
 legend("bottom", inset = c(0, -0.3), legend=c("power of JB test","powerloss of t test"),
-  col=c("black","red"), lty = c(1, 2), horiz = TRUE)
+  col=c("black","red"), lty = 1, horiz = TRUE)
 ```

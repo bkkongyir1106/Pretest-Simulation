@@ -48,7 +48,7 @@ close_cluster <- function(cl) {
 
 # Parallelized simulation setup
 {
-  my_cl <- par_set(cores_reserve = 2, set.seed(1234))
+  my_cl <- par_set(cores_reserve = 2)
   ntasks <- length(nvec) *  length(testvec) * length(dist_sum) 
   pb <- txtProgressBar(max=ntasks, style=3)
   progress <- function(n) setTxtProgressBar(pb, n)
