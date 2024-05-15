@@ -1,0 +1,2 @@
+- Old Stuff folder contains simulation on estimating te distribution of the t tests statistic, as well as simulation on the paper, "to test or not to test", and other document files.
+- Expected power loss and expected inflation of type I error folder contains the current simulations
