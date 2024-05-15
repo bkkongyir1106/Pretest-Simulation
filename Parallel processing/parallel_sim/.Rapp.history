@@ -1,5 +1,0 @@
-load("/Users/benedictkongyir/Desktop/OSU/Research/Permutation Test/New Simulations/cluster/parallel_sim/OneSample_error_inflation.RData")
-N
-load("/Users/benedictkongyir/Desktop/OSU/Research/Permutation Test/New Simulations/cluster/parallel_sim/TwoSamples_power_norm_par.RData")
-N
-load("/Users/benedictkongyir/Desktop/OSU/Research/Permutation Test/New Simulations/cluster/parallel_sim/TwoSamples_error_inflation.RData")
