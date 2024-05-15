@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE, fig.height = 6.5, fig.width = 8)
 ```
 
 
-
+### Power loss and  Expected Power loss
 ```{r}
 rm(list = ls())
  load("/Users/benedictkongyir/Library/Mobile Documents/com~apple~CloudDocs/Research.05.10.2024/Type I error/TWO SAMPLES_EXPECTED_POWERLOSS_OR.RData")
@@ -28,7 +28,6 @@ Expected_powerloss<-data_powerloss * data_prob_SW
 ```
 
 
- 
 ```{r}
 #par(mar = c(9, 4, 4, 1), xpd = TRUE)
 par(mfrow = c(2,2))
@@ -79,4 +78,66 @@ legend("topright", legend=c("Laplace", "Gamma", "t"), lwd = 3,
 ```
 
 
+### Inflation of Type I error rate and Expected Inflation of Type I error rate
 
+
+```{r}
+rm(list = ls())
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Expected Power loss and Expected Inflation of Type I error/TYPE I ERROR TWO SAMPLES.RData")
+#Probability of SW test
+nvec = nvec[-1]
+data_prob_SW <-data.frame(prob.non.sig.SW.test_par)[-1,]
+# power loss
+data_error <-data.frame(inflation_error)[-1,]
+#Expected powerloss
+Expected_inflation_error<-data_error * data_prob_SW
+```
+
+```{r}
+#par(mar = c(9, 4, 4, 1), xpd = TRUE)
+par(mfrow = c(2,2))
+# Adjust margins to reduce space between plots
+par(mai = c(0.75, 0.75, 0.2, 0.2))  # Adjust as needed
+plot(nvec, data_error$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(-0.01, 0.3), xlim = range(nvec), xlab = "Sample Size", ylab = "Inflation of Type I error")
+lines(nvec, data_error$Weibull, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, data_error$Chi.Square, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, data_error$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, data_error$Gamma, type = "o", lty = 5, pch = 5, col = "purple", lwd = 3)
+abline(h = 0, lwd = 2, col = "black", xpd = F)
+title(main = "Inflation of Type I error")
+legend("topleft", legend=c("Exp", "Weibull", "Chisq", "LogNormal", "Gamma"), lwd = 3,
+       col=c("red", "blue", "green", "orange", "purple"), lty = 1:5, pch =c(1,2,8, 4, 5), cex = 0.8, title = "Distribution")
+
+plot(nvec, data_error$Laplace, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(-0.01, 0.03), xlim = range(nvec), xlab = "Sample Size", ylab = "Inflation of Type I error rate")
+lines(nvec, data_error$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, data_error$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, data_error$Contaminated, type = "o", lty = 6, pch = 4, col = "brown")
+abline(h = 0, lwd = 2, col = "black", xpd = F)
+title(main = "Inflation of Type I error")
+legend("topleft", legend=c("Laplace", "Gamma", "t", "Contaminated"), lwd = 3,
+       col=c( "red", "blue", "green", "brown"), lty = 1:4, pch = c(1, 2, 8, 4), cex = 0.8, title = "Distribution")
+
+### Expected power loss
+plot(nvec, Expected_inflation_error$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(-0.01, 0.03), xlim = range(nvec), xlab = "Sample Size", ylab = "Expected Inflation of Type I error")
+lines(nvec, Expected_inflation_error$Weibull, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, Expected_inflation_error$Chi.Square, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, Expected_inflation_error$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, Expected_inflation_error$Gamma, type = "o", lty = 5, pch = 5, col = "purple", lwd = 3)
+abline(h = 0, lwd = 2, col = "black", xpd = F)
+title(main = "Expected Inflation of Type I error")
+legend("topleft", legend=c("Exp", "Weibull", "Chisq", "LogNormal", "Gamma"), lwd = 3,
+       col=c("red", "blue", "green", "orange", "purple"), lty = 1:5, pch =c(1,2,8, 4,5), cex = 0.8, title = "Distribution")
+
+plot(nvec, Expected_inflation_error$Laplace, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(-0.01, 0.03), xlim = range(nvec), xlab = "Sample Size", ylab = "Expected Inflation of Type I error")
+lines(nvec, Expected_inflation_error$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, Expected_inflation_error$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, data_error$Contaminated, type = "o", lty = 6, pch = 4, col = "brown")
+abline(h = 0, lwd = 2, col = "black", xpd = F)
+title(main = "Expected Inflation of Type I error")
+legend("topleft", legend=c("Laplace", "Gamma", "t", "Contaminated"), lwd = 3,
+       col=c( "red", "blue", "green", "brown"), lty = 1:3, pch = c(1, 2, 8, 4), cex = 0.8, title = "Distribution")
+```
