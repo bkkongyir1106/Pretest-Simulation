@@ -51,7 +51,7 @@ lines(nvec, data_powerloss$t, type = "o", lty = 3, pch = 8, col = "green", lwd =
 #lines(nvec, data_error$Contaminated, lty = 4, lwd = 3, col = "green")
 abline(h = 0, lwd = 2, col = "black", xpd = F)
 title(main = "Power loss")
-legend("topright", legend=c("Laplace", "Gamma", "t"), lwd = 3,
+legend("topright", legend=c("Laplace", "Normal", "t"), lwd = 3,
        col=c( "red", "blue", "green"), lty = 1:3,cex = 0.8, pch = c(1,2,8),title = "Distribution")
 
 ### Expected power loss
@@ -73,7 +73,7 @@ lines(nvec, Expected_powerloss$t, type = "o", lty = 3, pch = 8, col = "green", l
 #lines(nvec, data_error$Contaminated, lty = 4, lwd = 3, col = "green")
 abline(h = 0, lwd = 2, col = "black", xpd = F)
 title(main = "Expected Power loss")
-legend("topright", legend=c("Laplace", "Gamma", "t"), lwd = 3,
+legend("topright", legend=c("Laplace", "Normal", "t"), lwd = 3,
        col=c( "red", "blue", "green"), lty = 1:3,cex = 0.8, pch = c(1,2,8), title = "Distribution")
 ```
 
@@ -116,7 +116,7 @@ lines(nvec, data_error$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
 lines(nvec, data_error$Contaminated, type = "o", lty = 6, pch = 4, col = "brown")
 abline(h = 0, lwd = 2, col = "black", xpd = F)
 title(main = "Inflation of Type I error")
-legend("topleft", legend=c("Laplace", "Gamma", "t", "Contaminated"), lwd = 3,
+legend("topleft", legend=c("Laplace", "Normal", "t", "Contaminated"), lwd = 3,
        col=c( "red", "blue", "green", "brown"), lty = 1:4, pch = c(1, 2, 8, 4), cex = 0.8, title = "Distribution")
 
 ### Expected power loss
@@ -138,6 +138,6 @@ lines(nvec, Expected_inflation_error$t, type = "o", lty = 3, pch = 8, col = "gre
 lines(nvec, data_error$Contaminated, type = "o", lty = 6, pch = 4, col = "brown")
 abline(h = 0, lwd = 2, col = "black", xpd = F)
 title(main = "Expected Inflation of Type I error")
-legend("topleft", legend=c("Laplace", "Gamma", "t", "Contaminated"), lwd = 3,
+legend("topleft", legend=c("Laplace", "Normal", "t", "Contaminated"), lwd = 3,
        col=c( "red", "blue", "green", "brown"), lty = 1:3, pch = c(1, 2, 8, 4), cex = 0.8, title = "Distribution")
 ```
