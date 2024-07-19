@@ -1,0 +1,83 @@
+---
+title: "Utility of Normality Test in Two Samples Test"
+author: "Benedict Kongyir"
+date: "`r format(Sys.time(), '%m/%d/%Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.height = 8, fig.width = 10)
+library(ggplot2)
+library(gridExtra)
+# or 
+library(patchwork)
+```
+
+## Comparison of Power of Normality test methods
+
+```{r}
+rm(list = ls())
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Old stuff/NORMALITY TEST METHODS/OneSamplePowerNormality.RData")
+```
+
+#### One Sample Case
+```{r, fig.height= 12, fig.width= 12}
+# Convert to long-format data frame
+power_df1 <- as.data.frame(as.table(power_norm.test))
+colnames(power_df1) <- c("SampleSize", "Distribution", "Test", "Power")
+power_df1$SampleSize <- as.numeric(as.character(power_df1$SampleSize))
+
+# Create individual plots
+plots <- list()
+for (dist in dist_sum[-1]) {
+  p <- ggplot(subset(power_df1, Distribution == dist), aes(x = SampleSize, y = Power, color = Test)) +
+    geom_line() +
+    geom_point() +
+    ggtitle(paste("Power for", dist, "Distribution")) +
+    theme_minimal()
+  plots[[dist]] <- p
+}
+
+# Combine plots into a grid using gridExtra
+#grid.arrange(grobs = plots, ncol = 3)
+# or using patchwork
+wrap_plots(plots)
+
+```
+
+
+
+```{r}
+rm(list = ls())
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Old stuff/NORMALITY TEST METHODS/TwoSamplePowerNormalityTest.RData")
+```
+
+### Two Sample Case
+```{r, fig.height= 12, fig.width= 12}
+# Convert to long-format data frame
+power_df <- as.data.frame(as.table(power_norm.test))
+colnames(power_df) <- c("SampleSize", "Distribution", "Test", "Power")
+power_df$SampleSize <- as.numeric(as.character(power_df$SampleSize))
+
+# Create individual plots
+plots <- list()
+for (dist in dist_sum[-1]) {
+  p <- ggplot(subset(power_df, Distribution == dist), aes(x = SampleSize, y = Power, color = Test)) +
+    geom_line() +
+    geom_point() +
+    ggtitle(paste("Power for", dist, "Distribution")) +
+    theme_minimal()
+  plots[[dist]] <- p
+}
+
+# Combine plots into a grid using gridExtra
+#grid.arrange(grobs = plots, ncol = 3)
+# or using patchwork
+wrap_plots(plots)
+
+```
