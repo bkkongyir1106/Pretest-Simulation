@@ -1,0 +1,175 @@
+---
+title: "Utility of Normality Test in Two Samples Test"
+author: "Benedict Kongyir"
+date: "`r format(Sys.time(), '%m/%d/%Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.height = 8, fig.width = 10)
+
+```
+
+
+
+
+#### One Sample Probability of Type I error rates
+```{r}
+rm(list = ls())
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/COMBINE RESULTS_20240719/TYPE I ERROR RATES/OneSampleTypeI.errorRate.RData")
+error <- data.frame(TypeI.errorRate[, , 2])
+```
+
+
+
+```{r, fig.height= 6, fig.width= 14}
+
+par(mfrow = c(1,2))
+# Adjust margins to reduce space between plots
+par(mai = c(0.95, 0.85, 0.3, 0.3))  # Adjust as needed
+par(cex.lab = 1.5, font.lab = 2, cex.axis = 1.2, cex.main = 1.5, cex.sub = 1.2)  # Larger and bold labels, axis text, and title
+plot(nvec, error$Standard.Normal,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.1), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I error rates")
+lines(nvec, error$Uniform, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, error$t, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(nvec, error$Laplace, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, error$Contaminated, type = "o", lty = 5, pch = 5, col = "grey", lwd = 3)
+abline(h = 0.05)
+title(main = "Symmetric Distributions")
+legend("topright", legend=c("Normal", "Uniform", "t", "Laplace", "Contaminated"), lwd = 3,
+       col=c("red", "blue", "green",  "orange", "grey"), lty = 1:4, text.font = 2, pch =1:4, cex = 1.2 ,title = "Type I error Rates")
+
+plot(nvec, error$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.3), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I error rates")
+lines(nvec, error$Chi.Square, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, error$Gamma, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(nvec, error$Weibull, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, error$LogNormal, type = "o", lty = 5, pch = 5, col = "grey", lwd = 3)
+lines(nvec, error$Pareto, type = "o", lty = 5, pch = 5, col = "pink", lwd = 3)
+abline(h = 0.05)
+title(main = "Asymmetric Distributions")
+legend("topright", legend=c("Exponential","Chi-squared", "Gamma", "Weibul", "Lognormal", "Pareto"), lwd = 3,
+       col=c("red", "blue", "green",  "orange", "grey", "pink"), lty = 1:5, text.font = 2, pch =1:5, cex = 1.2, title = "Type I error Rates")
+```
+
+
+#### Two Sample Probability of Type I error rates
+```{r}
+rm(list = ls())
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/COMBINE RESULTS_20240719/TYPE I ERROR RATES/TwoSampleTypeI.errorRate.RData")
+error <- data.frame(TypeI.errorRate[, , 2])
+```
+
+```{r, fig.height= 6, fig.width= 14}
+
+par(mfrow = c(1,2))
+# Adjust margins to reduce space between plots
+par(mai = c(0.95, 0.85, 0.3, 0.3))  # Adjust as needed
+par(cex.lab = 1.5, font.lab = 2, cex.axis = 1.2, cex.main = 1.5, cex.sub = 1.2)  # Larger and bold labels, axis text, and title
+plot(nvec, error$Standard.Normal,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.1), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I error rates")
+lines(nvec, error$Uniform, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, error$t, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(nvec, error$Laplace, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, error$Contaminated, type = "o", lty = 5, pch = 5, col = "grey", lwd = 3)
+abline(h = 0.05)
+title(main = "Symmetric Distributions")
+legend("topright", legend=c("Normal", "Uniform", "t", "Laplace", "Contaminated"), lwd = 3,
+       col=c("red", "blue", "green",  "orange", "grey"), lty = 1:4, text.font = 2, pch =1:4, cex = 1.2, title = "Type I error Rates")
+
+plot(nvec, error$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.1), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I error rates")
+lines(nvec, error$Chi.Square, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, error$Gamma, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(nvec, error$Weibull, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, error$LogNormal, type = "o", lty = 5, pch = 5, col = "grey", lwd = 3)
+lines(nvec, error$Pareto, type = "o", lty = 5, pch = 5, col = "pink", lwd = 3)
+abline(h = 0.05)
+title(main = "Asymmetric Distributions")
+legend("topright", legend=c("Exponential","Chi-squared", "Gamma", "Weibul", "Lognormal", "Pareto"), lwd = 3,
+       col=c("red", "blue", "green",  "orange", "grey", "pink"), lty = 1:4, text.font = 2, pch =1:4, cex = 1.2, title = "Type I error Rates")
+```
+
+
+
+#### One Sample Conditional Probability of Type I error rates
+```{r}
+rm(list = ls())
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/COMBINE RESULTS_20240719/TYPE I ERROR RATES/ConditionalOneSampleTypeI.errorRate.RData")
+error <- data.frame(TypeI.errorRate)
+```
+
+
+
+```{r, fig.height= 6, fig.width= 14}
+
+par(mfrow = c(1,2))
+# Adjust margins to reduce space between plots
+par(mai = c(0.95, 0.85, 0.3, 0.3))  # Adjust as needed
+par(cex.lab = 1.5, font.lab = 2, cex.axis = 1.2, cex.main = 1.5, cex.sub = 1.2)  # Larger and bold labels, axis text, and title
+plot(nvec, error$Standard.Normal,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.1), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I error rates")
+lines(nvec, error$Uniform, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, error$t, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(nvec, error$Laplace, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, error$Contaminated, type = "o", lty = 5, pch = 5, col = "grey", lwd = 3)
+abline(h = 0.05)
+title(main = "Symmetric Distributions")
+legend("topright", legend=c("Normal", "Uniform", "t", "Laplace", "Contaminated"), lwd = 3,
+       col=c("red", "blue", "green",  "orange", "grey"), lty = 1:4, text.font = 2, pch =1:4, cex = 1.2 ,title = "Type I error Rates")
+
+plot(nvec, error$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.75), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I error rates")
+lines(nvec, error$Chi.Square, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, error$Gamma, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(nvec, error$Weibull, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, error$LogNormal, type = "o", lty = 5, pch = 5, col = "grey", lwd = 3)
+lines(nvec, error$Pareto, type = "o", lty = 5, pch = 5, col = "pink", lwd = 3)
+abline(h = 0.05)
+title(main = "Asymmetric Distributions")
+legend("topleft", legend=c("Exponential","Chi-squared", "Gamma", "Weibul", "Lognormal", "Pareto"), lwd = 3,
+       col=c("red", "blue", "green",  "orange", "grey", "pink"), lty = 1:5, text.font = 2, pch =1:5, cex = 1.2, title = "Type I error Rates")
+```
+
+
+<!-- #### Two Sample Conditional Probability of Type I error rates -->
+<!-- ```{r} -->
+<!-- rm(list = ls()) -->
+<!-- load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/COMBINE RESULTS_20240719/TYPE I ERROR RATES/TwoSampleTypeI.errorRate.RData") -->
+<!-- error <- data.frame(TypeI.errorRate[, , 2]) -->
+<!-- ``` -->
+
+<!-- ```{r, fig.height= 6, fig.width= 14} -->
+
+<!-- par(mfrow = c(1,2)) -->
+<!-- # Adjust margins to reduce space between plots -->
+<!-- par(mai = c(0.95, 0.85, 0.3, 0.3))  # Adjust as needed -->
+<!-- par(cex.lab = 1.5, font.lab = 2, cex.axis = 1.2, cex.main = 1.5, cex.sub = 1.2)  # Larger and bold labels, axis text, and title -->
+<!-- plot(nvec, error$Standard.Normal,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3,  -->
+<!--      ylim = c(0, 0.1), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I error rates") -->
+<!-- lines(nvec, error$Uniform, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3) -->
+<!-- lines(nvec, error$t, type = "o", lty = 3, pch = 3, col = "green", lwd = 3) -->
+<!-- lines(nvec, error$Laplace, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3) -->
+<!-- lines(nvec, error$Contaminated, type = "o", lty = 5, pch = 5, col = "grey", lwd = 3) -->
+<!-- abline(h = 0.05) -->
+<!-- title(main = "Symmetric Distributions") -->
+<!-- legend("topright", legend=c("Normal", "Uniform", "t", "Laplace", "Contaminated"), lwd = 3, -->
+<!--        col=c("red", "blue", "green",  "orange", "grey"), lty = 1:4, text.font = 2, pch =1:4, cex = 1.2, title = "Type I error Rates") -->
+
+<!-- plot(nvec, error$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3,  -->
+<!--      ylim = c(0, 0.1), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I error rates") -->
+<!-- lines(nvec, error$Chi.Square, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3) -->
+<!-- lines(nvec, error$Gamma, type = "o", lty = 3, pch = 3, col = "green", lwd = 3) -->
+<!-- lines(nvec, error$Weibull, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3) -->
+<!-- lines(nvec, error$LogNormal, type = "o", lty = 5, pch = 5, col = "grey", lwd = 3) -->
+<!-- lines(nvec, error$Pareto, type = "o", lty = 5, pch = 5, col = "pink", lwd = 3) -->
+<!-- abline(h = 0.05) -->
+<!-- title(main = "Asymmetric Distributions") -->
+<!-- legend("topright", legend=c("Exponential","Chi-squared", "Gamma", "Weibul", "Lognormal", "Pareto"), lwd = 3, -->
+<!--        col=c("red", "blue", "green",  "orange", "grey", "pink"), lty = 1:4, text.font = 2, pch =1:4, cex = 1.2, title = "Type I error Rates") -->
+<!-- ``` -->
