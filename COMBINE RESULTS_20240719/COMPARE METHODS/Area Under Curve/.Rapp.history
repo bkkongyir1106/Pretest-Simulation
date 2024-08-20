@@ -1,0 +1,2 @@
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/COMBINE RESULTS_20240719/COMPARE METHODS/Area Under Curve/TwoSampleAreaUnderCurve_error.RData")
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/COMBINE RESULTS_20240719/COMPARE METHODS/Area Under Curve/OneSampleAreaUnderCurve_error_image.RData")

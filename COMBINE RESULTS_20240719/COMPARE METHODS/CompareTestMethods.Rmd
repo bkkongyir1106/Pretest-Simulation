@@ -1,0 +1,1132 @@
+---
+title: "Utility of Normality Test in Two Samples Test"
+author: "Benedict Kongyir"
+date: "`r format(Sys.time(), '%m/%d/%Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.height = 8, fig.width = 10)
+# Load necessary packages
+library(knitr)
+library(kableExtra)
+setwd("/Users/benedictkongyir/Desktop/OSU/Research/Results from cluster")
+```
+
+### Two Sample Case
+
+```{r}
+rm(list = ls())
+load("/Users/benedictkongyir/Desktop/OSU/Research/Results from cluster/TwoSampleAreaUnderCurve_power.RData")
+# Power of t-test
+Power_ttest <-data.frame(power_t_table)
+# Power of Wilcoxon test:
+Powerwilcoxtest <-data.frame(power_wilcox_table)
+# Power of t_test/wilcoxon test:
+Powert_wilcoxtest <-data.frame(power_t_wilcox_table)
+# Power of the permutation test:
+PowerPermtest <-data.frame(power_perm_table)
+
+# Computation time for t-test 
+compTime_ttest <-data.frame(time_t_table)
+# Computation time for wilcoxon test
+CompTimewilcoxtest <-data.frame(time_wilcox_table)
+# Computation time for wilcoxon/ttest
+compTime_t_wilcoxtest <-data.frame(time_t_wilcox_table)
+# Computation time for permutation test (minutes):
+CompTimepermtest <-data.frame(time_perm_table)
+
+```
+
+
+#### Compare Power of four different test methods
+```{r}
+#par(mar = c(9, 4, 4, 1), xpd = TRUE)
+par(mfrow = c(2,2))
+# Adjust margins to reduce space between plots
+par(mai = c(0.75, 0.75, 0.2, 0.2))  # Adjust as needed
+plot(sample_sizes, Power_ttest$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, Powerwilcoxtest$Exponential, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, Powert_wilcoxtest$Exponential, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, PowerPermtest$Exponential, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+title(main = "Exponential Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+plot(sample_sizes, Power_ttest$LogNormal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, Powerwilcoxtest$LogNormal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, Powert_wilcoxtest$LogNormal, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, PowerPermtest$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+title(main = "LogNormal Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttes", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+
+plot(sample_sizes, Power_ttest$Chi.Square,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+    ylim = c(0, 1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, Powerwilcoxtest$Chi.Square, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, Powert_wilcoxtest$Chi.Square, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, PowerPermtest$Chi.Square, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+title(main = "Chi.Square Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+plot(sample_sizes, Power_ttest$Standard.Normal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+   ylim = c(0, 1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, Powerwilcoxtest$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, Powert_wilcoxtest$Standard.Normal, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, PowerPermtest$Standard.Normal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+title(main = "Standard.Normal Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+```
+
+
+
+#### Power and Computation Time Comparison for Normal Samples
+```{r, fig.height= 8, fig.width=12}
+# Set up a 2x2 plotting area
+par(mfrow = c(2, 2), mar = c(5, 4, 4, 5) + 0.1, xpd = TRUE)
+
+# 1st Plot: t test vs wilcoxon test
+plot(sample_sizes ,power_t_table$`Standard Normal` - power_wilcox_table$`Standard Normal`, axes = FALSE, ylim = range(power_t_table$`Standard Normal` - power_wilcox_table$`Standard Normal` - 0.01, power_t_table$`Standard Normal` - power_wilcox_table$`Standard Normal` + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t test - wilcoxon test")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_table$`Standard Normal` - time_wilcox_table$`Standard Normal`, axes = FALSE, ylim = range(time_t_table$`Standard Normal` - time_wilcox_table$`Standard Normal`- 0.01, time_t_table$`Standard Normal` - time_wilcox_table$`Standard Normal` + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_table$`Standard Normal` - time_wilcox_table$`Standard Normal` - 0.01, time_t_table$`Standard Normal` - time_wilcox_table$`Standard Normal` + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),col = c("blue", "red"), lty = c(1, 2),
+       pch = c(1, 2), horiz = TRUE)
+
+
+
+# 2nd Plot: t test vs perm test
+plot(sample_sizes ,power_t_table$`Standard Normal` - power_perm_table$`Standard Normal`, axes = FALSE, ylim = range(power_t_table$`Standard Normal` - power_perm_table$`Standard Normal` - 0.01, power_t_table$`Standard Normal` - power_wilcox_table$`Standard Normal` + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t test - perm test")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+# Prepare for new plot on the same graph
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_table$`Standard Normal` - time_perm_table$`Standard Normal`, axes = FALSE, ylim = range(time_t_table$`Standard Normal` - time_perm_table$`Standard Normal`-0.01, time_t_table$`Standard Normal` - time_wilcox_table$`Standard Normal` + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_table$Exponential-0.01, time_perm_table$Exponential + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),col = c("blue", "red"), lty = c(1, 2), 
+       pch = c(1, 2), horiz = TRUE)
+
+
+# 3rd Plot: t test vs t/wilcoxon test
+plot(sample_sizes ,power_t_table$`Standard Normal` - power_t_wilcox_table$`Standard Normal`, axes = FALSE, ylim = range(power_t_table$`Standard Normal` - power_t_wilcox_table$`Standard Normal` - 0.01, power_t_table$`Standard Normal` - power_t_wilcox_table$`Standard Normal` + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t test - t/wilcoxon test ")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_table$`Standard Normal` - time_t_wilcox_table$`Standard Normal`, axes = FALSE, ylim = range(time_t_table$`Standard Normal` - time_t_wilcox_table$`Standard Normal`-0.01, time_t_table$`Standard Normal` - time_t_wilcox_table$`Standard Normal` + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_table$`Standard Normal` - time_t_wilcox_table$`Standard Normal` - 0.01, time_t_table$`Standard Normal` - time_t_wilcox_table$`Standard Normal` + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),col = c("blue", "red"), lty = c(1, 2), 
+       pch = c(1, 2), horiz = TRUE)
+
+
+# 4th Plot: wilcoxon test vs perm test
+plot(sample_sizes ,power_t_wilcox_table$`Standard Normal` - power_perm_table$`Standard Normal`, axes = FALSE, ylim = range(power_t_wilcox_table$`Standard Normal` - power_perm_table$`Standard Normal` - 0.01, power_t_wilcox_table$`Standard Normal` - power_perm_table$`Standard Normal` + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t/wilcoxon test - perm test")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+# Prepare for new plot on the same graph
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_wilcox_table$`Standard Normal` - time_perm_table$`Standard Normal`, axes = FALSE, ylim = range(time_t_wilcox_table$`Standard Normal` - time_perm_table$`Standard Normal`-0.01, time_t_wilcox_table$`Standard Normal` - time_perm_table$`Standard Normal` + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+#lines(sample_sizes, CompTimePerm$Exponential, type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_wilcox_table$`Standard Normal` - time_perm_table$`Standard Normal`-0.01, time_t_wilcox_table$`Standard Normal` - time_perm_table$`Standard Normal` + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),
+       col = c("blue", "red"), lty = c(1, 2), pch = c(1, 2), horiz = TRUE)
+```
+
+
+#### Power and Computation Time Comparison for Exponential Samples
+```{r, fig.height= 8, fig.width=12}
+# Set up a 2x2 plotting area
+par(mfrow = c(2, 2), mar = c(5, 4, 4, 5) + 0.1, xpd = TRUE)
+
+# 1st Plot: t test vs wilcoxon test
+plot(sample_sizes ,power_t_table$Exponential - power_wilcox_table$Exponential, axes = FALSE, ylim = range(power_t_table$Exponential - power_wilcox_table$Exponential - 0.01, power_t_table$Exponential - power_wilcox_table$Exponential + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t test - wilcoxon test")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_table$Exponential - time_wilcox_table$Exponential, axes = FALSE, ylim = range(time_t_table$Exponential - time_wilcox_table$Exponential- 0.01, time_t_table$Exponential - time_wilcox_table$Exponential + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_table$Exponential - time_wilcox_table$Exponential - 0.01, time_t_table$Exponential - time_wilcox_table$Exponential + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),col = c("blue", "red"), lty = c(1, 2),
+       pch = c(1, 2), horiz = TRUE)
+
+
+
+# 2nd Plot: t test vs perm test
+plot(sample_sizes ,power_t_table$Exponential - power_perm_table$Exponential, axes = FALSE, ylim = range(power_t_table$Exponential - power_perm_table$Exponential - 0.01, power_t_table$Exponential - power_wilcox_table$Exponential + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t test - perm test")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+# Prepare for new plot on the same graph
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_table$Exponential - time_perm_table$Exponential, axes = FALSE, ylim = range(time_t_table$Exponential - time_perm_table$Exponential-0.01, time_t_table$Exponential - time_wilcox_table$Exponential + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_table$Exponential-0.01, time_perm_table$Exponential + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),col = c("blue", "red"), lty = c(1, 2), 
+       pch = c(1, 2), horiz = TRUE)
+
+
+# 3rd Plot: t test vs t/wilcoxon test
+plot(sample_sizes ,power_t_table$Exponential - power_t_wilcox_table$Exponential, axes = FALSE, ylim = range(power_t_table$Exponential - power_t_wilcox_table$Exponential - 0.01, power_t_table$Exponential - power_t_wilcox_table$Exponential + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t test - t/wilcoxon test ")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_table$Exponential - time_t_wilcox_table$Exponential, axes = FALSE, ylim = range(time_t_table$Exponential - time_t_wilcox_table$Exponential-0.01, time_t_table$Exponential - time_t_wilcox_table$Exponential + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_table$Exponential - time_t_wilcox_table$Exponential - 0.01, time_t_table$Exponential - time_t_wilcox_table$Exponential + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),col = c("blue", "red"), lty = c(1, 2), 
+       pch = c(1, 2), horiz = TRUE)
+
+
+# 4th Plot: wilcoxon test vs perm test
+plot(sample_sizes ,power_t_wilcox_table$Exponential - power_perm_table$Exponential, axes = FALSE, ylim = range(power_t_wilcox_table$Exponential - power_perm_table$Exponential - 0.01, power_t_wilcox_table$Exponential - power_perm_table$Exponential + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t/wilcoxon test - perm test")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+# Prepare for new plot on the same graph
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_wilcox_table$Exponential - time_perm_table$Exponential, axes = FALSE, ylim = range(time_t_wilcox_table$Exponential - time_perm_table$Exponential-0.01, time_t_wilcox_table$Exponential - time_perm_table$Exponential + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+#lines(sample_sizes, CompTimePerm$Exponential, type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_wilcox_table$Exponential - time_perm_table$Exponential-0.01, time_t_wilcox_table$Exponential - time_perm_table$Exponential + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),
+       col = c("blue", "red"), lty = c(1, 2), pch = c(1, 2), horiz = TRUE)
+```
+
+
+
+#### Power and Computation Time Comparison for Chi-Square Samples
+```{r, fig.height= 8, fig.width=12}
+# Set up a 2x2 plotting area
+par(mfrow = c(2, 2), mar = c(5, 4, 4, 5) + 0.1, xpd = TRUE)
+
+# 1st Plot: t test vs wilcoxon test
+plot(sample_sizes ,power_t_table$`Chi-Square` - power_wilcox_table$`Chi-Square`, axes = FALSE, ylim = range(power_t_table$`Chi-Square` - power_wilcox_table$`Chi-Square` - 0.01, power_t_table$`Chi-Square` - power_wilcox_table$`Chi-Square` + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t test - wilcoxon test")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_table$`Chi-Square` - time_wilcox_table$`Chi-Square`, axes = FALSE, ylim = range(time_t_table$`Chi-Square` - time_wilcox_table$`Chi-Square`- 0.01, time_t_table$`Chi-Square` - time_wilcox_table$`Chi-Square` + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_table$`Chi-Square` - time_wilcox_table$`Chi-Square` - 0.01, time_t_table$`Chi-Square` - time_wilcox_table$`Chi-Square` + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),col = c("blue", "red"), lty = c(1, 2),
+       pch = c(1, 2), horiz = TRUE)
+
+# 2nd Plot: t test vs perm test
+plot(sample_sizes ,power_t_table$`Chi-Square` - power_perm_table$`Chi-Square`, axes = FALSE, ylim = range(power_t_table$`Chi-Square` - power_perm_table$`Chi-Square` - 0.01, power_t_table$`Chi-Square` - power_wilcox_table$`Chi-Square` + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t test - perm test")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_table$`Chi-Square` - time_perm_table$`Chi-Square`, axes = FALSE, ylim = range(time_t_table$`Chi-Square` - time_perm_table$`Chi-Square`-0.01, time_t_table$`Chi-Square` - time_wilcox_table$`Chi-Square` + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_table$`Chi-Square`-0.01, time_perm_table$`Chi-Square` + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),col = c("blue", "red"), lty = c(1, 2), 
+       pch = c(1, 2), horiz = TRUE)
+
+
+# 3rd Plot: t test vs t/wilcoxon test
+plot(sample_sizes ,power_t_table$`Chi-Square` - power_t_wilcox_table$`Chi-Square`, axes = FALSE, ylim = range(power_t_table$`Chi-Square` - power_t_wilcox_table$`Chi-Square` - 0.01, power_t_table$`Chi-Square` - power_t_wilcox_table$`Chi-Square` + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t test - t/wilcoxon test ")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_table$`Chi-Square` - time_t_wilcox_table$`Chi-Square`, axes = FALSE, ylim = range(time_t_table$`Chi-Square` - time_t_wilcox_table$`Chi-Square`-0.01, time_t_table$`Chi-Square` - time_t_wilcox_table$`Chi-Square` + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_table$`Chi-Square` - time_t_wilcox_table$`Chi-Square` - 0.01, time_t_table$`Chi-Square` - time_t_wilcox_table$`Chi-Square` + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),col = c("blue", "red"), lty = c(1, 2), 
+       pch = c(1, 2), horiz = TRUE)
+
+
+# 4th Plot: wilcoxon test vs perm test
+plot(sample_sizes ,power_t_wilcox_table$`Chi-Square` - power_perm_table$`Chi-Square`, axes = FALSE, ylim = range(power_t_wilcox_table$`Chi-Square` - power_perm_table$`Chi-Square` - 0.01, power_t_wilcox_table$`Chi-Square` - power_perm_table$`Chi-Square` + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t/wilcoxon test - perm test")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_wilcox_table$`Chi-Square` - time_perm_table$`Chi-Square`, axes = FALSE, ylim = range(time_t_wilcox_table$`Chi-Square` - time_perm_table$`Chi-Square`-0.01, time_t_wilcox_table$`Chi-Square` - time_perm_table$`Chi-Square` + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_wilcox_table$`Chi-Square` - time_perm_table$`Chi-Square`-0.01, time_t_wilcox_table$`Chi-Square` - time_perm_table$`Chi-Square` + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),
+       col = c("blue", "red"), lty = c(1, 2), pch = c(1, 2), horiz = TRUE)
+```
+
+
+#### Power and Computation Time Comparison for LogNormal Samples
+```{r, fig.height= 8, fig.width=12}
+# Set up a 2x2 plotting area
+par(mfrow = c(2, 2), mar = c(5, 4, 4, 5) + 0.1, xpd = TRUE)
+
+# 1st Plot: t test vs wilcoxon test
+plot(sample_sizes ,power_t_table$LogNormal - power_wilcox_table$LogNormal, axes = FALSE, ylim = range(power_t_table$LogNormal - power_wilcox_table$LogNormal - 0.01, power_t_table$LogNormal - power_wilcox_table$LogNormal + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t test - wilcoxon test")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_table$LogNormal - time_wilcox_table$LogNormal, axes = FALSE, ylim = range(time_t_table$LogNormal - time_wilcox_table$LogNormal- 0.01, time_t_table$LogNormal - time_wilcox_table$LogNormal + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_table$LogNormal - time_wilcox_table$LogNormal - 0.01, time_t_table$LogNormal - time_wilcox_table$LogNormal + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),col = c("blue", "red"), lty = c(1, 2),
+       pch = c(1, 2), horiz = TRUE)
+
+# 2nd Plot: t test vs perm test
+plot(sample_sizes ,power_t_table$LogNormal - power_perm_table$LogNormal, axes = FALSE, ylim = range(power_t_table$LogNormal - power_perm_table$LogNormal - 0.01, power_t_table$LogNormal - power_wilcox_table$LogNormal + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t test - perm test")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_table$LogNormal - time_perm_table$LogNormal, axes = FALSE, ylim = range(time_t_table$LogNormal - time_perm_table$LogNormal-0.01, time_t_table$LogNormal - time_wilcox_table$LogNormal + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_table$LogNormal-0.01, time_perm_table$LogNormal + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),col = c("blue", "red"), lty = c(1, 2), 
+       pch = c(1, 2), horiz = TRUE)
+
+
+# 3rd Plot: t test vs t/wilcoxon test
+plot(sample_sizes ,power_t_table$LogNormal - power_t_wilcox_table$LogNormal, axes = FALSE, ylim = range(power_t_table$LogNormal - power_t_wilcox_table$LogNormal - 0.01, power_t_table$LogNormal - power_t_wilcox_table$LogNormal + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t test - t/wilcoxon test ")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_table$LogNormal - time_t_wilcox_table$LogNormal, axes = FALSE, ylim = range(time_t_table$LogNormal - time_t_wilcox_table$LogNormal-0.01, time_t_table$LogNormal - time_t_wilcox_table$LogNormal + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_table$LogNormal - time_t_wilcox_table$LogNormal - 0.01, time_t_table$LogNormal - time_t_wilcox_table$LogNormal + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),col = c("blue", "red"), lty = c(1, 2), 
+       pch = c(1, 2), horiz = TRUE)
+
+
+# 4th Plot: wilcoxon test vs perm test
+plot(sample_sizes ,power_t_wilcox_table$LogNormal - power_perm_table$LogNormal, axes = FALSE, ylim = range(power_t_wilcox_table$LogNormal - power_perm_table$LogNormal - 0.01, power_t_wilcox_table$LogNormal - power_perm_table$LogNormal + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t/wilcoxon test - perm test")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_wilcox_table$LogNormal - time_perm_table$LogNormal, axes = FALSE, ylim = range(time_t_wilcox_table$LogNormal - time_perm_table$LogNormal-0.01, time_t_wilcox_table$LogNormal - time_perm_table$LogNormal + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_wilcox_table$LogNormal - time_perm_table$LogNormal-0.01, time_t_wilcox_table$LogNormal - time_perm_table$LogNormal + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),
+       col = c("blue", "red"), lty = c(1, 2), pch = c(1, 2), horiz = TRUE)
+```
+
+
+
+#### Power and Computation Time Comparison for LogNormal Samples
+```{r, fig.height= 8, fig.width=12}
+# Set up a 2x2 plotting area
+par(mfrow = c(2, 2), mar = c(5, 4, 4, 5) + 0.1, xpd = TRUE)
+
+# 1st Plot: t test vs wilcoxon test
+plot(sample_sizes ,power_t_table$LogNormal - power_wilcox_table$LogNormal, axes = FALSE, ylim = range(power_t_table$LogNormal - power_wilcox_table$LogNormal - 0.01, power_t_table$LogNormal - power_wilcox_table$LogNormal + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t test - wilcoxon test")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_table$LogNormal - time_wilcox_table$LogNormal, axes = FALSE, ylim = range(time_t_table$LogNormal - time_wilcox_table$LogNormal- 0.01, time_t_table$LogNormal - time_wilcox_table$LogNormal + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_table$LogNormal - time_wilcox_table$LogNormal - 0.01, time_t_table$LogNormal - time_wilcox_table$LogNormal + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),col = c("blue", "red"), lty = c(1, 2),
+       pch = c(1, 2), horiz = TRUE)
+
+# 2nd Plot: t test vs perm test
+plot(sample_sizes ,power_t_table$LogNormal - power_perm_table$LogNormal, axes = FALSE, ylim = range(power_t_table$LogNormal - power_perm_table$LogNormal - 0.01, power_t_table$LogNormal - power_wilcox_table$LogNormal + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t test - perm test")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_table$LogNormal - time_perm_table$LogNormal, axes = FALSE, ylim = range(time_t_table$LogNormal - time_perm_table$LogNormal-0.01, time_t_table$LogNormal - time_wilcox_table$LogNormal + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_table$LogNormal-0.01, time_perm_table$LogNormal + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),col = c("blue", "red"), lty = c(1, 2), 
+       pch = c(1, 2), horiz = TRUE)
+
+
+# 3rd Plot: t test vs t/wilcoxon test
+plot(sample_sizes ,power_t_table$LogNormal - power_t_wilcox_table$LogNormal, axes = FALSE, ylim = range(power_t_table$LogNormal - power_t_wilcox_table$LogNormal - 0.01, power_t_table$LogNormal - power_t_wilcox_table$LogNormal + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t test - t/wilcoxon test ")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_table$LogNormal - time_t_wilcox_table$LogNormal, axes = FALSE, ylim = range(time_t_table$LogNormal - time_t_wilcox_table$LogNormal-0.01, time_t_table$LogNormal - time_t_wilcox_table$LogNormal + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_table$LogNormal - time_t_wilcox_table$LogNormal - 0.01, time_t_table$LogNormal - time_t_wilcox_table$LogNormal + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),col = c("blue", "red"), lty = c(1, 2), 
+       pch = c(1, 2), horiz = TRUE)
+
+
+# 4th Plot: wilcoxon test vs perm test
+plot(sample_sizes ,power_t_wilcox_table$LogNormal - power_perm_table$LogNormal, axes = FALSE, ylim = range(power_t_wilcox_table$LogNormal - power_perm_table$LogNormal - 0.01, power_t_wilcox_table$LogNormal - power_perm_table$LogNormal + 0.01), xlab = "", ylab = "", 
+     type = "o",  lty= 1, pch = 1,lwd = 2, col = "blue", main = "t/wilcoxon test - perm test")
+axis(2, ylim = c(0, 1), col = "black", las = 1)  
+abline(h = 0.0, lwd = 2, col = "black", xpd = F)
+mtext("Power", side = 2, line = 2.5)
+box()
+
+par(new = TRUE)
+
+# Plot computation time on the right side
+plot(sample_sizes, time_t_wilcox_table$LogNormal - time_perm_table$LogNormal, axes = FALSE, ylim = range(time_t_wilcox_table$LogNormal - time_perm_table$LogNormal-0.01, time_t_wilcox_table$LogNormal - time_perm_table$LogNormal + 0.01), xlab = "", ylab = "", type = "o", lty= 2, pch = 2, lwd = 2, col = "red")
+axis(4, ylim = range(time_t_wilcox_table$LogNormal - time_perm_table$LogNormal-0.01, time_t_wilcox_table$LogNormal - time_perm_table$LogNormal + 0.01), col = "black", las = 1)  
+axis(1, at = sample_sizes, labels = sample_sizes)
+mtext("Sample Size", side = 1, col = "black", line = 2.5)
+mtext("Computation Time", side = 4, line = 3.5) # Shifting the label 2 inches away
+# Add Legend
+legend("bottom", inset = c(0, -0.3), legend = c("power loss", "Time Diff"),
+       col = c("blue", "red"), lty = c(1, 2), pch = c(1, 2), horiz = TRUE)
+```
+
+#### Area Under the Power Curves
+
+```{r}
+TestMethod = c("t", "Wilcoxon", "t/Wilcoxon", "Permutation")
+Normal = c(0.4242111,  0.4056500, 0.4249556, 0.4252222)
+Exponential = c(0.4495222, 0.6531111,  0.6538000, 0.4608444)
+ChiSq = c(0.4421722, 0.5754500, 0.5773667, 0.4498111)
+LogNormal = c(0.5472611, 0.8531944, 0.8525056, 0.5790111)
+# Convert the matrix to a data frame for better display
+my_table <- data.frame(TestMethod, Normal, Exponential, ChiSq, LogNormal)
+colnames(my_table) <- c("Test Method", "Normal", "Exponential", "Chi-Squared", "LogNormal")
+knitr::kable(my_table, caption  = "Area Under the Power Curves")
+```
+
+
+#### Test for Normality using Skewness
+```{r}
+rm(list = ls())
+load("/Users/benedictkongyir/Desktop/OSU/Research/Results from cluster/TwoSampleAreaUnderCurve_Skewness_power.RData")
+# Power of t-test
+Power_ttest <-data.frame(power_t_table)
+# Power of Wilcoxon test:
+Powerwilcoxtest <-data.frame(power_wilcox_table)
+# Power of t_test/wilcoxon test:
+Powert_wilcoxtest <-data.frame(power_t_wilcox_table)
+# Power of the permutation test:
+PowerPermtest <-data.frame(power_perm_table)
+
+# Computation time for t-test 
+compTime_ttest <-data.frame(time_t_table)
+# Computation time for wilcoxon test
+CompTimewilcoxtest <-data.frame(time_wilcox_table)
+# Computation time for wilcoxon/ttest
+compTime_t_wilcoxtest <-data.frame(time_t_wilcox_table)
+# Computation time for permutation test (minutes):
+CompTimepermtest <-data.frame(time_perm_table)
+
+```
+
+
+```{r}
+#par(mar = c(9, 4, 4, 1), xpd = TRUE)
+par(mfrow = c(2,2))
+# Adjust margins to reduce space between plots
+par(mai = c(0.75, 0.75, 0.2, 0.2))  # Adjust as needed
+plot(sample_sizes, Power_ttest$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, Powerwilcoxtest$Exponential, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, Powert_wilcoxtest$Exponential, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, PowerPermtest$Exponential, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+title(main = "Exponential Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+plot(sample_sizes, Power_ttest$LogNormal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, Powerwilcoxtest$LogNormal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, Powert_wilcoxtest$LogNormal, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, PowerPermtest$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+title(main = "LogNormal Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttes", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+
+plot(sample_sizes, Power_ttest$Chi.Square,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+    ylim = c(0, 1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, Powerwilcoxtest$Chi.Square, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, Powert_wilcoxtest$Chi.Square, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, PowerPermtest$Chi.Square, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+title(main = "Chi.Square Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+plot(sample_sizes, Power_ttest$Standard.Normal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+   ylim = c(0, 1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, Powerwilcoxtest$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, Powert_wilcoxtest$Standard.Normal, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, PowerPermtest$Standard.Normal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+title(main = "Standard.Normal Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+```
+
+
+#### Compare Probability of Type I error rates for four Different test methods
+```{r}
+rm(list = ls())
+#load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/COMBINE RESULTS_20240719/COMPARE METHODS/TwoSampleCompareTestMethods_error.RData")
+load("/Users/benedictkongyir/Desktop/OSU/Research/Results from cluster/TwoSampleAreaUnderCurve_error.RData")
+# Power of t-test
+error_ttest <-data.frame(error_t_table)
+# Power of Wilcoxon test:
+error_wilcoxtest <-data.frame(error_wilcox_table)
+# Power of t_test/wilcoxon test:
+error_t_wilcoxtest <-data.frame(error_t_wilcox_table)
+# Power of the permutation test:
+error_Permtest <-data.frame(error_perm_table)
+
+# Computation time for t-test 
+compTime_ttest <-data.frame(time_t_table)
+# Computation time for wilcoxon test
+CompTimewilcoxtest <-data.frame(time_wilcox_table)
+# Computation time for wilcoxon/ttest
+compTime_t_wilcoxtest <-data.frame(time_t_wilcox_table)
+# Computation time for permutation test (minutes):
+CompTimepermtest <-data.frame(time_perm_table)
+
+```
+
+
+```{r}
+#par(mar = c(9, 4, 4, 1), xpd = TRUE)
+par(mfrow = c(2,2))
+# Adjust margins to reduce space between plots
+par(mai = c(0.75, 0.75, 0.2, 0.2))  # Adjust as needed
+plot(sample_sizes, error_ttest$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, error_wilcoxtest$Exponential, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, error_t_wilcoxtest$Exponential, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, error_Permtest$Exponential, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+abline(h = 0.05)
+title(main = "Exponential Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+plot(sample_sizes, error_ttest$LogNormal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, error_wilcoxtest$LogNormal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, error_t_wilcoxtest$LogNormal, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, error_Permtest$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+abline(h = 0.05)
+title(main = "LogNormal Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttes", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+
+plot(sample_sizes, error_ttest$Chi.Square,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+    ylim = c(0, 0.1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, error_wilcoxtest$Chi.Square, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, error_t_wilcoxtest$Chi.Square, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, error_Permtest$Chi.Square, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+abline(h = 0.05)
+title(main = "Chi.Square Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+plot(sample_sizes, error_ttest$Standard.Normal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+   ylim = c(0, 0.1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, error_wilcoxtest$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, error_t_wilcoxtest$Standard.Normal, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, error_Permtest$Standard.Normal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+abline(h = 0.05)
+title(main = "Standard.Normal Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+```
+
+#### Area Under the error Curves
+
+```{r}
+TestMethod = c("t", "Wilcoxon", "t/Wilcoxon", "Permutation")
+Normal = c(-0.000200 ,  -0.00171 , -0.00167 , 0.000285)
+Exponential = c( -0.005895 ,  -0.00314 ,   -0.00314,  -0.000665 )
+ChiSq = c( -0.003545 ,  -0.00260 ,  -0.00260 ,  -0.000420  )
+LogNormal = c( -0.013060 ,  -0.00222 , -0.00222,   -0.000495 )
+# Convert the matrix to a data frame for better display
+my_table <- data.frame(TestMethod, Normal, Exponential, ChiSq, LogNormal)
+colnames(my_table) <- c("Test Method", "Normal", "Exponential", "Chi-Squared", "LogNormal")
+knitr::kable(my_table, caption  = "Area Under the Type I error rate Curves")
+```
+
+
+
+### Skewness Method
+
+#### Compare Probability of Type I error rates for four Different test methods
+```{r}
+rm(list = ls())
+load("/Users/benedictkongyir/Desktop/OSU/Research/Results from cluster/TwoSampleAreaUnderCurveSkewness_error.RData")
+# Power of t-test
+error_ttest <-data.frame(error_t_table)
+# Power of Wilcoxon test:
+error_wilcoxtest <-data.frame(error_wilcox_table)
+# Power of t_test/wilcoxon test:
+error_t_wilcoxtest <-data.frame(error_t_wilcox_table)
+# Power of the permutation test:
+error_Permtest <-data.frame(error_perm_table)
+
+# Computation time for t-test 
+compTime_ttest <-data.frame(time_t_table)
+# Computation time for wilcoxon test
+CompTimewilcoxtest <-data.frame(time_wilcox_table)
+# Computation time for wilcoxon/ttest
+compTime_t_wilcoxtest <-data.frame(time_t_wilcox_table)
+# Computation time for permutation test (minutes):
+CompTimepermtest <-data.frame(time_perm_table)
+
+```
+
+
+```{r}
+#par(mar = c(9, 4, 4, 1), xpd = TRUE)
+par(mfrow = c(2,2))
+# Adjust margins to reduce space between plots
+par(mai = c(0.75, 0.75, 0.2, 0.2))  # Adjust as needed
+plot(sample_sizes, error_ttest$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, error_wilcoxtest$Exponential, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, error_t_wilcoxtest$Exponential, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, error_Permtest$Exponential, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+abline(h = 0.05)
+title(main = "Exponential Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+plot(sample_sizes, error_ttest$LogNormal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, error_wilcoxtest$LogNormal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, error_t_wilcoxtest$LogNormal, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, error_Permtest$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+abline(h = 0.05)
+title(main = "LogNormal Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttes", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+
+plot(sample_sizes, error_ttest$Chi.Square,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+    ylim = c(0, 0.1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, error_wilcoxtest$Chi.Square, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, error_t_wilcoxtest$Chi.Square, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, error_Permtest$Chi.Square, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+abline(h = 0.05)
+title(main = "Chi.Square Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+plot(sample_sizes, error_ttest$Standard.Normal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+   ylim = c(0, 0.1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, error_wilcoxtest$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, error_t_wilcoxtest$Standard.Normal, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, error_Permtest$Standard.Normal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+abline(h = 0.05)
+title(main = "Standard.Normal Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+```
+
+
+
+
+
+
+### One Sample Case Power
+
+```{r}
+rm(list = ls())
+#load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/COMBINE RESULTS_20240719/COMPARE METHODS/OneSampleCompareTestMethods_power.RData")
+load("/Users/benedictkongyir/Desktop/OSU/Research/Results from cluster/OneSampleAreaUnderCurve_power.RData")
+# Power of t-test
+Power_ttest <-data.frame(power_t_table)
+# Power of Wilcoxon test:
+Powerwilcoxtest <-data.frame(power_wilcox_table)
+# Power of t_test/wilcoxon test:
+Powert_wilcoxtest <-data.frame(power_t_wilcox_table)
+# Power of the permutation test:
+PowerPermtest <-data.frame(power_perm_table)
+
+# Computation time for t-test 
+compTime_ttest <-data.frame(time_t_table)
+# Computation time for wilcoxon test
+CompTimewilcoxtest <-data.frame(time_wilcox_table)
+# Computation time for wilcoxon/ttest
+compTime_ttest <-data.frame(time_t_wilcox_table)
+# Computation time for permutation test (minutes):
+CompTimewilcoxtest <-data.frame(time_perm_table)
+
+```
+
+#### Power of t-test/Mann-Whitney U test vs. permutation test
+```{r}
+#par(mar = c(9, 4, 4, 1), xpd = TRUE)
+par(mfrow = c(2,2))
+# Adjust margins to reduce space between plots
+par(mai = c(0.75, 0.75, 0.2, 0.2))  # Adjust as needed
+plot(sample_sizes, Power_ttest$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Type I error")
+lines(sample_sizes, Powerwilcoxtest$Exponential, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, Powert_wilcoxtest$Exponential, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, PowerPermtest$Exponential, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+title(main = "Exponential Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+plot(sample_sizes, Power_ttest$LogNormal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Type I error")
+lines(sample_sizes, Powerwilcoxtest$LogNormal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, Powert_wilcoxtest$LogNormal, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, PowerPermtest$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+title(main = "LogNormal Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttes", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+
+plot(sample_sizes, Power_ttest$Chi.Square,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+    ylim = c(0, 1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Type I error")
+lines(sample_sizes, Powerwilcoxtest$Chi.Square, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, Powert_wilcoxtest$Chi.Square, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, PowerPermtest$Chi.Square, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+title(main = "Chi.Square Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+plot(sample_sizes, Power_ttest$Standard.Normal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+   ylim = c(0, 1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Type I error")
+lines(sample_sizes, Powerwilcoxtest$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, Powert_wilcoxtest$Standard.Normal, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, PowerPermtest$Standard.Normal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+title(main = "Standard.Normal Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+```
+
+
+#### Area Under the Power Curves
+
+```{r}
+TestMethod = c("t", "Wilcoxon", "t/Wilcoxon", "Permutation")
+Normal = c(0.6461000,  0.6213111, 0.6453611, 0.6375000)
+Exponential = c(0.6819111, 0.5300722,  0.5431833, 0.7062278)
+ChiSq = c(0.6682056, 0.5359500, 0.5565056, 0.6833167)
+LogNormal = c(0.8059889, 0.8222889, 0.8309278, 0.8747333)
+# Convert the matrix to a data frame for better display
+my_table <- data.frame(TestMethod, Normal, Exponential, ChiSq, LogNormal)
+colnames(my_table) <- c("Test Method", "Normal", "Exponential", "Chi-Squared", "LogNormal")
+knitr::kable(my_table, caption  = "Area Under the Power Curves")
+```
+
+
+```{r}
+rm(list = ls())
+load("/Users/benedictkongyir/Desktop/OSU/Research/Results from cluster/OneSampleAreaUnderCurve_Skewness_power.RData")
+# Power of t-test
+Power_ttest <-data.frame(power_t_table)
+# Power of Wilcoxon test:
+Powerwilcoxtest <-data.frame(power_wilcox_table)
+# Power of t_test/wilcoxon test:
+Powert_wilcoxtest <-data.frame(power_t_wilcox_table)
+# Power of the permutation test:
+PowerPermtest <-data.frame(power_perm_table)
+
+# Computation time for t-test 
+compTime_ttest <-data.frame(time_t_table)
+# Computation time for wilcoxon test
+CompTimewilcoxtest <-data.frame(time_wilcox_table)
+# Computation time for wilcoxon/ttest
+compTime_ttest <-data.frame(time_t_wilcox_table)
+# Computation time for permutation test (minutes):
+CompTimewilcoxtest <-data.frame(time_perm_table)
+
+```
+
+#### Skewness Method
+```{r}
+#par(mar = c(9, 4, 4, 1), xpd = TRUE)
+par(mfrow = c(2,2))
+# Adjust margins to reduce space between plots
+par(mai = c(0.75, 0.75, 0.2, 0.2))  # Adjust as needed
+plot(sample_sizes, Power_ttest$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Type I error")
+lines(sample_sizes, Powerwilcoxtest$Exponential, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, Powert_wilcoxtest$Exponential, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, PowerPermtest$Exponential, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+title(main = "Exponential Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+plot(sample_sizes, Power_ttest$LogNormal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Type I error")
+lines(sample_sizes, Powerwilcoxtest$LogNormal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, Powert_wilcoxtest$LogNormal, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, PowerPermtest$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+title(main = "LogNormal Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttes", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+
+plot(sample_sizes, Power_ttest$Chi.Square,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+    ylim = c(0, 1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Type I error")
+lines(sample_sizes, Powerwilcoxtest$Chi.Square, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, Powert_wilcoxtest$Chi.Square, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, PowerPermtest$Chi.Square, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+title(main = "Chi.Square Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+plot(sample_sizes, Power_ttest$Standard.Normal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+   ylim = c(0, 1), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Type I error")
+lines(sample_sizes, Powerwilcoxtest$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, Powert_wilcoxtest$Standard.Normal, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, PowerPermtest$Standard.Normal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+title(main = "Standard.Normal Samples")
+legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+```
+
+
+
+
+
+#### Probability of Type I error rates
+```{r}
+rm(list = ls())
+#load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/COMBINE RESULTS_20240719/COMPARE METHODS/OneampleCompareTestMethods_error.RData")
+load("/Users/benedictkongyir/Desktop/OSU/Research/Results from cluster/OneSampleAreaUnderCurve_error.RData")
+# Power of t-test
+error_ttest <-data.frame(error_t_table)
+# Power of Wilcoxon test:
+error_wilcoxtest <-data.frame(error_wilcox_table)
+# Power of t_test/wilcoxon test:
+error_t_wilcoxtest <-data.frame(error_t_wilcox_table)
+# Power of the permutation test:
+error_Permtest <-data.frame(error_perm_table)
+
+# Computation time for t-test 
+compTime_ttest <-data.frame(time_t_table)
+# Computation time for wilcoxon test
+CompTimewilcoxtest <-data.frame(time_wilcox_table)
+# Computation time for wilcoxon/ttest
+compTime_t_wilcoxtest <-data.frame(time_t_wilcox_table)
+# Computation time for permutation test (minutes):
+CompTimepermtest <-data.frame(time_perm_table)
+
+```
+
+#### Power of t-test/Mann-Whitney U test vs. permutation test
+```{r}
+#par(mar = c(9, 4, 4, 1), xpd = TRUE)
+par(mfrow = c(2,2))
+# Adjust margins to reduce space between plots
+par(mai = c(0.75, 0.75, 0.2, 0.2))  # Adjust as needed
+plot(sample_sizes, error_ttest$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.5), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, error_wilcoxtest$Exponential, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, error_t_wilcoxtest$Exponential, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, error_Permtest$Exponential, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+abline(h = 0.05)
+title(main = "Exponential Samples")
+legend("topleft", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+plot(sample_sizes, error_ttest$LogNormal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.5), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, error_wilcoxtest$LogNormal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, error_t_wilcoxtest$LogNormal, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, error_Permtest$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+abline(h = 0.05)
+title(main = "LogNormal Samples")
+legend("topleft", legend=c("t","Wilcoxon", "Wilcoxon/ttes", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+
+plot(sample_sizes, error_ttest$Chi.Square,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+    ylim = c(0, 0.5), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, error_wilcoxtest$Chi.Square, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, error_t_wilcoxtest$Chi.Square, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, error_Permtest$Chi.Square, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+abline(h = 0.05)
+title(main = "Chi.Square Samples")
+legend("topleft", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+plot(sample_sizes, error_ttest$Standard.Normal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+   ylim = c(0, 0.5), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, error_wilcoxtest$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, error_t_wilcoxtest$Standard.Normal, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, error_Permtest$Standard.Normal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+abline(h = 0.05)
+title(main = "Standard.Normal Samples")
+legend("topleft", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+```
+
+
+#### Area Under the Type I error rate Curves
+```{r}
+TestMethod = c("t", "Wilcoxon", "t/Wilcoxon", "Permutation")
+Normal = c(0.00050,  -0.00280, 0.00220, -0.00215)
+Exponential = c(0.02800, 0.09155,  0.09670, 0.02215)
+ChiSq = c(0.01645, 0.05765, 0.06330, 0.01075)
+LogNormal = c(0.07725, 0.23725, 0.24595, 0.06860)
+# Convert the matrix to a data frame for better display
+my_table <- data.frame(TestMethod, Normal, Exponential, ChiSq, LogNormal)
+colnames(my_table) <- c("Test Method", "Normal", "Exponential", "Chi-Squared", "LogNormal")
+knitr::kable(my_table, caption  = "Area Under the Type I error rate Curves")
+```
+
+
+
+#### Skewness Method
+```{r}
+rm(list = ls())
+load("/Users/benedictkongyir/Desktop/OSU/Research/Results from cluster/OneSampleAreaUnderCurveSkewness_error.RData")
+# error of t-test
+error_ttest <-data.frame(error_t_table)
+# error of Wilcoxon test:
+error_wilcoxtest <-data.frame(error_wilcox_table)
+# error of t_test/wilcoxon test:
+error_t_wilcoxtest <-data.frame(error_t_wilcox_table)
+# error of the permutation test:
+error_Permtest <-data.frame(error_perm_table)
+
+# Computation time for t-test 
+compTime_ttest <-data.frame(time_t_table)
+# Computation time for wilcoxon test
+CompTimewilcoxtest <-data.frame(time_wilcox_table)
+# Computation time for wilcoxon/ttest
+compTime_t_wilcoxtest <-data.frame(time_t_wilcox_table)
+# Computation time for permutation test (minutes):
+CompTimepermtest <-data.frame(time_perm_table)
+
+```
+
+#### Power of t-test/Mann-Whitney U test vs. permutation test
+```{r}
+#par(mar = c(9, 4, 4, 1), xpd = TRUE)
+par(mfrow = c(2,2))
+# Adjust margins to reduce space between plots
+par(mai = c(0.75, 0.75, 0.2, 0.2))  # Adjust as needed
+plot(sample_sizes, error_ttest$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.5), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, error_wilcoxtest$Exponential, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, error_t_wilcoxtest$Exponential, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, error_Permtest$Exponential, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+abline(h = 0.05)
+title(main = "Exponential Samples")
+legend("topleft", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+plot(sample_sizes, error_ttest$LogNormal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.5), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, error_wilcoxtest$LogNormal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, error_t_wilcoxtest$LogNormal, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, error_Permtest$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+abline(h = 0.05)
+title(main = "LogNormal Samples")
+legend("topleft", legend=c("t","Wilcoxon", "Wilcoxon/ttes", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+
+plot(sample_sizes, error_ttest$Chi.Square,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+    ylim = c(0, 0.5), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, error_wilcoxtest$Chi.Square, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, error_t_wilcoxtest$Chi.Square, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, error_Permtest$Chi.Square, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+abline(h = 0.05)
+title(main = "Chi.Square Samples")
+legend("topleft", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+plot(sample_sizes, error_ttest$Standard.Normal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+   ylim = c(0, 0.5), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power")
+lines(sample_sizes, error_wilcoxtest$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, error_t_wilcoxtest$Standard.Normal, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(sample_sizes, error_Permtest$Standard.Normal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+abline(h = 0.05)
+title(main = "Standard.Normal Samples")
+legend("topleft", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"), lwd = 3,
+       col=c("red", "blue", "green",  "orange"), lty = 1:4, pch =1:4, cex = 0.8, title = "Test Method")
+
+```
+
+
+
+
+
+
+

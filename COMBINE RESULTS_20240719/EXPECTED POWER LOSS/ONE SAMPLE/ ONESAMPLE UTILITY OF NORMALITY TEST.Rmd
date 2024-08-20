@@ -1,0 +1,320 @@
+---
+title: "Utility of Normality test in One Sample test"
+author: "Benedict Kongyir"
+date: "`r format(Sys.time(), '%m/%d/%Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.height = 6.5, fig.width = 8)
+```
+
+
+
+
+```{r}
+rm(list = ls())
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Expected Power loss and Expected Inflation of Type I error/ONE SAMPLE/ONESAMPLE_POWERLOSS.RData")
+#Probability of SW test
+data_prob_SW <-data.frame(prob.non.sig.SW.test_par)[-1,]
+# power loss
+data_powerloss <-data.frame(powerloss)[-1,]
+#Expected powerloss
+Expected_powerloss<-data_powerloss * data_prob_SW
+nvec= nvec[-1]
+```
+
+### Power loss 
+
+```{r}
+#par(mar = c(9, 4, 4, 1), xpd = TRUE)
+#par(mfrow = c(1,2))
+# Adjust margins to reduce space between plots
+par(mai = c(0.75, 0.75, 0.2, 0.2))  # Adjust as needed
+plot(nvec, data_powerloss$Standard.Normal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(-0.02, 0.02), xlim = range(nvec), xlab = "Sample Size", ylab = "Power Loss")
+lines(nvec, data_powerloss$Uniform, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, data_powerloss$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, data_powerloss$Laplace, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+#lines(nvec, data_powerloss$Contaminate, lty = 4, lwd = 3, col = "green")
+abline(h = 0, lwd = 2, col = "black", xpd = F)
+title(main = "Power loss")
+legend("topright", legend=c("Normal", "Uniform", "t", "Laplace"), lwd = 3,
+       col=c( "red", "blue", "green", "orange"), lty =c(1, 2, 3, 4), pch = c(1, 2, 8), cex = 0.8, title = "Distribution")
+```
+
+### Expected Power loss
+```{r}
+plot(nvec, Expected_powerloss$Standard.Normal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3,
+     ylim = c(-0.02, 0.02), xlim = range(nvec), xlab = "Sample Size", ylab = "Expected Power Loss")
+lines(nvec, Expected_powerloss$Uniform, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, Expected_powerloss$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, Expected_powerloss$Laplace, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+abline(h = 0, lwd = 2, col = "black", xpd = F)
+title(main = "Expected Power loss")
+legend("topright", legend=c("Laplace", "Normal", "t", "Contaminated"), lwd = 3,
+       col=c( "red", "blue", "green", "orange"), lty =c(1, 2, 3, 4), pch = c(1, 2, 8),cex = 0.8, title = "Distribution")
+
+```
+
+### Power of two-stage procedure
+
+```{r}
+rm(list = ls())
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Expected Power loss and Expected Inflation of Type I error/ONE SAMPLE/OneSampleOverallPower20240607.RData")
+#Probability of SW test
+power.t.test <-data.frame(power_t_test_par)
+# power loss
+power.U.test <-data.frame(power_mann_whitney_par)
+#Expected powerloss
+overall_power<-data.frame(overall_power_par)
+```
+
+### Power loss 
+```{r, fig.width=10, fig.height=10}
+# #par(mar = c(9, 4, 4, 1), xpd = TRUE)
+# par(mfrow = c(3,2))
+# # Adjust margins to reduce space between plots
+# par(mai = c(0.75, 0.75, 0.2, 0.2))  # Adjust as needed
+# ### overall power
+# plot(nvec, power.t.test$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+#      ylim = c(0, 1), xlim = range(nvec), xlab = "Sample Size", ylab = "power of t test")
+# lines(nvec, power.t.test$Weibull, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+# lines(nvec, power.t.test$Chi.Square, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+# lines(nvec, power.t.test$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+# lines(nvec, power.t.test$Gamma, type = "o", lty = 5, pch = 5, col = "purple", lwd = 3)
+# lines(nvec, power.t.test$Pareto, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
+# title(main = "power of t test")
+# legend("bottomright", legend=c("Exp", "Weibull", "Chisq", "LogNormal", "Gamma", "Pareto"), lwd = 3,
+#        col=c("red", "blue", "green", "orange", "purple", "grey"), lty = 1:6, pch =c(1,2,8, 4,5, 6), cex = 0.8, title = "Distribution")
+# 
+# plot(nvec, power.t.test$Laplace, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+#      ylim = c(-0, 1), xlim = range(nvec), xlab = "Sample Size", ylab = "power of t test")
+# lines(nvec, power.t.test$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+# lines(nvec, power.t.test$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+# lines(nvec, power.t.test$Contaminated, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
+# lines(nvec, power.t.test$Uniform, type = "o", lty = 5, pch = 4, col = "purple", lwd = 3)
+# title(main = "power of t test")
+# legend("topleft", legend=c("Laplace", "Normal", "t", "Contaminated", "Uniform"), lwd = 3,
+#        col=c( "red", "blue", "green", "grey", "purple"), lty = 1:5,cex = 0.8, pch = c(1,2,8, 6, 4), title = "Distribution")
+# 
+# plot(nvec, power.U.test$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+#      ylim = c(0, 1), xlim = range(nvec), xlab = "Sample Size", ylab = "power of U test")
+# lines(nvec, power.U.test$Weibull, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+# lines(nvec, power.U.test$Chi.Square, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+# lines(nvec, power.U.test$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+# lines(nvec, power.U.test$Gamma, type = "o", lty = 5, pch = 5, col = "purple", lwd = 3)
+# lines(nvec, power.U.test$Pareto, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
+# title(main = "power of U test")
+# legend("bottomright", legend=c("Exp", "Weibull", "Chisq", "LogNormal", "Gamma", "Pareto"), lwd = 3,
+#        col=c("red", "blue", "green", "orange", "purple", "grey"), lty = 1:6, pch =c(1,2,8, 4,5, 6), cex = 0.8, title = "Distribution")
+# 
+# plot(nvec, power.U.test$Laplace, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+#      ylim = c(-0, 1), xlim = range(nvec), xlab = "Sample Size", ylab = "power of U test")
+# lines(nvec, power.U.test$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+# lines(nvec, power.U.test$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+# lines(nvec, power.U.test$Contaminated, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
+# lines(nvec, power.U.test$Uniform, type = "o", lty = 5, pch = 4, col = "purple", lwd = 3)
+# title(main = "power of U test")
+# legend("topleft", legend=c("Laplace", "Normal", "t", "Contaminated", "Uniform"), lwd = 3,
+#        col=c( "red", "blue", "green", "grey", "purple"), lty = 1:5,cex = 0.8, pch = c(1,2,8, 6, 4), title = "Distribution")
+# 
+# plot(nvec, overall_power$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+#      ylim = c(0, 1), xlim = range(nvec), xlab = "Sample Size", ylab = "overall power of test")
+# lines(nvec, overall_power$Weibull, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+# lines(nvec, overall_power$Chi.Square, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+# lines(nvec, overall_power$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+# lines(nvec, overall_power$Gamma, type = "o", lty = 5, pch = 5, col = "purple", lwd = 3)
+# lines(nvec, overall_power$Pareto, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
+# title(main = "overall power of test")
+# legend("bottomright", legend=c("Exp", "Weibull", "Chisq", "LogNormal", "Gamma", "Pareto"), lwd = 3,
+#        col=c("red", "blue", "green", "orange", "purple", "grey"), lty = 1:6, pch =c(1,2,8, 4,5, 6), cex = 0.8, title = "Distribution")
+# 
+# plot(nvec, overall_power$Laplace, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+#      ylim = c(-0, 1), xlim = range(nvec), xlab = "Sample Size", ylab = "overall power of test")
+# lines(nvec, overall_power$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+# lines(nvec, overall_power$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+# lines(nvec, overall_power$Contaminated, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
+# lines(nvec, overall_power$Uniform, type = "o", lty = 5, pch = 4, col = "purple", lwd = 3)
+# title(main = "overall power of test")
+# legend("topleft", legend=c("Laplace", "Normal", "t", "Contaminated", "Uniform"), lwd = 3,
+#        col=c( "red", "blue", "green", "grey", "purple"), lty = 1:5,cex = 0.8, pch = c(1,2,8, 6, 4), title = "Distribution")
+```
+
+
+
+### Inflation of Type I error rate and Expected Inflation of Type I error rate
+
+
+```{r}
+rm(list = ls())
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Expected Power loss and Expected Inflation of Type I error/ONE SAMPLE/ONESAMPLE_EXPECTED_TYPE1_ERROR.RData")
+#Probability of SW test
+nvec = nvec[-1]
+data_prob_SW <-data.frame(prob.non.sig.SW.test_par)[-1,]
+# power loss
+data_error <-data.frame(inflation_error)[-1,]
+#Expected powerloss
+Expected_inflation_error<-data_error * data_prob_SW
+```
+
+```{r}
+#par(mar = c(9, 4, 4, 1), xpd = TRUE)
+par(mfrow = c(2,2))
+# Adjust margins to reduce space between plots
+par(mai = c(0.75, 0.75, 0.2, 0.2))  # Adjust as needed
+plot(nvec, data_error$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(-0.01, 0.3), xlim = range(nvec), xlab = "Sample Size", ylab = "Inflation of Type I error")
+lines(nvec, data_error$Weibull, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, data_error$Chi.Square, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, data_error$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, data_error$Gamma, type = "o", lty = 5, pch = 5, col = "purple", lwd = 3)
+abline(h = 0, lwd = 2, col = "black", xpd = F)
+title(main = "Inflation of Type I error")
+legend("topright", legend=c("Exp", "Weibull", "Chisq", "LogNormal", "Gamma"), lwd = 3,
+       col=c("red", "blue", "green", "orange", "purple"), lty = 1:5, pch =c(1,2,8, 4, 5), cex = 0.8, title = "Distribution")
+
+plot(nvec, data_error$Laplace, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(-0.01, 0.01), xlim = range(nvec), xlab = "Sample Size", ylab = "Inflation of Type I error rate")
+lines(nvec, data_error$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, data_error$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, data_error$Contaminated, type = "o", lty = 6, pch = 4, col = "brown")
+abline(h = 0, lwd = 2, col = "black", xpd = F)
+title(main = "Inflation of Type I error")
+legend("topright", legend=c("Laplace", "Normal", "t", "Contaminated"), lwd = 3,
+       col=c( "red", "blue", "green", "brown"), lty = 1:4, pch = c(1, 2, 8, 4), cex = 0.8, title = "Distribution")
+
+### Expected power loss
+plot(nvec, Expected_inflation_error$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(-0.001, 0.03), xlim = range(nvec), xlab = "Sample Size", ylab = "Expected Inflation of Type I error")
+lines(nvec, Expected_inflation_error$Weibull, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, Expected_inflation_error$Chi.Square, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, Expected_inflation_error$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, Expected_inflation_error$Gamma, type = "o", lty = 5, pch = 5, col = "purple", lwd = 3)
+abline(h = 0, lwd = 2, col = "black", xpd = F)
+title(main = "Expected Inflation of Type I error")
+legend("topright", legend=c("Exp", "Weibull", "Chisq", "LogNormal", "Gamma"), lwd = 3,
+       col=c("red", "blue", "green", "orange", "purple"), lty = 1:5, pch =c(1,2,8, 4,5), cex = 0.8, title = "Distribution")
+
+plot(nvec, Expected_inflation_error$Laplace, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(-0.01, 0.01), xlim = range(nvec), xlab = "Sample Size", ylab = "Expected Inflation of Type I error")
+lines(nvec, Expected_inflation_error$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, Expected_inflation_error$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, data_error$Contaminated, type = "o", lty = 6, pch = 4, col = "brown")
+abline(h = 0, lwd = 2, col = "black", xpd = F)
+title(main = "Expected Inflation of Type I error")
+legend("topright", legend=c("Laplace", "Normal", "t", "Contaminated"), lwd = 3,
+       col=c( "red", "blue", "green", "brown"), lty = 1:3, pch = c(1, 2, 8, 4), cex = 0.8, title = "Distribution")
+```
+
+
+
+
+
+### Type I error rate two-stage procedure
+
+
+```{r}
+rm(list = ls())
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Expected Power loss and Expected Inflation of Type I error/ONE SAMPLE/ONESAMPLE.OVERALL.TYPI.ERROR..RData")
+#Probability of SW test
+TypeI.error.t.test <-data.frame(TypeI.error.t.test)
+# power loss
+TypeI.error.U.test <-data.frame(TypeI.error.U.test)
+#Expected powerloss
+overall_TypeI.error<-data.frame(overall_TypeI.error)
+```
+
+
+```{r , fig.height=10, fig.width=10}
+#par(mar = c(9, 4, 4, 1), xpd = TRUE)
+par(mfrow = c(3,2))
+# Adjust margins to reduce space between plots
+par(mai = c(0.75, 0.75, 0.2, 0.2))  # Adjust as needed
+### Type I error rate of t test
+plot(nvec, TypeI.error.t.test$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.8), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I error")
+lines(nvec, TypeI.error.t.test$Weibull, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, TypeI.error.t.test$Chi.Square, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, TypeI.error.t.test$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, TypeI.error.t.test$Gamma, type = "o", lty = 5, pch = 5, col = "purple", lwd = 3)
+abline(h = 0.05, lwd = 2, col = "black", xpd = F)
+title(main = "Type I error of t test")
+legend("topleft", legend=c("Exp", "Weibull", "Chisq", "LogNormal", "Gamma"), lwd = 3,
+       col=c("red", "blue", "green", "orange", "purple"), lty = 1:5, pch =c(1,2,8, 4, 5), cex = 0.8, title = "Distribution")
+
+plot(nvec, TypeI.error.t.test$Laplace, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.1), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I error rate")
+lines(nvec, TypeI.error.t.test$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, TypeI.error.t.test$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, TypeI.error.t.test$Contaminated, type = "o", lty = 6, pch = 4, col = "brown", lwd = 3)
+abline(h = 0.05, lwd = 2, col = "black", xpd = F)
+title(main = "Type I error of t test")
+legend("topleft", legend=c("Laplace", "Normal", "t", "Contaminated"), lwd = 3,
+       col=c( "red", "blue", "green", "brown"), lty = 1:4, pch = c(1, 2, 8, 4), cex = 0.8, title = "Distribution")
+
+### Type I error rate of Mann-Whitney U test
+plot(nvec, TypeI.error.U.test$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.5), xlim = range(nvec), xlab = "Sample Size", ylab = "Expected Inflation of Type I error")
+lines(nvec, TypeI.error.U.test$Weibull, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, TypeI.error.U.test$Chi.Square, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, TypeI.error.U.test$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, TypeI.error.U.test$Gamma, type = "o", lty = 5, pch = 5, col = "purple", lwd = 3)
+abline(h = 0.05, lwd = 2, col = "black", xpd = F)
+title(main = "Type I error of Mann-Whitney test")
+legend("topleft", legend=c("Exp", "Weibull", "Chisq", "LogNormal", "Gamma"), lwd = 3,
+       col=c("red", "blue", "green", "orange", "purple"), lty = 1:5, pch =c(1,2,8, 4,5), cex = 0.8, title = "Distribution")
+
+plot(nvec, TypeI.error.U.test$Laplace, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.1), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I error")
+lines(nvec, TypeI.error.U.test$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, TypeI.error.U.test$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, TypeI.error.U.test$Contaminated, type = "o", lty = 6, pch = 4, col = "brown", lwd = 3)
+abline(h = 0.05, lwd = 2, col = "black", xpd = F)
+title(main = "Type I error Mann-Whitney test")
+legend("topleft", legend=c("Laplace", "Normal", "t", "Contaminated"), lwd = 3,
+       col=c( "red", "blue", "green", "brown"), lty = 1:3, pch = c(1, 2, 8, 4), cex = 0.8, title = "Distribution")
+
+## ### Type I error rate of two-stage procedure
+plot(nvec, overall_TypeI.error$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.5), xlim = range(nvec), xlab = "Sample Size", ylab = "EType I error")
+lines(nvec, overall_TypeI.error$Weibull, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, overall_TypeI.error$Chi.Square, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, overall_TypeI.error$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, overall_TypeI.error$Gamma, type = "o", lty = 5, pch = 5, col = "purple", lwd = 3)
+abline(h = 0.05, lwd = 2, col = "black", xpd = F)
+title(main = "Overall Type I error rate of two-stage procedure")
+legend("topleft", legend=c("Exp", "Weibull", "Chisq", "LogNormal", "Gamma"), lwd = 3,
+       col=c("red", "blue", "green", "orange", "purple"), lty = 1:5, pch =c(1,2,8, 4,5), cex = 0.8, title = "Distribution")
+
+plot(nvec, overall_TypeI.error$Laplace, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.1), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I error")
+lines(nvec, overall_TypeI.error$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, overall_TypeI.error$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, overall_TypeI.error$Contaminated, type = "o", lty = 6, pch = 4, col = "brown", lwd = 3)
+abline(h = 0.05, lwd = 2, col = "black", xpd = F)
+title(main = "Overall Type I error rate of two-stage procedure")
+legend("topleft", legend=c("Laplace", "Normal", "t", "Contaminated"), lwd = 3,
+       col=c( "red", "blue", "green", "brown"), lty = 1:3, pch = c(1, 2, 8, 4), cex = 0.8, title = "Distribution")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

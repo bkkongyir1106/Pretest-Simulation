@@ -55,25 +55,23 @@ for (dist in distributions) {
     
     for (i in 1:N) {
       x <- generate_data(n, dist)
-      y <- generate_data(n, dist)
-      
+    
       # Perform t test
       time_t[i] <- system.time({
-        pval_t[i] <- t.test(x, y + d)$p.value
-      })
+        pval_t[i] <- t.test(x + d)$p.value
+      })["elapsed"]
       
       # Wilcoxon test
       time_wilcox[i] <- system.time({
-        pval_wilcox[i] <- wilcox.test(x, y + d)$p.value
-      })
+        pval_wilcox[i] <- wilcox.test(x + d)$p.value
+      })["elapsed"]
       
       # Perform t-test/Wilcoxon
       time_t_wilcox[i] <- system.time({
-        if (shapiro.test(x)$p.value > alpha & shapiro.test(y)$p.value > alpha) {
-          Shapiro_pval[i] <- 1
-          pvals[i] <- t.test(x, y + d)$p.value
+        if (abs(skewness(x)) < alpha) {
+          pvals[i] <- t.test(x + d)$p.value
         } else {
-          pvals[i] <- wilcox.test(x, y + d)$p.value
+          pvals[i] <- wilcox.test(x + d)$p.value
         }
       })["elapsed"]
       
@@ -123,7 +121,7 @@ for (dist in distributions) {
 
 # Function to compute the area under the curve using the trapezoidal rule
 compute_area <- function(x, y) {
-  (sum(diff(x) * (head(y, -1) + tail(y, -1)) / 2))/(max(sample_sizes) - min(sample_sizes))
+  (sum(diff(x) * (head(y, -1) + tail(y, -1)) / 2))/max(sample_sizes)
 }
 
 # Calculate areas
@@ -141,9 +139,8 @@ time_diff_t <- time_t_wilcox_table - time_t_table
 time_diff_wilcox <- time_t_wilcox_table - time_wilcox_table
 time_diff_perm <- time_t_wilcox_table - time_perm_table
 
-# power of Shapiro Wilk test
-cat("\nPower of Shapiro-Wilk test:\n")
-print(1- power_shapiro)
+#close progress bar
+close(pb)
 
 # Print power tables
 cat("Power for t test:\n")
@@ -191,7 +188,7 @@ print(area_t_wilcox)
 cat("\nArea under the power curve for permutation test:\n")
 print(area_perm)
 
-close(pb)
+
 
 save(sample_sizes, power_t_wilcox_table, power_perm_table, power_t_table, power_wilcox_table,
      time_t_table, time_wilcox_table, time_t_wilcox_table, time_perm_table,

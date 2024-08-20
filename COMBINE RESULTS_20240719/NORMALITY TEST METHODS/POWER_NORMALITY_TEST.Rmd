@@ -1,5 +1,5 @@
 ---
-title: "Utility of Normality Test in Two Samples Test"
+title: "Comparison of Power of Normality Test Methods"
 author: "Benedict Kongyir"
 date: "`r format(Sys.time(), '%m/%d/%Y')`"
 output: 
@@ -22,7 +22,7 @@ library(patchwork)
 
 ```{r}
 rm(list = ls())
-load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Old stuff/NORMALITY TEST METHODS/OneSamplePowerNormality.RData")
+load("/Users/benedictkongyir/Desktop/OSU/Research/Old stuff/NORMALITY TEST METHODS/TwoSamplePowerNormalityTest.RData")
 ```
 
 #### One Sample Case
@@ -54,7 +54,7 @@ wrap_plots(plots)
 
 ```{r}
 rm(list = ls())
-load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Old stuff/NORMALITY TEST METHODS/TwoSamplePowerNormalityTest.RData")
+load("/Users/benedictkongyir/Desktop/OSU/Research/Old stuff/NORMALITY TEST METHODS/TwoSamplePowerNormalityTest.RData")
 ```
 
 ### Two Sample Case
