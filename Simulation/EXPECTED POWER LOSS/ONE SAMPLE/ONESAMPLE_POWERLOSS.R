@@ -1,10 +1,11 @@
-#rm(list = ls())
-setwd("/home/kongyir/spring2024/power")
-source("/home/kongyir/spring2024/User_defined_functions.R")
-source("/home/kongyir/spring2024/utility.R")
-# setwd("~/Library/Mobile Documents/com~apple~CloudDocs/Research.05.10.2024/Power")
-# source("~/Desktop/OSU/Research/Pretest-Simulation/User defined functions/User_defined_functions.R")
-# source("~/Desktop/OSU/Research/Pretest-Simulation/User defined functions/utility.R")
+rm(list = ls())
+# setwd("/home/kongyir/spring2024/power")
+# source("/home/kongyir/spring2024/User_defined_functions.R")
+# source("/home/kongyir/spring2024/utility.R")
+
+setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/EXPECTED POWER LOSS/ONE SAMPLE")
+source("~/Desktop/OSU/Research/Pretest-Simulation/functions/User_defined_functions.R")
+source("~/Desktop/OSU/Research/Pretest-Simulation/functions/utility.R")
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%% Parallel process setup %%%%%%%%%%%%%%%%%%%----
 {
@@ -29,9 +30,9 @@ source("/home/kongyir/spring2024/utility.R")
   }
 }
 # set vectors
-N <- 1e4; P <- 1e5; alpha <- 0.05
+N <- 1e3; P <- 1e4; alpha <- 0.05
 dist_sum <- c("Standard Normal",  "Uniform", "t", "Laplace", "Contaminated")
-nvec <- c(5, 10, 15, 20, 25, 30)
+nvec <- c(8, 10, 15, 20, 25, 30, 50)
 d.vec <- c(0.5)
 
 # Parallelized simulation setup
@@ -59,9 +60,11 @@ system.time({
       while (TotalSim.passed.SW.test < N) {
         x <- generate_data(n, dist) 
         TotalSim = TotalSim + 1 
+        # t test
         if(shapiro.test(x)$p.value > alpha){
           TotalSim.passed.SW.test = TotalSim.passed.SW.test + 1
           pval[TotalSim.passed.SW.test] <- t.test(x + d)$p.value
+          # permutation
           observed_statistic <- calculate_test_statistic(x + d)
           permuted_statistics <- rep(0, P)
           for (l in 1:P) {
@@ -79,7 +82,7 @@ system.time({
       Results <- list(
         power_t_test = power_t_test,
         power_perm.test = power_perm.test,
-        Prob.SW_n.s = TotalSim.passed.SW.test/TotalSim
+        Prob.SW_n.s = Prob.SW_n.s
       )
     }
 })
@@ -99,6 +102,7 @@ for (t in seq_along(nvec)) {
   }
 }
 powerloss <- power_perm.test_par - power_t.test_par
+Expected_powerloss <- powerloss * prob.non.sig.SW.test_par
 power_t.test_par
 power_perm.test_par
 powerloss
