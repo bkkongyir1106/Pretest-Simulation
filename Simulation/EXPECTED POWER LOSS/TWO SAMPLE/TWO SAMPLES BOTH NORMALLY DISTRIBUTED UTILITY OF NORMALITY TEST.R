@@ -112,6 +112,7 @@ power_t.test
 power_perm.test
 powerloss
 prob.non.sig.SW.test
+ExpectedPowerloss = powerloss * prob.non.sig.SW.test
 
 save.image(paste0("TwoSamplesExpectedPowerlossAND20240607*",".RData"))
 

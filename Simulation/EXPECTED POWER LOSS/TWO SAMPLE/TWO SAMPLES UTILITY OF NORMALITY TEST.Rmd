@@ -12,8 +12,9 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, fig.height = 8, fig.width = 10)
-source("~/Desktop/OSU/Research/Pretest-Simulation/User defined functions/User_defined_functions.R")
-source("~/Desktop/OSU/Research/Pretest-Simulation/User defined functions/utility.R")
+source("~/Desktop/OSU/Research/Pretest-Simulation/functions/User_defined_functions.R")
+source("~/Desktop/OSU/Research/Pretest-Simulation/functions/utility.R")
+
 
 ```
 
@@ -25,7 +26,7 @@ source("~/Desktop/OSU/Research/Pretest-Simulation/User defined functions/utility
 Power loss and expected power loss are prominent for smaller sample sizes(n less than 30), especially for skewed distributions like lognormal, exponential, but decreases to zero or close to zero as sample size increase( above 30).
 ```{r}
 rm(list = ls())
- load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Expected Power loss and Expected Inflation of Type I error/TWO SAMPLE/TWOSAMPLES-EXPECTED-POWERLOSS-ATLEAST-ONE-SAMPLE-PAST-NORMALITY.RData")
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/EXPECTED POWER LOSS/TWO SAMPLE/TWOSAMPLES-EXPECTED-POWERLOSS-ATLEAST-ONE-SAMPLE-PAST-NORMALITY.RData")
 #Probability of SW test
 data_prob_SW <-data.frame(prob.non.sig.SW.test_par)
 # power loss
@@ -96,7 +97,7 @@ legend("topright", legend=c("Laplace", "Normal", "t", "Contaminated", "Uniform")
 Power loss and expected power loss are minimal for almost all sample sizes except for sample sizes less than 10.
 ```{r}
 rm(list = ls())
- load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Expected Power loss and Expected Inflation of Type I error/TWO SAMPLE/TWOSAMPLES-POWERLOSS-BOTH-SAMPLES-PASSED-NORMALITY.RData")
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/EXPECTED POWER LOSS/TWO SAMPLE/TWOSAMPLES-POWERLOSS-BOTH-SAMPLES-PASSED-NORMALITY.RData")
 #Probability of SW test
 data_prob_SW <-data.frame(prob.non.sig.SW.test)
 # power loss
@@ -164,7 +165,7 @@ legend("topright", legend=c("Laplace", "Normal", "t", "Contaminated", "Uniform")
 ##### Power loss of Two Sample Two-Stage Procedure
 ```{r}
 rm(list = ls())
- load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Expected Power loss and Expected Inflation of Type I error/TWO SAMPLE/TWOSAMPLE.POWERLOSS.TWOSTAGE.PROCEDURE.RData")
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/EXPECTED POWER LOSS/TWO SAMPLE/TWOSAMPLE.POWERLOSS.TWOSTAGE.PROCEDURE.RData")
 #Probability of SW test
 power.t.test <-data.frame(power_t_test_par)
 # power loss
@@ -252,7 +253,7 @@ legend("topleft", legend=c("Laplace", "Normal", "t", "Contaminated", "Uniform"),
 
 ```{r}
 rm(list = ls())
-load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Expected Power loss and Expected Inflation of Type I error/TWO SAMPLE/TWO SAMPLES EXPECTED INFLATION OF TYPE I ERROR.RData")
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/EXPECTED POWER LOSS/TWO SAMPLE/TWO SAMPLES EXPECTED INFLATION OF TYPE I ERROR.RData")
 #Probability of SW test
 nvec = nvec[-1]
 data_prob_SW <-data.frame(prob.non.sig.SW.test_par)[-1,]
@@ -322,7 +323,7 @@ Type I error rates are controlled for both skewed and symmetric distributions fo
 
 ```{r}
 rm(list = ls())
-load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Expected Power loss and Expected Inflation of Type I error/TWO SAMPLE/TWOSAMPLE.TYPEI.ERROR.TWOSTAGE.PROCEDURE.RData")
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/EXPECTED POWER LOSS/TWO SAMPLE/TWOSAMPLE.TYPEI.ERROR.TWOSTAGE.PROCEDURE.RData")
 #Probability of SW test
 TypeI.error.t.test <-data.frame(TypeI.error.t.test)
 # power loss
@@ -401,60 +402,5 @@ abline(h = 0.05, lwd = 2, col = "black", xpd = F)
 title(main = "Overall Type I error rate of two-stage procedure")
 legend("topleft", legend=c("Laplace", "Normal", "t", "Contaminated"), lwd = 3,
        col=c( "red", "blue", "green", "brown"), lty = 1:3, pch = c(1, 2, 8, 4), cex = 0.8, title = "Distribution")
-```
-
-### Bootstrap Confidence intervals vs. t test confidence intervals
-
-For smaller sample sizes, below 30 the confidence intervals contains zero for most distributions,except for exponential, Pareto, Lognormal,t, and Weibull distributions. As sample size increases, confidence intervals tend to be significant and narrower for most distributions
-```{r}
-load("/Users/benedictkongyir/Library/Mobile Documents/com~apple~CloudDocs/Research.05.10.2024/Power/workspace.RData")
-# Function to plot the confidence intervals with legend
-plot_cis <- function(results) {
-  data_list <- list()
-  for (name in names(results)) {
-    res <- results[[name]]
-    dist_n <- strsplit(name, "_")[[1]]
-    data_list <- append(data_list, list(data.frame(
-      Distribution = dist_n[1],
-      SampleSize = as.numeric(dist_n[2]),
-      BootLower = res$boot_ci[, 1],
-      BootUpper = res$boot_ci[, 2],
-      TTestLower = res$t_test_ci[, 1],
-      TTestUpper = res$t_test_ci[, 2]
-    )))
-  }
-  plot_data <- do.call(rbind, data_list)
-  ggplot(plot_data, aes(x = factor(SampleSize), group = Distribution)) +
-    geom_point(aes(y = BootLower, color = "Bootstrap"), size = 2) +
-    geom_point(aes(y = BootUpper, color = "Bootstrap"), size = 2) +
-    geom_point(aes(y = TTestLower, color = "T-test"), size = 2) +
-    geom_point(aes(y = TTestUpper, color = "T-test"), size = 2) +
-    geom_line(aes(y = BootLower, color = "Bootstrap"), linetype = "dashed") +
-    geom_line(aes(y = BootUpper, color = "Bootstrap"), linetype = "dashed") +
-    geom_line(aes(y = TTestLower, color = "T-test"), linetype = "dashed") +
-    geom_line(aes(y = TTestUpper, color = "T-test"), linetype = "dashed") +
-    facet_wrap(~Distribution, scales = "free") +
-    labs(title = "Bootstrap and T-test Confidence Intervals",
-         x = "Sample Size",
-         y = "Confidence Interval Bounds",
-         color = "Method") +
-    theme_minimal() +
-    scale_color_manual(values = c("Bootstrap" = "blue", "T-test" = "red"))
-}
-# Function to print the results in organized tables
-print_results <- function(results) {
-  for (name in names(results)) {
-    res <- results[[name]]
-    cat("Results for", name, ":\n")
-    for (i in 1:nrow(res$boot_ci)) {
-      cat("Bootstrap CI [", res$boot_ci[i, 1], ", ", res$boot_ci[i, 2], "]\n")
-      cat("T-test CI [", res$t_test_ci[i, 1], ", ", res$t_test_ci[i, 2], "]\n")
-    }
-    cat("\n")
-  }
-}
-# Main execution
-results <- generate_and_calculate_cis()
-plot_cis(results)
 ```
 

@@ -1,0 +1,184 @@
+---
+title: "Utility of Normality Test in Two Samples Test"
+author: "Benedict Kongyir"
+date: "`r format(Sys.time(), '%m/%d/%Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.height = 8, fig.width = 10)
+
+```
+
+
+### One Sample Case
+```{r}
+rm(list = ls())
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/TYPE I ERROR RATES/Selective Inference Type I error/OneSampleTypeI.errorRate.RData")
+error <- data.frame(TypeI.errorRate)
+
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/TYPE I ERROR RATES/Selective Inference Type I error/OneSampleConditionalTypeI.errorRate.RData")
+errorConditional <- data.frame(TypeI.errorRate)
+
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/TYPE I ERROR RATES/Selective Inference Type I error/OneSampleTwoStageTypeI.errorRate.RData")
+errorTwoStage <- data.frame(TypeI.errorRate)
+```
+
+
+
+```{r, fig.height= 14, fig.width= 10}
+
+par(mfrow = c(3,2))
+# Adjust margins to reduce space between plots
+par(mai = c(0.95, 0.85, 0.3, 0.3))  # Adjust as needed
+par(cex.lab = 1.5, font.lab = 2, cex.axis = 1.2, cex.main = 1.5, cex.sub = 1.2)  # Larger and bold labels, axis text, and title
+# Type I error
+plot(nvec, error$Standard.Normal,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.1), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I error rates")
+lines(nvec, error$Uniform, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, error$t, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(nvec, error$Laplace, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, error$Contaminated, type = "o", lty = 5, pch = 5, col = "grey", lwd = 3)
+abline(h = 0.05)
+title(main = "Unconditional Type I error")
+legend("topright", legend=c("Normal", "Uniform", "t", "Laplace", "Contaminated"), lwd = 3,
+       col=c("red", "blue", "green",  "orange", "grey"), lty = 1:4, text.font = 2, pch =1:4, cex = 1.2 ,title = "Type I error Rates")
+
+plot(nvec, error$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.75), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I error rates")
+lines(nvec, error$Chi.Square, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, error$Gamma, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(nvec, error$Weibull, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, error$LogNormal, type = "o", lty = 5, pch = 5, col = "grey", lwd = 3)
+lines(nvec, error$Pareto, type = "o", lty = 5, pch = 5, col = "pink", lwd = 3)
+abline(h = 0.05)
+title(main = "Unconditional Type I error")
+legend("topleft", legend=c("Exponential","Chi-squared", "Gamma", "Weibul", "Lognormal", "Pareto"), lwd = 3,
+       col=c("red", "blue", "green",  "orange", "grey", "pink"), lty = 1:5, text.font = 2, pch =1:5, cex = 1.2, title = "Type I error Rates")
+
+# Conditional Type i error
+plot(nvec, errorConditional$Standard.Normal,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.1), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I errorConditional rates")
+lines(nvec, errorConditional$Uniform, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, errorConditional$t, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(nvec, errorConditional$Laplace, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, errorConditional$Contaminated, type = "o", lty = 5, pch = 5, col = "grey", lwd = 3)
+abline(h = 0.05)
+title(main = "Condition Type I error")
+legend("topright", legend=c("Normal", "Uniform", "t", "Laplace", "Contaminated"), lwd = 3,
+       col=c("red", "blue", "green",  "orange", "grey"), lty = 1:4, text.font = 2, pch =1:4, cex = 1.2 ,title = "Type I error Rates")
+
+plot(nvec, errorConditional$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.75), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I errorConditional rates")
+lines(nvec, errorConditional$Chi.Square, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, errorConditional$Gamma, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(nvec, errorConditional$Weibull, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, errorConditional$LogNormal, type = "o", lty = 5, pch = 5, col = "grey", lwd = 3)
+lines(nvec, errorConditional$Pareto, type = "o", lty = 5, pch = 5, col = "pink", lwd = 3)
+abline(h = 0.05)
+title(main = "Condition Type I error")
+legend("topleft", legend=c("Exponential","Chi-squared", "Gamma", "Weibul", "Lognormal", "Pareto"), lwd = 3,
+       col=c("red", "blue", "green",  "orange", "grey", "pink"), lty = 1:5, text.font = 2, pch =1:5, cex = 1.2, title = "Type I error Rates")
+
+# Two-Stage
+plot(nvec, errorTwoStage$Standard.Normal,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.1), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I errorTwoStage rates")
+lines(nvec, errorTwoStage$Uniform, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, errorTwoStage$t, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(nvec, errorTwoStage$Laplace, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, errorTwoStage$Contaminated, type = "o", lty = 5, pch = 5, col = "grey", lwd = 3)
+abline(h = 0.05)
+title(main = "Two -Stage Type I error")
+legend("topright", legend=c("Normal", "Uniform", "t", "Laplace", "Contaminated"), lwd = 3,
+       col=c("red", "blue", "green",  "orange", "grey"), lty = 1:4, text.font = 2, pch =1:4, cex = 1.2 ,title = "Type I error Rates")
+
+plot(nvec, errorTwoStage$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.75), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I errorTwoStage rates")
+lines(nvec, errorTwoStage$Chi.Square, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, errorTwoStage$Gamma, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(nvec, errorTwoStage$Weibull, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, errorTwoStage$LogNormal, type = "o", lty = 5, pch = 5, col = "grey", lwd = 3)
+lines(nvec, errorTwoStage$Pareto, type = "o", lty = 5, pch = 5, col = "pink", lwd = 3)
+abline(h = 0.05)
+title(main = "Two -Stage Type I error")
+legend("topleft", legend=c("Exponential","Chi-squared", "Gamma", "Weibul", "Lognormal", "Pareto"), lwd = 3,
+       col=c("red", "blue", "green",  "orange", "grey", "pink"), lty = 1:5, text.font = 2, pch =1:5, cex = 1.2, title = "Type I error Rates")
+```
+
+
+
+### Two Sample Case
+```{r}
+rm(list = ls())
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/TYPE I ERROR RATES/Selective Inference Type I error/TwoSampleTypeI.errorRate.RData")
+error <- data.frame(TypeI.errorRate)
+
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/TYPE I ERROR RATES/Selective Inference Type I error/TwoSampleTwoStageTypeI.errorRate.RData")
+errorTwoStage <- data.frame(TypeI.errorRate)
+```
+
+
+
+```{r, fig.height= 10, fig.width= 10}
+
+par(mfrow = c(2,2))
+# Adjust margins to reduce space between plots
+par(mai = c(0.95, 0.85, 0.3, 0.3))  # Adjust as needed
+par(cex.lab = 1.5, font.lab = 2, cex.axis = 1.2, cex.main = 1.5, cex.sub = 1.2)  # Larger and bold labels, axis text, and title
+# Type I error
+plot(nvec, error$Standard.Normal,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.2), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I error rates")
+lines(nvec, error$Uniform, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, error$t, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(nvec, error$Laplace, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, error$Contaminated, type = "o", lty = 5, pch = 5, col = "grey", lwd = 3)
+abline(h = 0.05)
+title(main = "Unconditional Type I error")
+legend("topright", legend=c("Normal", "Uniform", "t", "Laplace", "Contaminated"), lwd = 3,
+       col=c("red", "blue", "green",  "orange", "grey"), lty = 1:4, text.font = 2, pch =1:4, cex = 1.2 ,title = "Type I error Rates")
+
+plot(nvec, error$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.2), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I error rates")
+lines(nvec, error$Chi.Square, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, error$Gamma, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(nvec, error$Weibull, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, error$LogNormal, type = "o", lty = 5, pch = 5, col = "grey", lwd = 3)
+lines(nvec, error$Pareto, type = "o", lty = 5, pch = 5, col = "pink", lwd = 3)
+abline(h = 0.05)
+title(main = "Unconditional Type I error")
+legend("topleft", legend=c("Exponential","Chi-squared", "Gamma", "Weibul", "Lognormal", "Pareto"), lwd = 3,
+       col=c("red", "blue", "green",  "orange", "grey", "pink"), lty = 1:5, text.font = 2, pch =1:5, cex = 1.2, title = "Type I error Rates")
+
+
+# Two-Stage
+plot(nvec, errorTwoStage$Standard.Normal,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.2), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I errorTwoStage rates")
+lines(nvec, errorTwoStage$Uniform, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, errorTwoStage$t, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(nvec, errorTwoStage$Laplace, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, errorTwoStage$Contaminated, type = "o", lty = 5, pch = 5, col = "grey", lwd = 3)
+abline(h = 0.05)
+title(main = "Two -Stage Type I error")
+legend("topright", legend=c("Normal", "Uniform", "t", "Laplace", "Contaminated"), lwd = 3,
+       col=c("red", "blue", "green",  "orange", "grey"), lty = 1:4, text.font = 2, pch =1:4, cex = 1.2 ,title = "Type I error Rates")
+
+plot(nvec, errorTwoStage$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0, 0.2), xlim = range(nvec), xlab = "Sample Size", ylab = "Type I errorTwoStage rates")
+lines(nvec, errorTwoStage$Chi.Square, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, errorTwoStage$Gamma, type = "o", lty = 3, pch = 3, col = "green", lwd = 3)
+lines(nvec, errorTwoStage$Weibull, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, errorTwoStage$LogNormal, type = "o", lty = 5, pch = 5, col = "grey", lwd = 3)
+lines(nvec, errorTwoStage$Pareto, type = "o", lty = 5, pch = 5, col = "pink", lwd = 3)
+abline(h = 0.05)
+title(main = "Two -Stage Type I error")
+legend("topleft", legend=c("Exponential","Chi-squared", "Gamma", "Weibul", "Lognormal", "Pareto"), lwd = 3,
+       col=c("red", "blue", "green",  "orange", "grey", "pink"), lty = 1:5, text.font = 2, pch =1:5, cex = 1.2, title = "Type I error Rates")
+```
+
+
+

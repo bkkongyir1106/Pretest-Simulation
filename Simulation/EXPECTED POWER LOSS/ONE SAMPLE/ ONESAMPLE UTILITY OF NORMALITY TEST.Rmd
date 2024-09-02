@@ -19,7 +19,8 @@ knitr::opts_chunk$set(echo = TRUE, fig.height = 6.5, fig.width = 8)
 
 ```{r}
 rm(list = ls())
-load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Expected Power loss and Expected Inflation of Type I error/ONE SAMPLE/ONESAMPLE_POWERLOSS.RData")
+#load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Expected Power loss and Expected Inflation of Type I error/ONE SAMPLE/ONESAMPLE_POWERLOSS.RData")
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/EXPECTED POWER LOSS/ONE SAMPLE/ONESAMPLE_POWERLOSS.RData")
 #Probability of SW test
 data_prob_SW <-data.frame(prob.non.sig.SW.test_par)[-1,]
 # power loss
@@ -29,13 +30,14 @@ Expected_powerloss<-data_powerloss * data_prob_SW
 nvec= nvec[-1]
 ```
 
-### Power loss 
+### Power loss and Expected Power loss
 
-```{r}
+```{r, fig.height = 8, fig.width = 14}
 #par(mar = c(9, 4, 4, 1), xpd = TRUE)
-#par(mfrow = c(1,2))
+par(mfrow = c(1,2))
 # Adjust margins to reduce space between plots
-par(mai = c(0.75, 0.75, 0.2, 0.2))  # Adjust as needed
+par(mai = c(0.95, 0.98, 0.5, 0.5))  # Adjust as needed
+par(cex.lab = 1.5, font.lab = 2, cex.axis = 1.5, cex.main = 1.5, cex.sub = 1.2)  # Larger and bold labels, axis text, and title
 plot(nvec, data_powerloss$Standard.Normal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
      ylim = c(-0.02, 0.02), xlim = range(nvec), xlab = "Sample Size", ylab = "Power Loss")
 lines(nvec, data_powerloss$Uniform, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
@@ -45,11 +47,9 @@ lines(nvec, data_powerloss$Laplace, type = "o", lty = 4, pch = 4, col = "orange"
 abline(h = 0, lwd = 2, col = "black", xpd = F)
 title(main = "Power loss")
 legend("topright", legend=c("Normal", "Uniform", "t", "Laplace"), lwd = 3,
-       col=c( "red", "blue", "green", "orange"), lty =c(1, 2, 3, 4), pch = c(1, 2, 8), cex = 0.8, title = "Distribution")
-```
+       col=c( "red", "blue", "green", "orange"), lty =c(1, 2, 3, 4), pch = c(1, 2, 8), cex = 1.0, title = "Distribution")
 
-### Expected Power loss
-```{r}
+# Expected Powerloss
 plot(nvec, Expected_powerloss$Standard.Normal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3,
      ylim = c(-0.02, 0.02), xlim = range(nvec), xlab = "Sample Size", ylab = "Expected Power Loss")
 lines(nvec, Expected_powerloss$Uniform, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
@@ -58,15 +58,17 @@ lines(nvec, Expected_powerloss$Laplace, type = "o", lty = 4, pch = 4, col = "ora
 abline(h = 0, lwd = 2, col = "black", xpd = F)
 title(main = "Expected Power loss")
 legend("topright", legend=c("Laplace", "Normal", "t", "Contaminated"), lwd = 3,
-       col=c( "red", "blue", "green", "orange"), lty =c(1, 2, 3, 4), pch = c(1, 2, 8),cex = 0.8, title = "Distribution")
+       col=c( "red", "blue", "green", "orange"), lty =c(1, 2, 3, 4), pch = c(1, 2, 8),cex = 1.0,  title = "Distribution")
 
 ```
+
+
 
 ### Power of two-stage procedure
 
 ```{r}
 rm(list = ls())
-load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Expected Power loss and Expected Inflation of Type I error/ONE SAMPLE/OneSampleOverallPower20240607.RData")
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/EXPECTED POWER LOSS/ONE SAMPLE/OneSampleOverallPower20240607.RData")
 #Probability of SW test
 power.t.test <-data.frame(power_t_test_par)
 # power loss
@@ -77,73 +79,73 @@ overall_power<-data.frame(overall_power_par)
 
 ### Power loss 
 ```{r, fig.width=10, fig.height=10}
-# #par(mar = c(9, 4, 4, 1), xpd = TRUE)
-# par(mfrow = c(3,2))
-# # Adjust margins to reduce space between plots
-# par(mai = c(0.75, 0.75, 0.2, 0.2))  # Adjust as needed
-# ### overall power
-# plot(nvec, power.t.test$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
-#      ylim = c(0, 1), xlim = range(nvec), xlab = "Sample Size", ylab = "power of t test")
-# lines(nvec, power.t.test$Weibull, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
-# lines(nvec, power.t.test$Chi.Square, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
-# lines(nvec, power.t.test$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
-# lines(nvec, power.t.test$Gamma, type = "o", lty = 5, pch = 5, col = "purple", lwd = 3)
-# lines(nvec, power.t.test$Pareto, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
-# title(main = "power of t test")
-# legend("bottomright", legend=c("Exp", "Weibull", "Chisq", "LogNormal", "Gamma", "Pareto"), lwd = 3,
-#        col=c("red", "blue", "green", "orange", "purple", "grey"), lty = 1:6, pch =c(1,2,8, 4,5, 6), cex = 0.8, title = "Distribution")
-# 
-# plot(nvec, power.t.test$Laplace, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
-#      ylim = c(-0, 1), xlim = range(nvec), xlab = "Sample Size", ylab = "power of t test")
-# lines(nvec, power.t.test$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
-# lines(nvec, power.t.test$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
-# lines(nvec, power.t.test$Contaminated, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
-# lines(nvec, power.t.test$Uniform, type = "o", lty = 5, pch = 4, col = "purple", lwd = 3)
-# title(main = "power of t test")
-# legend("topleft", legend=c("Laplace", "Normal", "t", "Contaminated", "Uniform"), lwd = 3,
-#        col=c( "red", "blue", "green", "grey", "purple"), lty = 1:5,cex = 0.8, pch = c(1,2,8, 6, 4), title = "Distribution")
-# 
-# plot(nvec, power.U.test$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
-#      ylim = c(0, 1), xlim = range(nvec), xlab = "Sample Size", ylab = "power of U test")
-# lines(nvec, power.U.test$Weibull, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
-# lines(nvec, power.U.test$Chi.Square, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
-# lines(nvec, power.U.test$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
-# lines(nvec, power.U.test$Gamma, type = "o", lty = 5, pch = 5, col = "purple", lwd = 3)
-# lines(nvec, power.U.test$Pareto, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
-# title(main = "power of U test")
-# legend("bottomright", legend=c("Exp", "Weibull", "Chisq", "LogNormal", "Gamma", "Pareto"), lwd = 3,
-#        col=c("red", "blue", "green", "orange", "purple", "grey"), lty = 1:6, pch =c(1,2,8, 4,5, 6), cex = 0.8, title = "Distribution")
-# 
-# plot(nvec, power.U.test$Laplace, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
-#      ylim = c(-0, 1), xlim = range(nvec), xlab = "Sample Size", ylab = "power of U test")
-# lines(nvec, power.U.test$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
-# lines(nvec, power.U.test$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
-# lines(nvec, power.U.test$Contaminated, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
-# lines(nvec, power.U.test$Uniform, type = "o", lty = 5, pch = 4, col = "purple", lwd = 3)
-# title(main = "power of U test")
-# legend("topleft", legend=c("Laplace", "Normal", "t", "Contaminated", "Uniform"), lwd = 3,
-#        col=c( "red", "blue", "green", "grey", "purple"), lty = 1:5,cex = 0.8, pch = c(1,2,8, 6, 4), title = "Distribution")
-# 
-# plot(nvec, overall_power$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
-#      ylim = c(0, 1), xlim = range(nvec), xlab = "Sample Size", ylab = "overall power of test")
-# lines(nvec, overall_power$Weibull, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
-# lines(nvec, overall_power$Chi.Square, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
-# lines(nvec, overall_power$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
-# lines(nvec, overall_power$Gamma, type = "o", lty = 5, pch = 5, col = "purple", lwd = 3)
-# lines(nvec, overall_power$Pareto, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
-# title(main = "overall power of test")
-# legend("bottomright", legend=c("Exp", "Weibull", "Chisq", "LogNormal", "Gamma", "Pareto"), lwd = 3,
-#        col=c("red", "blue", "green", "orange", "purple", "grey"), lty = 1:6, pch =c(1,2,8, 4,5, 6), cex = 0.8, title = "Distribution")
-# 
-# plot(nvec, overall_power$Laplace, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
-#      ylim = c(-0, 1), xlim = range(nvec), xlab = "Sample Size", ylab = "overall power of test")
-# lines(nvec, overall_power$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
-# lines(nvec, overall_power$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
-# lines(nvec, overall_power$Contaminated, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
-# lines(nvec, overall_power$Uniform, type = "o", lty = 5, pch = 4, col = "purple", lwd = 3)
-# title(main = "overall power of test")
-# legend("topleft", legend=c("Laplace", "Normal", "t", "Contaminated", "Uniform"), lwd = 3,
-#        col=c( "red", "blue", "green", "grey", "purple"), lty = 1:5,cex = 0.8, pch = c(1,2,8, 6, 4), title = "Distribution")
+#par(mar = c(9, 4, 4, 1), xpd = TRUE)
+par(mfrow = c(3,2))
+# Adjust margins to reduce space between plots
+par(mai = c(0.75, 0.75, 0.2, 0.2))  # Adjust as needed
+### overall power
+plot(nvec, power.t.test$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3,
+     ylim = c(0, 1), xlim = range(nvec), xlab = "Sample Size", ylab = "power of t test")
+lines(nvec, power.t.test$Weibull, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, power.t.test$Chi.Square, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, power.t.test$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, power.t.test$Gamma, type = "o", lty = 5, pch = 5, col = "purple", lwd = 3)
+lines(nvec, power.t.test$Pareto, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
+title(main = "power of t test")
+legend("bottomright", legend=c("Exp", "Weibull", "Chisq", "LogNormal", "Gamma", "Pareto"), lwd = 3,
+       col=c("red", "blue", "green", "orange", "purple", "grey"), lty = 1:6, pch =c(1,2,8, 4,5, 6), cex = 0.8, title = "Distribution")
+
+plot(nvec, power.t.test$Laplace, type = "o", lty = 1, pch = 1, col = "red", lwd = 3,
+     ylim = c(-0, 1), xlim = range(nvec), xlab = "Sample Size", ylab = "power of t test")
+lines(nvec, power.t.test$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, power.t.test$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, power.t.test$Contaminated, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
+lines(nvec, power.t.test$Uniform, type = "o", lty = 5, pch = 4, col = "purple", lwd = 3)
+title(main = "power of t test")
+legend("topleft", legend=c("Laplace", "Normal", "t", "Contaminated", "Uniform"), lwd = 3,
+       col=c( "red", "blue", "green", "grey", "purple"), lty = 1:5,cex = 0.8, pch = c(1,2,8, 6, 4), title = "Distribution")
+
+plot(nvec, power.U.test$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3,
+     ylim = c(0, 1), xlim = range(nvec), xlab = "Sample Size", ylab = "power of U test")
+lines(nvec, power.U.test$Weibull, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, power.U.test$Chi.Square, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, power.U.test$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, power.U.test$Gamma, type = "o", lty = 5, pch = 5, col = "purple", lwd = 3)
+lines(nvec, power.U.test$Pareto, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
+title(main = "power of U test")
+legend("bottomright", legend=c("Exp", "Weibull", "Chisq", "LogNormal", "Gamma", "Pareto"), lwd = 3,
+       col=c("red", "blue", "green", "orange", "purple", "grey"), lty = 1:6, pch =c(1,2,8, 4,5, 6), cex = 0.8, title = "Distribution")
+
+plot(nvec, power.U.test$Laplace, type = "o", lty = 1, pch = 1, col = "red", lwd = 3,
+     ylim = c(-0, 1), xlim = range(nvec), xlab = "Sample Size", ylab = "power of U test")
+lines(nvec, power.U.test$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, power.U.test$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, power.U.test$Contaminated, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
+lines(nvec, power.U.test$Uniform, type = "o", lty = 5, pch = 4, col = "purple", lwd = 3)
+title(main = "power of U test")
+legend("topleft", legend=c("Laplace", "Normal", "t", "Contaminated", "Uniform"), lwd = 3,
+       col=c( "red", "blue", "green", "grey", "purple"), lty = 1:5,cex = 0.8, pch = c(1,2,8, 6, 4), title = "Distribution")
+
+plot(nvec, overall_power$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3,
+     ylim = c(0, 1), xlim = range(nvec), xlab = "Sample Size", ylab = "overall power of test")
+lines(nvec, overall_power$Weibull, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, overall_power$Chi.Square, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, overall_power$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+lines(nvec, overall_power$Gamma, type = "o", lty = 5, pch = 5, col = "purple", lwd = 3)
+lines(nvec, overall_power$Pareto, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
+title(main = "overall power of test")
+legend("bottomright", legend=c("Exp", "Weibull", "Chisq", "LogNormal", "Gamma", "Pareto"), lwd = 3,
+       col=c("red", "blue", "green", "orange", "purple", "grey"), lty = 1:6, pch =c(1,2,8, 4,5, 6), cex = 0.8, title = "Distribution")
+
+plot(nvec, overall_power$Laplace, type = "o", lty = 1, pch = 1, col = "red", lwd = 3,
+     ylim = c(-0, 1), xlim = range(nvec), xlab = "Sample Size", ylab = "overall power of test")
+lines(nvec, overall_power$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, overall_power$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, overall_power$Contaminated, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
+lines(nvec, overall_power$Uniform, type = "o", lty = 5, pch = 4, col = "purple", lwd = 3)
+title(main = "overall power of test")
+legend("topleft", legend=c("Laplace", "Normal", "t", "Contaminated", "Uniform"), lwd = 3,
+       col=c( "red", "blue", "green", "grey", "purple"), lty = 1:5,cex = 0.8, pch = c(1,2,8, 6, 4), title = "Distribution")
 ```
 
 
@@ -153,7 +155,7 @@ overall_power<-data.frame(overall_power_par)
 
 ```{r}
 rm(list = ls())
-load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Expected Power loss and Expected Inflation of Type I error/ONE SAMPLE/ONESAMPLE_EXPECTED_TYPE1_ERROR.RData")
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/EXPECTED POWER LOSS/ONE SAMPLE/ONESAMPLE_EXPECTED_TYPE1_ERROR.RData")
 #Probability of SW test
 nvec = nvec[-1]
 data_prob_SW <-data.frame(prob.non.sig.SW.test_par)[-1,]
@@ -163,7 +165,7 @@ data_error <-data.frame(inflation_error)[-1,]
 Expected_inflation_error<-data_error * data_prob_SW
 ```
 
-```{r}
+```{r, fig.height = 10, fig.width = 14}
 #par(mar = c(9, 4, 4, 1), xpd = TRUE)
 par(mfrow = c(2,2))
 # Adjust margins to reduce space between plots
@@ -221,7 +223,7 @@ legend("topright", legend=c("Laplace", "Normal", "t", "Contaminated"), lwd = 3,
 
 ```{r}
 rm(list = ls())
-load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Expected Power loss and Expected Inflation of Type I error/ONE SAMPLE/ONESAMPLE.OVERALL.TYPI.ERROR..RData")
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/EXPECTED POWER LOSS/ONE SAMPLE/ONESAMPLE.OVERALL.TYPI.ERROR..RData")
 #Probability of SW test
 TypeI.error.t.test <-data.frame(TypeI.error.t.test)
 # power loss
