@@ -1,9 +1,11 @@
-# clear working environment
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS %%%%%%%%%%%%%%%%%%%%%%%%%-----
+# # Un-comment this before submitting code to cluster
+# setwd("/home/kongyir")
+# source("/home/kongyir/User_defined_functions.R")
+# source("/home/kongyir/utility.R")
+
+# # clear working environment
 rm(list = ls())
-# Un-comment this before submitting code to cluster
-# setwd("/home/kongyir/spring2024/error")
-# source("/home/kongyir/spring2024/User_defined_functions.R")
-# source("/home/kongyir/spring2024/utility.R")
 # Set directories in local computer
 setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/AREA UNDER CURVE/TYPE I ERROR")
 source("~/Desktop/OSU/Research/Pretest-Simulation/functions/User_defined_functions.R")
@@ -35,7 +37,7 @@ close_cluster <- function(cl) {
 ## Set up the simulation parameters
 {
   N <- 1e3
-  B <- 1e4
+  B <- 1e3
   alpha <- 0.05
   dist_sum <- c("Standard Normal", "Exponential", "Chi-Square", "LogNormal")
   nvec <- c(8, 10, 15, 20, 25, 30, 50)
@@ -169,13 +171,19 @@ avg_time_wilcox
 avg_time_t_wilcox
 avg_time_perm
 
+# Area under Type I error curve
+area_t
+area_wilcox
+area_t_wilcox
+area_perm
 
 # Save Data
-save.image(paste0("OneSampleTypeI.errorRateAREA",".RData"))
+save.image(paste0("OneSampleTypeI.errorRateAUC",".RData"))
 
-# Write data to excel
-library(writexl)
-error_dataframe <- data.frame(TypeI.errorRate_t, TypeI.errorRate_wilcox, TypeI.errorRate_t_wilcox, TypeI.errorRate_perm)
-write_xlsx(error_dataframe, path = "OneSampleTypeI_error_ratesAREA.xlsx")
+# # Write data to excel
+# library(writexl)
+# error_dataframe <- data.frame(TypeI.errorRate_t, TypeI.errorRate_wilcox, TypeI.errorRate_t_wilcox, TypeI.errorRate_perm)
+# write_xlsx(error_dataframe, path = "OneSampleTypeI_error_rates.xlsx")
+
 
 

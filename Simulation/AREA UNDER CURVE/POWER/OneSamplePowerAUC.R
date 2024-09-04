@@ -7,7 +7,7 @@
 # # clear working environment
 rm(list = ls())
 # Set directories in local computer
-setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/AREA UNDER CURVE/TYPE I ERROR")
+setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/AREA UNDER CURVE/POWER")
 source("~/Desktop/OSU/Research/Pretest-Simulation/functions/User_defined_functions.R")
 source("~/Desktop/OSU/Research/Pretest-Simulation/functions/utility.R")
 
@@ -134,7 +134,7 @@ system.time({
 
 ## Output
 powrvec <- numeric(length(nvec) * length(dist_sum))
-power_t <- power_wilcox <- power_t_wilcox <- power_perm <- array(errorvec, dim = c(length(nvec), length(dist_sum)), dimnames = list(nvec, dist_sum))
+power_t <- power_wilcox <- power_t_wilcox <- power_perm <- array(powrvec, dim = c(length(nvec), length(dist_sum)), dimnames = list(nvec, dist_sum))
 avg_time_t <- avg_time_wilcox <- avg_time_t_wilcox <- avg_time_perm <- array(powrvec, dim = c(length(nvec), length(dist_sum)), dimnames = list(nvec, dist_sum))
 
 for (t in seq_along(nvec)) {

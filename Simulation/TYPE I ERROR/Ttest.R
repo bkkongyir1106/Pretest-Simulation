@@ -1,4 +1,4 @@
-N = 1000; alpa = 0.05
+N = 1000; alpha = 0.05
 samp = c(10, 20, 50)
 errort = errorw = NULL
 for(j in 1 : 3){

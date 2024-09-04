@@ -1,4 +1,5 @@
 # Required Libraries
+rm(list = ls())
 if(!require("pacman")) install.packages("pacman")
 pacman::p_load(e1071, tseries, nortest, infotheo, ineq, caret, pROC, ROCR, randomForest, evd, discretization, nnet, ggplot2)
 
@@ -84,7 +85,7 @@ data <- data[sample(nrow(data)), ]
 
 # Step 3: Split Data into Training and Test Sets
 set.seed(123)
-trainIndex <- createDataPartition(data$Label, p = .98, list = FALSE, times = 1)
+trainIndex <- createDataPartition(data$Label, p = .8, list = FALSE, times = 1)
 train_data <- data[trainIndex, ]
 test_data  <- data[-trainIndex, ]
 
@@ -156,4 +157,5 @@ models <- list(
 
 # Plot the ROC curves
 plot_roc_curve(models, test_data)
+
 
