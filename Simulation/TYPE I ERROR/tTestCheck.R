@@ -15,6 +15,20 @@ for(j in seq_along(samples)){
 }
 error
 
+# wilcoxon test
+error3 = NULL
+for(j in seq_along(samples)){
+  n = samples[j]
+  pvalw = numeric(N)
+  for(i in 1 : N){
+    x = rexp(n, rate = 3) - 1/3
+    #x = rnorm(n, 0, 1)
+    pvalw[i] = wilcox.test(x)$p.value
+  }
+  error3[j] = mean(pval < alpha)
+}
+error3
+
 # Two-stage procedure
 error1 = NULL
 for(j in seq_along(samples)){

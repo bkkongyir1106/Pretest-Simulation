@@ -52,7 +52,7 @@ calculate_test_statistic <- function(x, y) {
 
 # Function to compute the area under the curve using the trapezoidal rule
 compute_area <- function(x, y) {
-  (sum(diff(x) * (head(y, -1) + tail(y, -1)) / 2))/(max(sample_sizes) - min(sample_sizes))
+  (sum(diff(x) * (head(y, -1) + tail(y, -1)) / 2))/(max(nvec) - min(nvec))
 }
 
 
@@ -87,21 +87,23 @@ system.time({
         
         # Perform t-test/Wilcoxon test based on Shapiro-Wilk normality test
         time_t_wilcox[i] <- system.time({
-          if (shapiro.test(x)$p.value > alpha) {
+          if (shapiro.test(x)$p.value > alpha & shapiro.test(y)$p.value > alpha) {
             pvals[i] <- t.test(x, y + d)$p.value
           } else {
-            pvals[i] <- wilcox.test(x, y + d, mu = 0)$p.value
+            pvals[i] <- wilcox.test(x, y + d)$p.value
           }
         })["elapsed"]
         
         # Perform permutation test
+        data <- c(x, y + d)
         observe_stat <- calculate_test_statistic(x, y + d)
         time_perm[i] <- system.time({
           permuted_stat <- numeric(B)
           for (j in 1:B) {
-            index <- sample(c(-1, 1), length(x), replace = TRUE)
-            sample_data <- index * abs(x, y + d)
-            permuted_stat[j] <- calculate_test_statistic(sample_data)
+            sample_data <- sample(data)
+            sample_x <- sample_data[1:length(x)]
+            sample_y <- sample_data[(length(x) + 1):(length(x) + length(y))]
+            permuted_stat[j] <- calculate_test_statistic(sample_x, sample_y) 
           }
           pval_perm[i] <- mean(abs(permuted_stat) >= abs(observe_stat))
         })["elapsed"]
@@ -182,10 +184,10 @@ area_perm
 # Save Data
 save.image(paste0("TwoSamplepowerAUC",".RData"))
 
-# # Write data to excel
-# library(writexl)
-# power_dataframe <- data.frame(power_t, power_wilcox, power_t_wilcox, power_perm)
-# write_xlsx(power_dataframe, path = "TwoSamplepower_AUC.xlsx")
+# Write data to excel
+library(writexl)
+power_dataframe <- data.frame(power_t, power_wilcox, power_t_wilcox, power_perm)
+write_xlsx(power_dataframe, path = "TwoSamplepower_AUC.xlsx")
 
 
 
