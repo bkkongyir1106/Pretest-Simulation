@@ -158,4 +158,3 @@ models <- list(
 # Plot the ROC curves
 plot_roc_curve(models, test_data)
 
-
