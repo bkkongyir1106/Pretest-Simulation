@@ -39,7 +39,8 @@ close_cluster <- function(cl) {
   N <- 1e3
   B <- 1e3
   alpha <- 0.05
-  dist_sum <- c("Standard Normal", "Exponential", "Chi-Square", "LogNormal")
+  #dist_sum <- c("Standard Normal", "Exponential", "Chi-Square", "LogNormal")
+  dist_sum <- c("LogNormal")
   nvec <- c(8, 10, 15, 20, 25, 30, 50)
   d <- 0.5
 }
@@ -82,22 +83,24 @@ system.time({
         
         # Perform Wilcoxon test
         time_wilcox[i] <- system.time({
-          pval_wilcox[i] <- wilcox.test(x, y + d, mu = 0)$p.value
+          pval_wilcox[i] <- wilcox.test(x, y + d)$p.value
         })["elapsed"]
         
         # Perform t-test/Wilcoxon test based on Shapiro-Wilk normality test
+        N_t = 0
         time_t_wilcox[i] <- system.time({
           if (shapiro.test(x)$p.value > alpha & shapiro.test(y)$p.value > alpha) {
             pvals[i] <- t.test(x, y + d)$p.value
+            N_t = N_t + 1
           } else {
             pvals[i] <- wilcox.test(x, y + d)$p.value
           }
         })["elapsed"]
         
         # Perform permutation test
-        data <- c(x, y + d)
-        observe_stat <- calculate_test_statistic(x, y + d)
         time_perm[i] <- system.time({
+          data <- c(x, y + d)
+          observe_stat <- calculate_test_statistic(x, y + d)
           permuted_stat <- numeric(B)
           for (j in 1:B) {
             sample_data <- sample(data)
@@ -129,7 +132,8 @@ system.time({
         time_t = avg_time_t,
         time_wilcox = avg_time_wilcox,
         time_t_wilcox = avg_time_t_wilcox,
-        time_perm = avg_time_perm
+        time_perm = avg_time_perm,
+        p_sw = N_t/N
       )
     }
   
@@ -138,7 +142,7 @@ system.time({
 
 ## Output
 powrvec <- numeric(length(nvec) * length(dist_sum))
-power_t <- power_wilcox <- power_t_wilcox <- power_perm <- array(powrvec, dim = c(length(nvec), length(dist_sum)), dimnames = list(nvec, dist_sum))
+power_t <- power_wilcox <- power_t_wilcox <- power_perm <- p <- array(powrvec, dim = c(length(nvec), length(dist_sum)), dimnames = list(nvec, dist_sum))
 avg_time_t <- avg_time_wilcox <- avg_time_t_wilcox <- avg_time_perm <- array(powrvec, dim = c(length(nvec), length(dist_sum)), dimnames = list(nvec, dist_sum))
 
 for (t in seq_along(nvec)) {
@@ -154,6 +158,7 @@ for (t in seq_along(nvec)) {
     avg_time_wilcox[t, j] <- (sim_out[[t]][[j]]$time_wilcox)
     avg_time_t_wilcox[t, j] <- (sim_out[[t]][[j]]$time_t_wilcox)
     avg_time_perm[t, j] <- (sim_out[[t]][[j]]$time_perm)
+    p[t, j] <- sim_out[[t]][[j]]$p_sw
   }
 }
 
@@ -182,12 +187,12 @@ area_t_wilcox
 area_perm
 
 # Save Data
-save.image(paste0("TwoSamplepowerAUC",".RData"))
+#save.image(paste0("TwoSamplepowerAUC",".RData"))
 
 # Write data to excel
-library(writexl)
-power_dataframe <- data.frame(power_t, power_wilcox, power_t_wilcox, power_perm)
-write_xlsx(power_dataframe, path = "TwoSamplepower_AUC.xlsx")
+# library(writexl)
+# power_dataframe <- data.frame(power_t, power_wilcox, power_t_wilcox, power_perm)
+# write_xlsx(power_dataframe, path = "TwoSamplepower_AUC.xlsx")
 
 
 

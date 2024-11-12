@@ -25,76 +25,68 @@ set.seed(12345)
 
 ### Combine Plots
 ```{r, fig.height= 14, fig.width= 10}
-par(mfrow = c(4,2))
-# Adjust margins to reduce space between plots
-par(mai = c(0.95, 0.85, 0.3, 0.3))  # Adjust as needed
-par(cex.lab = 1.5, font.lab = 2, cex.axis = 1.2, cex.main = 1.5, cex.sub = 1.2)  # Larger and bold
-df = n - 1
-z <- seq(from = -3, to = 3, by = 0.01)
-# normal Distribution
-plot(z, dt(z, df = df), col = "red", type = "l", xlab = " ",  ylab = "Density",  lwd = 2, main = " ", sub = " ")
-title(main = "Density plots of t_18 and N(0,1)",sub = substitute(paste(bold("normal Dist"))),  cex = 2)
+# Set up a 4x2 grid layout
+par(mfrow = c(4, 2))
+
+# Adjust margins for plots and the area for the shared legend
+par(mai = c(0.95, 0.85, 0.3, 0.3))  # Adjust margins as needed
+par(cex.lab = 1.5, font.lab = 2, cex.axis = 1.2, cex.main = 1.5, cex.sub = 1.2)  # Customize text size
+
+df <- n - 1  # degrees of freedom for t-distribution
+z <- seq(from = -3, to = 3, by = 0.01)  # range for t-distribution
+
+# Plot 1: Normal Distribution
+plot(z, dt(z, df = df), col = "red", type = "l", lwd = 2, main = " ", sub = "normal Dist", xlab = " ", ylab = "Density")
 lines(density(norm_statistic), lwd = 2)
-abline(v=qt(0.025, df = df), col = "blue")
-abline(v=qt(0.975, df = df), col = "blue")
-legend("bottom", legend = c("theoretical", "empirical"), col = c("red", "black"), lty = 1, cex = 1, text.font = 2, lwd = 2, bty = "n", ncol=2, inset=c(0, -.22), xpd=TRUE)
+abline(v = qt(0.025, df = df), col = "blue")
+abline(v = qt(0.975, df = df), col = "blue")
 
-# Exponential Distribution
-plot(z, dt(z, df = df), col = "red",type = "l", lwd = 2, main = " ", sub = " " , xlab = " ",  ylab = "Density")
-title(main = "Density plots of t_18 and exp(1)", sub = substitute(paste(bold("Exponential Dist"))),  cex = 2)
-lines(density(e_statistic) , lwd = 2)
-abline(v=qt(0.025, df = df), col = "blue")
-abline(v=qt(0.975, df = df), col = "blue")
-legend("bottom", legend = c("theoretical", "empirical"), col = c("red", "black"), lty = 1, cex = 1, text.font = 2, lwd = 2, bty = "n", ncol=2, inset=c(0, -.22), xpd=TRUE)
+# Plot 2: Exponential Distribution
+plot(z, dt(z, df = df), col = "red", type = "l", lwd = 2, main = " ", sub = "Exponential Dist", xlab = " ", ylab = "Density")
+lines(density(e_statistic), lwd = 2)
+abline(v = qt(0.025, df = df), col = "blue")
+abline(v = qt(0.975, df = df), col = "blue")
 
-# t Distribution
-plot(z, dt(z, df = df), col = "red", type = "l", lwd = 2, main = " ", sub = " " , xlab = " ",  ylab = "Density")
-title(main = "Density plots of t_18 and t(3)", sub = substitute(paste(bold("t Dist"))),  cex = 2)
-lines(density(t_statistic) , lwd = 2)
-abline(v=qt(0.025, df = df), col = "blue")
-abline(v=qt(0.975, df = df), col = "blue")
-legend("bottom", legend = c("theoretical", "empirical"), col = c("red", "black"), lty = 1, cex = 1, text.font = 2, lwd = 2, bty = "n", ncol=2, inset=c(0, -.22), xpd=TRUE)
+# Plot 3: t Distribution
+plot(z, dt(z, df = df), col = "red", type = "l", lwd = 2, main = " ", sub = "t Dist", xlab = " ", ylab = "Density")
+lines(density(t_statistic), lwd = 2)
+abline(v = qt(0.025, df = df), col = "blue")
+abline(v = qt(0.975, df = df), col = "blue")
 
-# uniform Distribution
-plot(z, dt(z, df = df), col = "red",  type = "l", lwd = 2, main = " ", sub = " " , xlab = " ",  ylab = "Density")
-title(main = "Density plots of t_18 and U(0,1)", sub = substitute(paste(bold("Uniform Dist"))),  cex = 2)
-lines(density(u_statistic) , lwd = 2)
-abline(v=qt(0.025, df = df), col = "blue")
-abline(v=qt(0.975, df = df), col = "blue")
-legend("bottom", legend = c("theoretical", "empirical"), col = c("red", "black"), lty = 1, cex = 1, text.font = 2, lwd = 2, bty = "n", ncol=2, inset=c(0, -.22), xpd=TRUE)
+# Plot 4: Uniform Distribution
+plot(z, dt(z, df = df), col = "red", type = "l", lwd = 2, main = " ", sub = "Uniform Dist", xlab = " ", ylab = "Density")
+lines(density(u_statistic), lwd = 2)
+abline(v = qt(0.025, df = df), col = "blue")
+abline(v = qt(0.975, df = df), col = "blue")
 
-# chi-squared Distribution
-plot(z, dt(z, df = df), col = "red",  type = "l", lwd = 2, main = " ", sub = " " , xlab = " ",  ylab = "Density")
-title(main = "Density plots of t_18 and Chisq(7)",  sub = substitute(paste(bold("Chi-Square Dist"))),  cex = 2)
-lines(density(k_statistic) , lwd = 2)
-abline(v=qt(0.025, df = df), col = "blue")
-abline(v=qt(0.975, df = df ), col = "blue")
-legend("bottom", legend = c("theoretical", "empirical"), col = c("red", "black"), lty = 1, cex = 1, text.font = 2, lwd = 2, bty = "n", ncol=2, inset=c(0, -.22), xpd=TRUE)
+# Plot 5: Chi-Squared Distribution
+plot(z, dt(z, df = df), col = "red", type = "l", lwd = 2, main = " ", sub = "Chi-Square Dist", xlab = " ", ylab = "Density")
+lines(density(k_statistic), lwd = 2)
+abline(v = qt(0.025, df = df), col = "blue")
+abline(v = qt(0.975, df = df), col = "blue")
 
-# weibull Distribution
-plot(z, dt(z, df = df), col = "red" , type = "l", lwd = 2, main = " ", sub = " " , xlab = " ",  ylab = "Density")
-title(main = "Density plots of t_18 and Weibull(1, 2)", sub = substitute(paste(bold("Weibull Dist"))),  cex = 2)
-lines(density(w_statistic) , lwd = 2)
-abline(v=qt(0.025, df = df ), col = "blue")
-abline(v=qt(0.975, df = df ), col = "blue")
-legend("bottom", legend = c("theoretical", "empirical"), col = c("red", "black"), lty = 1, cex = 1, text.font = 2, lwd = 2, bty = "n", ncol=2, inset=c(0, -.22), xpd=TRUE)
+# Plot 6: Weibull Distribution
+plot(z, dt(z, df = df), col = "red", type = "l", lwd = 2, main = " ", sub = "Weibull Dist", xlab = " ", ylab = "Density")
+lines(density(w_statistic), lwd = 2)
+abline(v = qt(0.025, df = df), col = "blue")
+abline(v = qt(0.975, df = df), col = "blue")
 
-# gamma Distribution
-plot(z, dt(z, df = df), col = "red" , type = "l", lwd = 2, main = " ", sub = " " , xlab = " ",  ylab = "Density")
-title(main = "Density plots of t_18 and Gamma(3,0.1)", sub = substitute(paste(bold("Gamma Dist"))),  cex = 2)
-lines(density(g_statistic) , lwd = 2)
-abline(v=qt(0.025, df = df), col = "blue")
-abline(v=qt(0.975, df = df), col = "blue")
-legend("bottom", legend = c("theoretical", "empirical"), col = c("red", "black"), lty = 1, cex = 1, text.font = 2, lwd = 2, bty = "n", ncol=2, inset=c(0, -.22), xpd=TRUE)
+# Plot 7: Gamma Distribution
+plot(z, dt(z, df = df), col = "red", type = "l", lwd = 2, main = " ", sub = "Gamma Dist", xlab = " ", ylab = "Density")
+lines(density(g_statistic), lwd = 2)
+abline(v = qt(0.025, df = df), col = "blue")
+abline(v = qt(0.975, df = df), col = "blue")
 
-# lognormal Distribution
-plot(z, dt(z, df = df), col = "red" , type = "l", lwd = 2, main = " ", sub = " " , xlab = " ",  ylab = "Density")
-title(main = "Density plots of t_18 and logN(0,1)", sub = substitute(paste(bold("Lognormal Dist"))),  cex = 2)
+# Plot 8: Lognormal Distribution
+plot(z, dt(z, df = df), col = "red", type = "l", lwd = 2, main = " ", sub = "Lognormal Dist", xlab = " ", ylab = "Density")
 lines(density(log_statistic), lwd = 2)
-abline(v=qt(0.025, df = df), col = "blue")
-abline(v=qt(0.975, df = df), col = "blue")
-legend("bottom", legend = c("theoretical ", "empirical"), col = c("red", "black"), lty = 1, cex = 1, text.font = 2, lwd = 3, bty = "n", ncol=2, inset=c(0, -.22), xpd=TRUE)
+abline(v = qt(0.025, df = df), col = "blue")
+abline(v = qt(0.975, df = df), col = "blue")
 
+# Add a shared legend outside the grid
+par(fig = c(0, 1, 0, 1), mai = c(2, 2, 2, 2), mar = c(0, 0, 0, 0), new = TRUE)
+plot(0, 0, type = "n", axes = FALSE, xlab = "", ylab = "")
+legend("bottom", legend = c("theoretical", "empirical"), col = c("red", "black"), lty = 1, lwd = 2, cex = 1.5, ncol = 2, xpd = TRUE, bty = "n", inset = c(0, -0.15))
 
 ```
 

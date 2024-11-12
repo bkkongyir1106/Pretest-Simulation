@@ -7,7 +7,8 @@ pacman::p_load(e1071, tseries, nortest, infotheo, ineq, caret, pROC, ROCR, rando
 rm(list = ls())
 # Set directories in local computer
 setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/MACHINE LEARNING APPROACH")
-source("~/Desktop/OSU/Research/Pretest-Simulation/Simulation/MACHINE LEARNING APPROACH/fun.R")
+#source("~/Desktop/OSU/Research/Pretest-Simulation/Simulation/MACHINE LEARNING APPROACH/fun.R")
+source("~/Desktop/OSU/Research/Pretest-Simulation/Simulation/MACHINE LEARNING APPROACH/generate_data.R")
 
 calculate_zero_crossing_rate <- function(samples) {
   zero_crossings <- sum(diff(samples > 0))
@@ -68,15 +69,18 @@ generate_data <- function(n_samples, n_per_sample, dist = "normal", label) {
 
 # Generate data
 set.seed(123)
-normal_data <- generate_data(1000, 10, "normal", "Normal")
-
+normal <- generate_data(100, 10, "normal", "Normal")
+stdnormal <- generate_data(100, 10, "Standard Normal", "Normal")
 lognorma <- generate_data(100, 10,  "LogNormal", "Non_Normal")
 chisq_data <- generate_data(100, 10, "Chi-Square", "Non_Normal")
 exp_data <- generate_data(100, 10, "Exponential", "Non_Normal")
-#Weibull <- generate_data(100, 10, "Weibull", "Non_Normal")
+Weibull <- generate_data(100, 10, "Weibull", "Non_Normal")
 Pareto <- generate_data(100, 10, "Pareto", "Non_Normal")
+Uniform <- generate_data(100, 10, "Uniform", "Non_Normal")
 
-non_normal_data <- rbind(lognorma, chisq_data, exp_data, Pareto)
+# combine data
+normal_data <- rbind(normal, stdnormal)
+non_normal_data <- rbind(Uniform, chisq_data, Weibull, exp_data, Pareto)
 
 # Combine and shuffle data, excluding entropy and tail index columns
 data <- rbind(normal_data, non_normal_data)
@@ -163,3 +167,42 @@ print(rf_var_imp)
 
 # Plot the Variable Importance
 plot(rf_var_imp, main = "Variable Importance - Random Forest")
+
+
+# Generate validation data
+set.seed(123)
+normal <- generate_data(100, 10, "normal", "Normal")
+stdnormal <- generate_data(100, 10, "Standard Normal", "Normal")
+lognormal <- generate_data(100, 10,  "LogNormal", "Non_Normal")
+Uniform <- generate_data(100, 10, "Uniform", "Non_Normal")
+Weibull <- generate_data(100, 10, "Weibull", "Non_Normal")
+Pareto <- generate_data(100, 10, "Pareto", "Non_Normal")
+datax = generate_data(100, 10, "Laplace", "Non_Normal")
+# Combine the validation data
+validation_data <- rbind(normal, datax)
+
+# Shuffle the validation data
+validation_data <- validation_data[sample(nrow(validation_data)), ]
+
+# Ensure that Label is a factor in the validation data
+validation_data$Label <- factor(validation_data$Label, levels = levels(train_data$Label))
+
+# Predict on validation data using trained models
+log_pred_val <- predict(log_model, newdata = validation_data)
+rf_pred_val <- predict(rf_model, newdata = validation_data)
+ann_pred_val <- predict(ann_model, newdata = validation_data)
+
+# Convert predictions to factors with the same levels as the true labels
+log_pred_val <- factor(log_pred_val, levels = levels(validation_data$Label))
+rf_pred_val <- factor(rf_pred_val, levels = levels(validation_data$Label))
+ann_pred_val <- factor(ann_pred_val, levels = levels(validation_data$Label))
+
+# Confusion Matrix for validation data
+log_conf_matrix_val <- confusionMatrix(log_pred_val, validation_data$Label)
+rf_conf_matrix_val <- confusionMatrix(rf_pred_val, validation_data$Label)
+ann_conf_matrix_val <- confusionMatrix(ann_pred_val, validation_data$Label)
+
+# Print the validation confusion matrices
+print(log_conf_matrix_val)
+print(rf_conf_matrix_val)
+print(ann_conf_matrix_val)

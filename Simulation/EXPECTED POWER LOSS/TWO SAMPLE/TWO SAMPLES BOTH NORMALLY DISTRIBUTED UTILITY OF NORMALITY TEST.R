@@ -71,7 +71,7 @@ system.time({
           # Permutation test
           observed_statistic <- calculate_test_statistic(x, y + d)
           permuted_statistics <- rep(0, P)
-          for (l in 1:P) { # sample data
+          for (l in 1 : P) { 
             sampled_data <- sample(c(x, y + d))
             permuted_data1 <- sampled_data[1:length(x)]
             permuted_data2 <- sampled_data[(length(x) + 1):(length(x) + length(y))]

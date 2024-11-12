@@ -49,8 +49,7 @@ generate_data <- function(n, dist){
   }
   return(x)
 }
-
-#Apply different tests
+#%%%%%%%%%%% Apply different Normality tests %%%%%%%%%%%%%%%
 generate_tests <- function(x, test){
   if(test == "KS"){
     output <- lillie.test(x)
@@ -76,6 +75,140 @@ generate_tests <- function(x, test){
   if(test == "CHISQ"){
     output <- chisq.test(x)
   }
-  
 return(output)
 }
+
+# %%%%%%%%%%%% calculate one-sample  test statistic %%%%%%%%%%%%% 
+OneSample_test_statistic <- function(x) {
+  return((mean(x) * sqrt(length(x))) / sd(x))
+}
+
+# %%%%%%%%%%%% calculate two-sample  test statistic %%%%%%%%%%%%% 
+TwoSample_test_statistic <- function(x, y) {
+  return((mean(x) - mean(y))/sqrt(var(x)/length(x) + var(y)/length(y)))
+}
+
+# Function to compute the area under the curve using the trapezoidal rule
+compute_area <- function(x, y) {
+  (sum(diff(x) * (head(y, -1) + tail(y, -1)) / 2)) / (max(nvec) - min(nvec))
+}
+
+# OneSample Type I error Test Methods
+OneSample_test <- function(x, test){
+  if(test == "t"){
+    pval <- t.test(x)$p.value
+  }
+  if(test == "Wilcox"){
+    pval <- wilcox.test(x)$p.value
+  }
+  if(test == "t_Wilcox"){
+    if(shapiro.test(x)$p.value > alpha){
+      pval <- t.test(x)$p.value
+    }else{
+      pval <- wilcox.test(x)$p.value
+    }
+  }
+  if(test == "perm"){
+    # Perform permutation test
+    observe_stat <- OneSample_test_statistic(x)
+      permuted_stat <- numeric(B)
+      for (j in 1:B) {
+        index <- sample(c(-1, 1), length(x), replace = TRUE)
+        sample_data <- index * abs(x)
+        permuted_stat[j] <- OneSample_test_statistic(sample_data)
+      }
+      pval <- mean(abs(permuted_stat) >= abs(observe_stat))
+  }
+  return(pval)
+}
+#TwoSample Type I error Test Methods
+TwoSample_test <- function(x, y, test){
+  if(test == "t"){
+    pval <- t.test(x, y)$p.value
+  }
+  if(test == "Wilcox"){
+    pval <- wilcox.test(x, y)$p.value
+  }
+  if(test == "t_Wilcox"){
+    if(shapiro.test(x)$p.value > alpha & shapiro.test(y)$p.value > alpha){
+      pval <- t.test(x, y)$p.value
+    }else{
+      pval <- wilcox.test(x, y)$p.value
+    }
+  }
+  if(test == "perm"){
+    # Perform permutation test
+    observe_stat <- TwoSample_test_statistic(x, y)
+    permuted_stat <- numeric(B)
+    for (j in 1:B) {
+      sample_data <- sample(data)
+      sample_x <- sample_data[1:length(x)]
+      sample_y <- sample_data[(length(x) + 1):(length(x) + length(y))]
+      permuted_stat[j] <- TwoSample_test_statistic(sample_x, sample_y) 
+    }
+    pval <- mean(abs(permuted_stat) >= abs(observe_stat))
+  }
+  return(pval)
+}
+
+# %%%%%%%%%%%%%%%%%%%% POWER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# OneSample Power Test Methods
+OneSample_Power.test <- function(x, test){
+  if(test == "t"){
+    pval <- t.test(x + d)$p.value
+  }
+  if(test == "Wilcox"){
+    pval <- wilcox.test(x + d)$p.value
+  }
+  if(test == "t_Wilcox"){
+    if(shapiro.test(x)$p.value > alpha){
+      pval <- t.test(x + d)$p.value
+    }else{
+      pval <- wilcox.test(x + d)$p.value
+    }
+  }
+  if(test == "perm"){
+    # Perform permutation test
+    observe_stat <- OneSample_test_statistic(x + d)
+    permuted_stat <- numeric(B)
+    for (j in 1:B) {
+      index <- sample(c(-1, 1), length(x + d), replace = TRUE)
+      sample_data <- index * abs(x + d)
+      permuted_stat[j] <- OneSample_test_statistic(sample_data)
+    }
+    pval <- mean(abs(permuted_stat) >= abs(observe_stat))
+  }
+  return(pval)
+}
+#TwoSample Power Test Methods
+TwoSample_Power.test <- function(x, y, test){
+  if(test == "t"){
+    pval <- t.test(x, y + d)$p.value
+  }
+  if(test == "Wilcox"){
+    pval <- wilcox.test(x, y + d)$p.value
+  }
+  if(test == "t_Wilcox"){
+    if(shapiro.test(x)$p.value > alpha & shapiro.test(y)$p.value > alpha){
+      pval <- t.test(x, y + d)$p.value
+    }else{
+      pval <- wilcox.test(x, y + d)$p.value
+    }
+  }
+  if(test == "perm"){
+    # Perform permutation test
+    data <- c(x, y + d)
+    observe_stat <- TwoSample_test_statistic(x, y + d)
+    permuted_stat <- numeric(B)
+    for (j in 1:B) {
+      sample_data <- sample(data)
+      sample_x <- sample_data[1:length(x)]
+      sample_y <- sample_data[(length(x) + 1):(length(x) + length(y))]
+      permuted_stat[j] <- TwoSample_test_statistic(sample_x, sample_y) 
+    }
+    pval <- mean(abs(permuted_stat) >= abs(observe_stat))
+  }
+  return(pval)
+}
+
