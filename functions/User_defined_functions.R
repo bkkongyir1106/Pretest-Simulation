@@ -1,12 +1,9 @@
 # load necessary libraries
-library("nortest")
-library("dgof")
-library("dplyr")
-library(moments)
-library(tseries)
-library(LaplacesDemon)
-library(VGAM)
-#Generate data from different distribution but located similarly
+rm(list = ls())
+if(!require("pacman")) install.packages("pacman")
+pacman::p_load(e1071, tseries, dgof,  nortest, ggplot2, dplyr, LaplacesDemon, VGAM)
+
+#Generate data from different distribution 
 generate_data <- function(n, dist){
     if(dist == "Standard Normal"){ 
       x <- rnorm(n, mean = 0, sd = 1)
@@ -49,7 +46,8 @@ generate_data <- function(n, dist){
   }
   return(x)
 }
-#%%%%%%%%%%% Apply different Normality tests %%%%%%%%%%%%%%%
+
+## Normality tests Methods ###
 generate_tests <- function(x, test){
   if(test == "KS"){
     output <- lillie.test(x)
@@ -77,24 +75,22 @@ generate_tests <- function(x, test){
   }
 return(output)
 }
-
-# %%%%%%%%%%%% calculate one-sample  test statistic %%%%%%%%%%%%% 
+# calculate one-sample  test statistic #
 OneSample_test_statistic <- function(x) {
   return((mean(x) * sqrt(length(x))) / sd(x))
 }
-
-# %%%%%%%%%%%% calculate two-sample  test statistic %%%%%%%%%%%%% 
+# calculate two-sample  test statistic #
 TwoSample_test_statistic <- function(x, y) {
   return((mean(x) - mean(y))/sqrt(var(x)/length(x) + var(y)/length(y)))
 }
 
-# Function to compute the area under the curve using the trapezoidal rule
+# compute the area under the curve 
 compute_area <- function(x, y) {
   (sum(diff(x) * (head(y, -1) + tail(y, -1)) / 2)) / (max(nvec) - min(nvec))
 }
 
-# OneSample Type I error Test Methods
-OneSample_test <- function(x, test){
+# OneSample Type I error #
+OneSample_TypeI_test <- function(x, test, alpha){
   if(test == "t"){
     pval <- t.test(x)$p.value
   }
@@ -121,8 +117,8 @@ OneSample_test <- function(x, test){
   }
   return(pval)
 }
-#TwoSample Type I error Test Methods
-TwoSample_test <- function(x, y, test){
+# TwoSample Type I error #
+TwoSample_TypeI_error_test <- function(x, y, test, alpha){
   if(test == "t"){
     pval <- t.test(x, y)$p.value
   }
@@ -138,6 +134,7 @@ TwoSample_test <- function(x, y, test){
   }
   if(test == "perm"){
     # Perform permutation test
+    data <- c(x, y)
     observe_stat <- TwoSample_test_statistic(x, y)
     permuted_stat <- numeric(B)
     for (j in 1:B) {
@@ -151,10 +148,10 @@ TwoSample_test <- function(x, y, test){
   return(pval)
 }
 
-# %%%%%%%%%%%%%%%%%%%% POWER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-# OneSample Power Test Methods
-OneSample_Power.test <- function(x, test){
+# Calculate OneSample Power #
+d = 0.5
+B = 1000
+OneSample_Power.test <- function(x, test, alpha){
   if(test == "t"){
     pval <- t.test(x + d)$p.value
   }
@@ -173,7 +170,7 @@ OneSample_Power.test <- function(x, test){
     observe_stat <- OneSample_test_statistic(x + d)
     permuted_stat <- numeric(B)
     for (j in 1:B) {
-      index <- sample(c(-1, 1), length(x + d), replace = TRUE)
+      index <- sample(c(-1, 1), length(x), replace = TRUE)
       sample_data <- index * abs(x + d)
       permuted_stat[j] <- OneSample_test_statistic(sample_data)
     }
@@ -181,8 +178,8 @@ OneSample_Power.test <- function(x, test){
   }
   return(pval)
 }
-#TwoSample Power Test Methods
-TwoSample_Power.test <- function(x, y, test){
+# Calculate TwoSample Power #
+TwoSample_Power.test <- function(x, y, test, alpha){
   if(test == "t"){
     pval <- t.test(x, y + d)$p.value
   }
@@ -212,3 +209,87 @@ TwoSample_Power.test <- function(x, y, test){
   return(pval)
 }
 
+# Bootstrap: onesample Type I error
+n_bootstrap = 1e4
+bootstrap_Onesample.TypeI_error.test <- function(x) {
+  n1 <- length(x)
+  test.statistics0 <- OneSample_test_statistic(x)
+  test.statistics1 <- numeric(n_bootstrap)
+  for (i in 1:n_bootstrap) {
+    sample1 <- sample(x, n1, replace = TRUE)
+    test.statistics1[i] <- OneSample_test_statistic(sample1)
+  }
+  pval <- mean(abs(test.statistics1) >= abs(test.statistics0))
+  return(pval)
+}
+
+# Bootstrap: one sample power
+n_bootstrap = 1e4
+d = 0.5
+bootstrap_Onesample.power.test <- function(x) {
+  n1 <- length(x)
+  test.statistics0 <- OneSample_test_statistic(x + d)
+  test.statistics1 <- numeric(n_bootstrap)
+  
+  for (i in 1:n_bootstrap) {
+    sample1 <- sample(x + d, n1, replace = TRUE)
+    test.statistics1[i] <- OneSample_test_statistic(sample1)
+  }
+  
+  pval <- mean(abs(test.statistics1) >= abs(test.statistics0))
+  return(pval)
+}
+
+# Bootstrap: two samples Type I error
+n_bootstrap = 1e4
+bootstrap_twosample.TypeI_error.test <- function(x, y) {
+  n1 <- length(x)
+  n2 <- length(y)
+  test.statistics0 <- TwoSample_test_statistic(x, y)
+  test.statistics1 <- numeric(n_bootstrap)
+  for (i in 1:n_bootstrap) {
+    sample1 <- sample(x, n1, replace = TRUE)
+    sample2 <- sample(y, n2, replace = TRUE)
+    test.statistics1[i] <- TwoSample_test_statistic(sample1, sample2)
+  }
+  
+  pval <- mean(abs(test.statistics1) >= abs(test.statistics0))
+  return(pval)
+}
+
+# Bootstrap: two samples Power
+n_bootstrap = 1e4
+d = 0.5
+bootstrap_twosample.power.test <- function(x, y) {
+  n1 <- length(x)
+  n2 <- length(y)
+  test.statistics0 <- TwoSample_test_statistic(x, y + d)
+  test.statistics1 <- numeric(n_bootstrap)
+  for (i in 1:n_bootstrap) {
+    sample1 <- sample(x, n1, replace = TRUE)
+    sample2 <- sample(y + d, n2, replace = TRUE)
+    test.statistics1[i] <- TwoSample_test_statistic(sample1, sample2)
+  }
+  
+  pval <- mean(abs(test.statistics1) >= abs(test.statistics0))
+  return(pval)
+}
+# example
+bootstrap_twosample.TypeI_error.test(x = rnorm(100), y = rnorm(100))
+
+# Bootstrap: two samples Type I error
+n_bootstrap = 1e4
+bootstrap_twosample.TypeI_error.test <- function(x, y) {
+  n1 <- length(x)
+  n2 <- length(y)
+  test.statistics0 <- TwoSample_test_statistic(x, y)
+  test.statistics1 <- numeric(n_bootstrap)
+  for (i in 1:n_bootstrap) {
+    sample1 <- sample(x, n1, replace = TRUE)
+    sample2 <- sample(y, n2, replace = TRUE)
+    test.statistics1[i] <- TwoSample_test_statistic(sample1, sample2)
+  }
+  
+  pval <- mean(abs(test.statistics1) >= abs(test.statistics0))
+  return(pval)
+}

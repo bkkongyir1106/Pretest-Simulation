@@ -28,7 +28,7 @@ load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/
 ```
 
 #### One Sample Case
-```{r, fig.height= 12, fig.width= 12}
+```{r, fig.height= 12, fig.width= 12, warning=FALSE}
 # Convert to long-format data frame
 power_df1 <- as.data.frame(as.table(power_norm.test))
 colnames(power_df1) <- c("SampleSize", "Distribution", "Test", "Power")
@@ -37,22 +37,30 @@ power_df1$SampleSize <- as.numeric(as.character(power_df1$SampleSize))
 # Exclude Weibull distribution from the data
 power_df1 <- subset(power_df1, Distribution != "Weibull")
 
+# Define unique shapes for each test
+unique_tests <- unique(power_df1$Test)
+shapes <- c(16, 17, 18, 19, 15, 8) # Adjust the number of shapes if necessary
+shape_mapping <- setNames(shapes[seq_along(unique_tests)], unique_tests)
+
 # Create individual plots without legends
 plots <- list()
 for (dist in unique(power_df1$Distribution)[-1]) {
-  p <- ggplot(subset(power_df1, Distribution == dist), aes(x = SampleSize, y = Power, color = Test)) +
+  p <- ggplot(subset(power_df1, Distribution == dist), aes(x = SampleSize, y = Power, color = Test, shape = Test)) +
     geom_line() +
-    geom_point() +
+    geom_point(size = 3) + # Add shape mapping
+    scale_shape_manual(values = shape_mapping) + # Map shapes to tests
     ggtitle(paste("Power for", dist)) +
     theme_minimal() +
     theme(legend.position = "none") # Remove legend from individual plots
+  
   plots[[dist]] <- p
 }
 
 # Extract a plot to get the shared legend
-p_legend <- ggplot(subset(power_df1, Distribution == unique(power_df1$Distribution)[1]), aes(x = SampleSize, y = Power, color = Test)) +
+p_legend <- ggplot(subset(power_df1, Distribution == unique(power_df1$Distribution)[1]), aes(x = SampleSize, y = Power, color = Test, shape = Test)) +
   geom_line() +
-  geom_point() +
+  geom_point(size = 3) +
+  scale_shape_manual(values = shape_mapping) + # Consistent shape mapping
   theme_minimal() +
   theme(legend.position = "right") # Set legend position to the right for extraction
 
@@ -67,7 +75,5 @@ final_plot <- plot_grid(combined_plots, legend, rel_widths = c(3, 0.4))
 
 # Display the final plot
 print(final_plot)
-
 ```
-
 
