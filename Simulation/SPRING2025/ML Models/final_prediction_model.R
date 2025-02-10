@@ -1,10 +1,11 @@
 # Required Libraries
 rm(list = ls())
 if(!require("pacman")) install.packages("pacman")
-pacman::p_load(e1071, tseries, nortest,gbm, lawstat, infotheo, ineq, caret, pROC, ROCR, randomForest, evd, discretization, nnet, ggplot2)
+pacman::p_load(e1071, tseries, nortest, gbm, lawstat, infotheo, ineq, caret, pROC, ROCR, randomForest, evd, discretization, nnet, ggplot2)
 
 # Set directories 
 setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/MACHINE LEARNING APPROACH")
+
 # Read-in-external user-defined functions
 source("~/Desktop/OSU/Research/Pretest-Simulation/Simulation/MACHINE LEARNING APPROACH/fun.R")
 
@@ -36,19 +37,19 @@ calculate_shapiro_wilk <- function(samples) {
 
 # Shapiro-Francia Test
 calculate_shapiro_francia <- function(samples) {
-    FS.test <- lawstat::sf.test(samples)$statistic
-  return(as.numeric(FS.test))
+  SF.test <- lawstat::sf.test(samples)$statistic
+  return(as.numeric(SF.test))
 }
 
 # Liliefors Test 
 calculate_lilliefors <- function(samples) {
-    LF.test <- nortest::lillie.test(samples)$statistic
+  LF.test <- nortest::lillie.test(samples)$statistic
   return(as.numeric(LF.test))
 }
 
 # Cramer-von Mises Test
 calculate_cramer_von_mises <- function(samples) {
-    CVM.test <- nortest::cvm.test(samples)$statistic
+  CVM.test <- nortest::cvm.test(samples)$statistic
   return(as.numeric(CVM.test))
 }
 
@@ -89,6 +90,7 @@ calculate_cv <- function(samples) {
 calculate_energy <- function(samples) {
   return(sum(samples^2))
 }
+
 calculate_features <- function(samples) {
   skewness <- e1071::skewness(samples)
   kurtosis <- e1071::kurtosis(samples)
@@ -117,8 +119,8 @@ calculate_features <- function(samples) {
     Cramer_Von_Mises = cramer_von_mises,
     Sample_Size = sample_size,
     Range = range,
-    Coefficient_of_Variation = cv,
-    Energy = energy
+    Coefficient_of_Variation = cv
+    #Energy = energy
   )
   
   return(features)
@@ -148,169 +150,189 @@ generate_data <- function(samples_size, N, dist = "normal", label) {
   return(data)
 }
 
-# Generate data
-set.seed(123)
-normal_data <- generate_data(10, 3000, "normal", "Normal")
-lognormal <- generate_data(10, 500, "LogNormal", "Non_Normal")
-chisq_data <- generate_data(10, 500, "Chi-Square", "Non_Normal")
-exp_data <- generate_data(10, 500, "Exponential", "Non_Normal")
-Weibull <- generate_data(10, 500, "Weibull", "Non_Normal")
-Laplace <- generate_data(10, 500, "Laplace", "Non_Normal")
-Gamma <- generate_data(10, 500, "Gamma", "Non_Normal")
-#combine data
-non_normal_data <- rbind(lognormal,chisq_data, exp_data, Weibull, Laplace, Gamma)
-
-# Combine and shuffle data, excluding entropy and tail index columns
-data <- rbind(normal_data, non_normal_data)
-data <- data[sample(nrow(data)), ]
-
-# Step 3: Split Data into Training and Test Sets
-set.seed(123)
-trainIndex <- createDataPartition(data$Label, p = .7, list = FALSE, times = 1)
-train_data <- data[trainIndex, ]
-test_data  <- data[-trainIndex, ]
-
-# Ensure that Label is a factor
-train_data$Label <- as.factor(train_data$Label)
-test_data$Label <- as.factor(test_data$Label)
-
-# Normalize the training and test data
-Normalized_train_data <- normalize_data(train_data)
-Normalized_test_data <- normalize_data(test_data)
-
-# Step 4: Build Machine Learning Models
-# Logistic Regression Model
-log_model <- train(Label ~ ., data = train_data, method = "glm", family = "binomial")
-log_pred <- predict(log_model, newdata = test_data)
-log_pred <- factor(log_pred, levels = levels(test_data$Label))
-log_conf_matrix <- confusionMatrix(log_pred, test_data$Label)
-print(log_conf_matrix)
-
-# Random Forest Model
-rf_model <- train(Label ~ ., data = train_data, method = "rf")
-rf_pred <- predict(rf_model, newdata = test_data)
-rf_pred <- factor(rf_pred, levels = levels(test_data$Label))
-rf_conf_matrix <- confusionMatrix(rf_pred, test_data$Label)
-print(rf_conf_matrix)
-
-# ANN Model
-ann_model <- train(Label ~ ., data = train_data, method = "nnet", trace = FALSE)
-ann_pred <- predict(ann_model, newdata = test_data)
-ann_pred <- factor(ann_pred, levels = levels(test_data$Label))
-ann_conf_matrix <- confusionMatrix(ann_pred, test_data$Label)
-print(ann_conf_matrix)
-
-# Gradient Boosting Trees (GBM)
-gbm_model <- train(Label ~ ., data = train_data, method = "gbm", verbose = FALSE)
-gbm_pred <- predict(gbm_model, newdata = test_data)
-gbm_pred <- factor(gbm_pred, levels = levels(test_data$Label))
-gbm_conf_matrix <- confusionMatrix(gbm_pred, test_data$Label)
-print(gbm_conf_matrix)
-
-# Support Vector Machines (SVM)
-svm_model <- train(Label ~ ., data = train_data, method = "svmRadial", trControl = trainControl(classProbs = TRUE))
-svm_pred <- predict(svm_model, newdata = test_data)
-svm_pred <- factor(svm_pred, levels = levels(test_data$Label))
-svm_conf_matrix <- confusionMatrix(svm_pred, test_data$Label)
-print(svm_conf_matrix)
-
-# K-Nearest Neighbors (KNN)
-knn_model <- train(Label ~ ., data = train_data, method = "knn")
-knn_pred <- predict(knn_model, newdata = test_data)
-knn_pred <- factor(knn_pred, levels = levels(test_data$Label))
-knn_conf_matrix <- confusionMatrix(knn_pred, test_data$Label)
-print(knn_conf_matrix)
-
-# Create a function to plot ROC curves
-plot_roc_curve <- function(models, test_data) {
-  roc_curves <- list()
-  for (model_name in names(models)) {
-    model <- models[[model_name]]
-    pred_prob <- predict(model, newdata = test_data, type = "prob")[,2]
+# Track runtime of the entire code
+runtime <- system.time({
+  
+  # Generate data
+  set.seed(123)
+  normal_data <- generate_data(8, 2000, "normal", "Normal")
+  lognormal <- generate_data(8, 300, "LogNormal", "Non_Normal")
+  chisq_data <- generate_data(8, 300, "Chi-Square", "Non_Normal")
+  exp_data <- generate_data(8, 300, "Exponential", "Non_Normal")
+  Weibull <- generate_data(8, 300, "Weibull", "Non_Normal")
+  Laplace <- generate_data(8, 300, "Laplace", "Non_Normal")
+  Gamma <- generate_data(8, 300, "Gamma", "Non_Normal")
+  
+  # Combine data
+  non_normal_data <- rbind(lognormal, chisq_data, exp_data, Weibull, Laplace, Gamma)
+  
+  # Combine and shuffle data, excluding entropy and tail index columns
+  data <- rbind(normal_data, non_normal_data)
+  data <- data[sample(nrow(data)), ]
+  
+  # Step 3: Split Data into Training and Test Sets
+  set.seed(123)
+  trainIndex <- createDataPartition(data$Label, p = .7, list = FALSE, times = 1)
+  train_data <- data[trainIndex, ]
+  test_data  <- data[-trainIndex, ]
+  
+  # Ensure that Label is a factor
+  train_data$Label <- as.factor(train_data$Label)
+  test_data$Label <- as.factor(test_data$Label)
+  
+  # Normalize the training and test data
+  Normalized_train_data <- normalize_data(train_data)
+  Normalized_test_data <- normalize_data(test_data)
+  
+  # Step 4: Build Machine Learning Models
+  # Logistic Regression Model
+  log_model <- train(Label ~ ., data = train_data, method = "glm", family = "binomial")
+  log_pred <- predict(log_model, newdata = test_data)
+  log_pred <- factor(log_pred, levels = levels(test_data$Label))
+  log_conf_matrix <- confusionMatrix(log_pred, test_data$Label)
+  print(log_conf_matrix)
+  
+  # Random Forest Model
+  rf_model <- train(Label ~ ., data = train_data, method = "rf")
+  rf_pred <- predict(rf_model, newdata = test_data)
+  rf_pred <- factor(rf_pred, levels = levels(test_data$Label))
+  rf_conf_matrix <- confusionMatrix(rf_pred, test_data$Label)
+  print(rf_conf_matrix)
+  
+  # ANN Model
+  ann_model <- train(Label ~ ., data = train_data, method = "nnet", trace = FALSE)
+  ann_pred <- predict(ann_model, newdata = test_data)
+  ann_pred <- factor(ann_pred, levels = levels(test_data$Label))
+  ann_conf_matrix <- confusionMatrix(ann_pred, test_data$Label)
+  print(ann_conf_matrix)
+  
+  # Gradient Boosting Trees (GBM)
+  gbm_model <- train(Label ~ ., data = train_data, method = "gbm", verbose = FALSE)
+  gbm_pred <- predict(gbm_model, newdata = test_data)
+  gbm_pred <- factor(gbm_pred, levels = levels(test_data$Label))
+  gbm_conf_matrix <- confusionMatrix(gbm_pred, test_data$Label)
+  print(gbm_conf_matrix)
+  
+  # Support Vector Machines (SVM)
+  svm_model <- train(Label ~ ., data = train_data, method = "svmRadial", trControl = trainControl(classProbs = TRUE))
+  svm_pred <- predict(svm_model, newdata = test_data)
+  svm_pred <- factor(svm_pred, levels = levels(test_data$Label))
+  svm_conf_matrix <- confusionMatrix(svm_pred, test_data$Label)
+  print(svm_conf_matrix)
+  
+  # K-Nearest Neighbors (KNN)
+  knn_model <- train(Label ~ ., data = train_data, method = "knn")
+  knn_pred <- predict(knn_model, newdata = test_data)
+  knn_pred <- factor(knn_pred, levels = levels(test_data$Label))
+  knn_conf_matrix <- confusionMatrix(knn_pred, test_data$Label)
+  print(knn_conf_matrix)
+  
+  # Create a function to plot ROC curves and compute AUC values
+  plot_roc_curve <- function(models, test_data) {
+    roc_curves <- list()
+    auc_values <- list()
+    for (model_name in names(models)) {
+      model <- models[[model_name]]
+      pred_prob <- predict(model, newdata = test_data, type = "prob")[,2]
       roc_curve <- roc(test_data$Label, pred_prob, levels = rev(levels(test_data$Label)))
       roc_curves[[model_name]] <- roc_curve
+      auc_values[[model_name]] <- auc(roc_curve)
+    }
+    # Plot ROC curves if available
+    if (length(roc_curves) > 0) {
+      print(ggroc(roc_curves) +
+              ggtitle("ROC Curves for Different Models") +
+              theme_minimal())
+    }
+    
+    # Return AUC values
+    return(auc_values)
   }
-  # Plot ROC curves if available
-  if (length(roc_curves) > 0) {
-    ggroc(roc_curves) +
-      ggtitle("ROC Curves for Different Models") +
-      theme_minimal()
-  }
-}
-# Store models in a list
-models <- list(
-  "Logistic Regression" = log_model,
-  "Random Forest" = rf_model,
-  "ANN" = ann_model,
-  "GBM" = gbm_model,
-  "SVM" = svm_model,
-  "KNN" = knn_model
-)
+  
+  # Store models in a list
+  models <- list(
+    "Logistic Regression" = log_model,
+    "Random Forest" = rf_model,
+    "ANN" = ann_model,
+    "GBM" = gbm_model,
+    "SVM" = svm_model,
+    "KNN" = knn_model
+  )
+  
+  # Plot the ROC curves 
+  auc_results <- plot_roc_curve(models, test_data)
+  # Print AUC values
+  print(auc_results)
+  
+  # Variable Importance Plot for Random Forest
+  rf_var_imp <- varImp(rf_model)
+  print(rf_var_imp)
+  
+  # Plot the Variable Importance
+  plot(rf_var_imp, main = "Variable Importance - Random Forest")
+  
+  # Generate data from distribution different from those 
+  # used to build the mode to  validate the models
+  set.seed(12345)
+  normal <- generate_data(8, 1000, "normal", "Normal")
+  Fdata <- generate_data(8, 300, "F", "Non_Normal")
+  gumbel_data <- generate_data(8, 300, "Gumbel", "Non_Normal")
+  logistic_data <- generate_data(8, 300, "logistic", "Non_Normal")
+  fake_normal <- generate_data(8, 300, "normal", "Non_Normal")
+  t <- generate_data(8, 300, "t", "Non_Normal")
+  # Combine the validation data
+  nonnormal.data <- rbind(Fdata, t)
+  validation_data <- rbind(normal, t)
+  
+  # Ensure that Label is a factor
+  validation_data$Label <- as.factor(validation_data$Label)
+  
+  # Normalize the training and test data
+  Normalized_train_data <- normalize_data(validation_data)
+  
+  # Shuffle the validation data
+  validation_data <- validation_data[sample(nrow(validation_data)), ]
+  
+  # Ensure Label is a factor in the validation data
+  validation_data$Label <- factor(validation_data$Label, levels = levels(validation_data$Label))
+  
+  # logistic Regression
+  log_pred_val <- predict(log_model, newdata = validation_data)
+  log_pred_val <- factor(log_pred_val, levels = levels(validation_data$Label))
+  log_conf_matrix_val <- confusionMatrix(log_pred_val, validation_data$Label)
+  print(log_conf_matrix_val)
+  
+  # Random Forest
+  rf_pred_val <- predict(rf_model, newdata = validation_data)
+  rf_pred_val <- factor(rf_pred_val, levels = levels(validation_data$Label))
+  rf_conf_matrix_val <- confusionMatrix(rf_pred_val, validation_data$Label)
+  print(rf_conf_matrix_val)
+  
+  # ANN 
+  ann_pred_val <- predict(ann_model, newdata = validation_data)
+  ann_pred_val <- factor(ann_pred_val, levels = levels(validation_data$Label))
+  ann_conf_matrix_val <- confusionMatrix(ann_pred_val, validation_data$Label)
+  print(ann_conf_matrix_val)
+  
+  # GB
+  gbm_pred_val <- predict(gbm_model, newdata = validation_data)
+  gbm_pred_val <- factor(gbm_pred_val, levels = levels(validation_data$Label))
+  gbm_conf_matrix_val <- confusionMatrix(gbm_pred_val, validation_data$Label)
+  print(gbm_conf_matrix_val)
+  
+  # SVM
+  svm_pred_val <- predict(svm_model, newdata = validation_data)
+  svm_pred_val <- factor(svm_pred_val, levels = levels(validation_data$Label))
+  svm_conf_matrix_val <- confusionMatrix(svm_pred_val, validation_data$Label)
+  print(svm_conf_matrix_val)
+  
+  # KNN
+  knn_pred_val <- predict(knn_model, newdata = validation_data)
+  knn_pred_val <- factor(knn_pred_val, levels = levels(validation_data$Label))
+  knn_conf_matrix_val <- confusionMatrix(knn_pred_val, validation_data$Label)
+  print(knn_conf_matrix_val)
+})
 
-# Plot the ROC curves
-plot_roc_curve(models, test_data)
+# Print the runtime
+print(runtime)
 
-# Variable Importance Plot for Random Forest
-rf_var_imp <- varImp(rf_model)
-print(rf_var_imp)
-
-# Plot the Variable Importance
-plot(rf_var_imp, main = "Variable Importance - Random Forest")
-
-
-# Generate data from distribution different from those 
-# used to build the mode to  validate the models
-set.seed(12345)
-normal <- generate_data(10, 1000, "normal", "Normal")
-lognormal <- generate_data(10, 300,  "LogNormal", "Non_Normal")
-Uniform <- generate_data(10, 300, "Uniform", "Non_Normal")
-Weibull <- generate_data(10, 300, "Weibull", "Non_Normal")
-Contaminated <- generate_data(10, 300, "Contaminated", "Non_Normal")
-
-# Combine the validation data
-nonnormal.data <- rbind(lognormal, Uniform, Contaminated, Weibull)
-validation_data <- rbind(normal, nonnormal.data)
-# Ensure that Label is a factor
-validation_data$Label <- as.factor(validation_data$Label)
-# Normalize the training and test data
-Normalized_train_data <- normalize_data(validation_data)
-# Shuffle the validation data
-validation_data <- validation_data[sample(nrow(validation_data)), ]
-# Ensure Label is a factor in the validation data
-validation_data$Label <- factor(validation_data$Label, levels = levels(validation_data$Label))
-
-# logistic Regression
-log_pred_val <- predict(log_model, newdata = validation_data)
-log_pred_val <- factor(log_pred_val, levels = levels(validation_data$Label))
-log_conf_matrix_val <- confusionMatrix(log_pred_val, validation_data$Label)
-print(log_conf_matrix_val)
-
-# Random Forest
-rf_pred_val <- predict(rf_model, newdata = validation_data)
-rf_pred_val <- factor(rf_pred_val, levels = levels(validation_data$Label))
-rf_conf_matrix_val <- confusionMatrix(rf_pred_val, validation_data$Label)
-print(rf_conf_matrix_val)
-
-# ANN 
-ann_pred_val <- predict(ann_model, newdata = validation_data)
-ann_pred_val <- factor(ann_pred_val, levels = levels(validation_data$Label))
-ann_conf_matrix_val <- confusionMatrix(ann_pred_val, validation_data$Label)
-print(ann_conf_matrix_val)
-
-# GB
-gbm_pred_val <- predict(gbm_model, newdata = validation_data)
-gbm_pred_val <- factor(gbm_pred_val, levels = levels(validation_data$Label))
-gbm_conf_matrix_val <- confusionMatrix(gbm_pred_val, validation_data$Label)
-print(gbm_conf_matrix_val)
-
-# SVM
-svm_pred_val <- predict(svm_model, newdata = validation_data)
-svm_pred_val <- factor(svm_pred_val, levels = levels(validation_data$Label))
-svm_conf_matrix_val <- confusionMatrix(svm_pred_val, validation_data$Label)
-print(svm_conf_matrix_val)
-
-#KNN
-knn_pred_val <- predict(knn_model, newdata = validation_data)
-knn_pred_val <- factor(knn_pred_val, levels = levels(validation_data$Label))
-knn_conf_matrix_val <- confusionMatrix(knn_pred_val, validation_data$Label)
-print(knn_conf_matrix_val)

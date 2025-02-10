@@ -1,115 +1,62 @@
 rm(list = ls())
 # Install required packages
 if(!require("pacman")) install.packages("pacman")
-pacman::p_load(e1071, tseries, nortest,gbm, lawstat, infotheo, ineq, caret, pROC, ROCR, randomForest, evd, discretization, nnet, ggplot2)
+pacman::p_load(e1071, tseries, nortest,gbm, tidyr, lawstat, infotheo, ineq, caret, pROC, ROCR, randomForest, evd, discretization, nnet, ggplot2)
 
 # Set working directory
-setwd("~/Desktop/OSU/Research/Pretest-Simulation/Simulation/Fall 2024/User Interface")
+setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/SPRING2025/User Interface")
 # Call in external functions
 source("~/Desktop/OSU/Research/Pretest-Simulation/functions/utility.R")
 source("~/Desktop/OSU/Research/Pretest-Simulation/functions/User_defined_functions.R")
-# Define the Generate_data function
-Generate_data <- function(datagen.type, n = NULL, dist = NULL, two_samples = FALSE, 
-                          priors = NULL, x_weights = NULL, y_weights = NULL, ...) {
-  
-  # generation via function
-  if (datagen.type == 1) {
-    if (!is.null(priors) && length(priors) == 2 && !is.null(x_weights) && dist == "mixture") {
-       x_weights <- x_weights / sum(x_weights)
-      # Generate data for x 
-      x <- vector(length = n)
-      for (i in 1:n) {
-        component <- sample(1:2, size = 1, prob = x_weights)
-        x[i] <- generate_data(1, priors[component])
-      }
-      if (two_samples) {
-          y_weights <- y_weights / sum(y_weights)
-        y <- vector(length = n)
-        for (i in 1:n) {
-          component <- sample(1:2, size = 1, prob = y_weights)
-          y[i] <- generate_data(1, priors[component])
-        }
-      } else {
-        y <- NULL  
-      }
-    } else {
-      x <- generate_data(n, dist)  
-      if (two_samples) {
-        y <- generate_data(n, dist)  
-      } else {
-        y <- NULL  
-      }
-    }
-  }
-  # loading from a CSV file
-  if (datagen.type == 2) {
-    # Prompt user to select a CSV file
-    file_path <- file.choose()  
-    data <- read.csv(file_path, header = TRUE)  
-    if (two_samples) {
-      if (ncol(data) < 2) {
-        stop("The CSV file should contain at least two columns for two samples (x and y).")
-      }
-      x <- data[[1]]  
-      y <- data[[2]]  
-    } else {
-      x <- data[[1]]  
-      y <- NULL       
-    }
-  }
-  
-  return(list(x = x, y = y))
-}
-# Define Calculate_power function
-Calculate_power <- function(alpha, N, twosamples = FALSE, dist, sample_size, test) {
-  powr_t <- numeric(length(sample_size))
+
+sample_size = c(8, 10, 15, 20, 25, 30, 50 )
+effect_size = 0.5
+twosamples = TRUE
+test = "t_Wilcox"
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Perform Downstream Test( t, Wilcox, t/Wilcox, permutation)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Calculate_power <- function(alpha, N, twosamples = FALSE, dist, sample_size, test, effect_size, B) {
+  results <- numeric(length(sample_size))
   for (j in seq_along(sample_size)) {
     n <- sample_size[j]
-    pval_t <- numeric(N)
+    pval <- numeric(N)
     for (i in 1:N) {
       if (twosamples) {
         data <- Generate_data(datagen.type = 1, n = n, dist = dist, two_samples = TRUE)
-        pval_t[i] <- TwoSample_Power.test(data$x, data$y, test, alpha)
+        pval[i] <- TwoSample.test(data$x, data$y + effect_size, test, alpha, B)
       } else {
         data <- Generate_data(datagen.type = 1, n = n, dist = dist, two_samples = FALSE)
-        pval_t[i] <- OneSample_Power.test(data$x, test, alpha)
+        pval[i] <- OneSample.test(data$x + effect_size, test, alpha, B)
       }
     }
-    powr_t[j] <- mean(pval_t < alpha)
+    results[j] <- mean(pval < alpha)
   }
-  return(powr_t)
+  return(results)
 }
-# Produce Power
+# Produce Results
 set.seed(12345)
-power_results <- Calculate_power(alpha = 0.05, N = 1000, twosamples = FALSE,
-        dist = "Uniform", sample_size = c(10, 20, 30, 50, 100), test = "t_Wilcox")
-power_results
-
-#Calculate Type I Error
-Calculate_TypeI_error <- function(alpha, N, twosamples = FALSE, dist, sample_size, test) {
-  error <- numeric(length(sample_size))
-  for (j in seq_along(sample_size)) {
-    n <- sample_size[j]
-    pval_t <- numeric(N)
-    for (i in 1:N) {
-      if (twosamples) {
-        data <- Generate_data(datagen.type = 1, n = n, dist = dist, two_samples = TRUE)
-        pval_t[i] <- TwoSample_TypeI_error_test(data$x, data$y, test, alpha)
-      } else {
-        data <- Generate_data(datagen.type = 1, n = n, dist = dist, two_samples = FALSE)
-        pval_t[i] <- OneSample_TypeI_test(data$x, test, alpha)
-      }
-    }
-    error[j] <- mean(pval_t < alpha)
-  }
-  return(error)
-}
-# Produce Type I error
-set.seed(12345)
-TypeI.error_results <- Calculate_TypeI_error(alpha = 0.05, N = 1000, twosamples = TRUE,
-                 dist = "Chi-Square", sample_size = c(10, 20, 30, 50, 100), test = "perm")
-TypeI.error_results
-
+results_test <- Calculate_power(alpha = 0.05, N = 1e4, twosamples = twosamples,
+        dist = "Uniform", sample_size = sample_size, test = test, effect_size = effect_size, B = 1e3)
+print(results_test)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Bootstrap Method
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# load data
 data_load = Generate_data(datagen.type = 2, n = NULL, dist = NULL, two_samples = TRUE)
-bootstrap_twosample.test(data_load$x, data_load$y)
+
+bootstrap_calulate <- function(twosamples = FALSE){
+  if(twosamples){
+    # Two sample case
+    results <- bootstrap_two_sample(x1 = data_load$x, x2 = data_load$y, effect_size = effect_size, alpha = 0.05,  n_bootstrap =1e4, sample_size = sample_size)
+  }else{
+    # One sample case
+    results <- bootstrap_two_sample(x = data_load$x, effect_size = effect_size, alpha = 0.05,  n_bootstrap =1e4, sample_size = sample_size)
+  }
+  return(results)
+}
+# Produce Results
+set.seed(12345)
+Boot_results <- bootstrap_calulate(twosamples = twosamples)
+print(Boot_results)
+
