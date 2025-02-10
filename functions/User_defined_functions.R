@@ -47,7 +47,66 @@ generate_data <- function(n, dist){
   return(x)
 }
 
-## Normality tests Methods ###
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Define the functions to generate data from either a specific, a mixture 
+# distribution of load from a source file
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Generate_data <- function(datagen.type, n = NULL, dist = NULL, two_samples = FALSE, 
+                          priors = NULL, x_weights = NULL, y_weights = NULL, ...) {
+  
+  # generation via function
+  if (datagen.type == 1) {
+    if (!is.null(priors) && length(priors) == 2 && !is.null(x_weights) && dist == "mixture") {
+      x_weights <- x_weights / sum(x_weights)
+      # Generate data for x 
+      x <- vector(length = n)
+      for (i in 1:n) {
+        component <- sample(1:2, size = 1, prob = x_weights)
+        x[i] <- generate_data(1, priors[component])
+      }
+      if (two_samples) {
+        y_weights <- y_weights / sum(y_weights)
+        # Generate data for y
+        y <- vector(length = n)
+        for (i in 1:n) {
+          component <- sample(1:2, size = 1, prob = y_weights)
+          y[i] <- generate_data(1, priors[component])
+        }
+      } else {
+        y <- NULL  
+      }
+    } else {
+      x <- generate_data(n, dist)  
+      if (two_samples) {
+        y <- generate_data(n, dist)  
+      } else {
+        y <- NULL  
+      }
+    }
+  }
+  # loading from a CSV file
+  if (datagen.type == 2) {
+    # Prompt user to select a CSV file
+    file_path <- file.choose()  
+    data <- read.csv(file_path, header = TRUE)  
+    if (two_samples) {
+      if (ncol(data) < 2) {
+        stop("The CSV file should contain at least two columns for two samples (x and y).")
+      }
+      x <- data[[1]]  
+      y <- data[[2]]  
+    } else {
+      x <- data[[1]]  
+      y <- NULL       
+    }
+  }
+  
+  return(list(x = x, y = y))
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Define function to perform different Normality tests
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 generate_tests <- function(x, test){
   if(test == "KS"){
     output <- lillie.test(x)
@@ -75,6 +134,10 @@ generate_tests <- function(x, test){
   }
 return(output)
 }
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Define simple calculation functions 
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # calculate one-sample  test statistic #
 OneSample_test_statistic <- function(x) {
   return((mean(x) * sqrt(length(x))) / sd(x))
@@ -89,8 +152,12 @@ compute_area <- function(x, y) {
   (sum(diff(x) * (head(y, -1) + tail(y, -1)) / 2)) / (max(nvec) - min(nvec))
 }
 
-# OneSample Type I error #
-OneSample_TypeI_test <- function(x, test, alpha){
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Define functions for performing various downstream tests 
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# One Sample Case #
+OneSample.test <- function(x, test, alpha, B = NULL){
   if(test == "t"){
     pval <- t.test(x)$p.value
   }
@@ -107,34 +174,35 @@ OneSample_TypeI_test <- function(x, test, alpha){
   if(test == "perm"){
     # Perform permutation test
     observe_stat <- OneSample_test_statistic(x)
-      permuted_stat <- numeric(B)
-      for (j in 1:B) {
-        index <- sample(c(-1, 1), length(x), replace = TRUE)
-        sample_data <- index * abs(x)
-        permuted_stat[j] <- OneSample_test_statistic(sample_data)
-      }
-      pval <- mean(abs(permuted_stat) >= abs(observe_stat))
+    permuted_stat <- numeric(B)
+    for (j in 1:B) {
+      index <- sample(c(-1, 1), length(x), replace = TRUE)
+      sample_data <- index * abs(x)
+      permuted_stat[j] <- OneSample_test_statistic(sample_data)
+    }
+    pval <- mean(abs(permuted_stat) >= abs(observe_stat))
   }
   return(pval)
 }
-# TwoSample Type I error #
-TwoSample_TypeI_error_test <- function(x, y, test, alpha){
+
+# Two Sample Case #
+TwoSample.test <- function(x, y, test, alpha, B = NULL){
   if(test == "t"){
     pval <- t.test(x, y)$p.value
   }
   if(test == "Wilcox"){
-    pval <- wilcox.test(x, y)$p.value
+    pval <- wilcox.test(x, y )$p.value
   }
   if(test == "t_Wilcox"){
     if(shapiro.test(x)$p.value > alpha & shapiro.test(y)$p.value > alpha){
-      pval <- t.test(x, y)$p.value
+      pval <- t.test(x, y )$p.value
     }else{
-      pval <- wilcox.test(x, y)$p.value
+      pval <- wilcox.test(x, y )$p.value
     }
   }
   if(test == "perm"){
     # Perform permutation test
-    data <- c(x, y)
+    data <- c(x, y )
     observe_stat <- TwoSample_test_statistic(x, y)
     permuted_stat <- numeric(B)
     for (j in 1:B) {
@@ -147,149 +215,91 @@ TwoSample_TypeI_error_test <- function(x, y, test, alpha){
   }
   return(pval)
 }
-
-# Calculate OneSample Power #
-d = 0.5
-B = 1000
-OneSample_Power.test <- function(x, test, alpha){
-  if(test == "t"){
-    pval <- t.test(x + d)$p.value
-  }
-  if(test == "Wilcox"){
-    pval <- wilcox.test(x + d)$p.value
-  }
-  if(test == "t_Wilcox"){
-    if(shapiro.test(x)$p.value > alpha){
-      pval <- t.test(x + d)$p.value
-    }else{
-      pval <- wilcox.test(x + d)$p.value
-    }
-  }
-  if(test == "perm"){
-    # Perform permutation test
-    observe_stat <- OneSample_test_statistic(x + d)
-    permuted_stat <- numeric(B)
-    for (j in 1:B) {
-      index <- sample(c(-1, 1), length(x), replace = TRUE)
-      sample_data <- index * abs(x + d)
-      permuted_stat[j] <- OneSample_test_statistic(sample_data)
-    }
-    pval <- mean(abs(permuted_stat) >= abs(observe_stat))
-  }
-  return(pval)
-}
-# Calculate TwoSample Power #
-TwoSample_Power.test <- function(x, y, test, alpha){
-  if(test == "t"){
-    pval <- t.test(x, y + d)$p.value
-  }
-  if(test == "Wilcox"){
-    pval <- wilcox.test(x, y + d)$p.value
-  }
-  if(test == "t_Wilcox"){
-    if(shapiro.test(x)$p.value > alpha & shapiro.test(y)$p.value > alpha){
-      pval <- t.test(x, y + d)$p.value
-    }else{
-      pval <- wilcox.test(x, y + d)$p.value
-    }
-  }
-  if(test == "perm"){
-    # Perform permutation test
-    data <- c(x, y + d)
-    observe_stat <- TwoSample_test_statistic(x, y + d)
-    permuted_stat <- numeric(B)
-    for (j in 1:B) {
-      sample_data <- sample(data)
-      sample_x <- sample_data[1:length(x)]
-      sample_y <- sample_data[(length(x) + 1):(length(x) + length(y))]
-      permuted_stat[j] <- TwoSample_test_statistic(sample_x, sample_y) 
-    }
-    pval <- mean(abs(permuted_stat) >= abs(observe_stat))
-  }
-  return(pval)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# New bootstrap
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+bootstrap_one_sample_test <- function(x, test, effect_size, alpha, n_bootstrap, sample_size) {
+  map_dbl(sample_size, ~{
+    mean(replicate(n_bootstrap, {
+      sample_data <- sample(x, .x, replace = TRUE) + effect_size
+      OneSample.test(sample_data, test, alpha, B = 100)$p.value < alpha
+    }))
+  })
 }
 
-# Bootstrap: onesample Type I error
-n_bootstrap = 1e4
-bootstrap_Onesample.TypeI_error.test <- function(x) {
-  n1 <- length(x)
-  test.statistics0 <- OneSample_test_statistic(x)
-  test.statistics1 <- numeric(n_bootstrap)
-  for (i in 1:n_bootstrap) {
-    sample1 <- sample(x, n1, replace = TRUE)
-    test.statistics1[i] <- OneSample_test_statistic(sample1)
-  }
-  pval <- mean(abs(test.statistics1) >= abs(test.statistics0))
-  return(pval)
+bootstrap_two_sample_test <- function(x, y, test, effect_size, alpha, n_bootstrap, sample_size) {
+  map_dbl(sample_size, ~{
+    mean(replicate(n_bootstrap, {
+      sample_x <- sample(x, .x, replace = TRUE)
+      sample_y <- sample(y, .x, replace = TRUE) + effect_size
+      TwoSample.test(sample_x, sample_y, test, alpha, B = 100)$p.value < alpha
+    }))
+  })
 }
 
-# Bootstrap: one sample power
-n_bootstrap = 1e4
-d = 0.5
-bootstrap_Onesample.power.test <- function(x) {
-  n1 <- length(x)
-  test.statistics0 <- OneSample_test_statistic(x + d)
-  test.statistics1 <- numeric(n_bootstrap)
+# Improved codes
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# bootstrap function for one-sample location test
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+bootstrap_one_sample <- function(x, effect_size, alpha, n_bootstrap, sample_size) {
+  results <- numeric(length(sample_size))  
   
-  for (i in 1:n_bootstrap) {
-    sample1 <- sample(x + d, n1, replace = TRUE)
-    test.statistics1[i] <- OneSample_test_statistic(sample1)
+  for(j in seq_along(sample_size)) {
+    n <- sample_size[j]
+    
+    # Null distribution
+    null_stats <- replicate(n_bootstrap, {
+      OneSample_test_statistic(sample(x, n, replace = TRUE))
+    })
+    crit <- quantile(null_stats, c(alpha/2, 1 - alpha/2))
+    
+    # Alternative distribution
+    alt_stats <- replicate(n_bootstrap, {
+      shifted_data <- sample(x, n, replace = TRUE) + effect_size
+      OneSample_test_statistic(shifted_data)
+    })
+    
+    results[j] <- mean(alt_stats < crit[1] | alt_stats > crit[2])
   }
   
-  pval <- mean(abs(test.statistics1) >= abs(test.statistics0))
-  return(pval)
+  return(results)
 }
 
-# Bootstrap: two samples Type I error
-n_bootstrap = 1e4
-bootstrap_twosample.TypeI_error.test <- function(x, y) {
-  n1 <- length(x)
-  n2 <- length(y)
-  test.statistics0 <- TwoSample_test_statistic(x, y)
-  test.statistics1 <- numeric(n_bootstrap)
-  for (i in 1:n_bootstrap) {
-    sample1 <- sample(x, n1, replace = TRUE)
-    sample2 <- sample(y, n2, replace = TRUE)
-    test.statistics1[i] <- TwoSample_test_statistic(sample1, sample2)
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# bootstrap function for one-sample location test
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+bootstrap_two_sample <- function(x1, x2, effect_size, alpha, n_bootstrap, sample_size) {
+  results <- numeric(length(sample_size))  
+  combined <- c(x1, x2)
+  
+  for(j in seq_along(sample_size)) {
+    n <- sample_size[j]
+    
+    # Null distribution
+    null_stats <- replicate(n_bootstrap, {
+      s1 <- sample(combined, n, replace = TRUE)
+      s2 <- sample(combined, n, replace = TRUE)
+      TwoSample_test_statistic(s1, s2)
+    })
+    crit <- quantile(null_stats, c(alpha/2, 1 - alpha/2))
+    
+    # Alternative distribution
+    alt_stats <- replicate(n_bootstrap, {
+      s1 <- sample(x1, n, replace = TRUE)
+      s2 <- sample(x2, n, replace = TRUE) + effect_size
+      TwoSample_test_statistic(s1, s2)
+    })
+    
+    results[j] <- mean(alt_stats < crit[1] | alt_stats > crit[2])
   }
   
-  pval <- mean(abs(test.statistics1) >= abs(test.statistics0))
-  return(pval)
+  return(results)
 }
 
-# Bootstrap: two samples Power
-n_bootstrap = 1e4
-d = 0.5
-bootstrap_twosample.power.test <- function(x, y) {
-  n1 <- length(x)
-  n2 <- length(y)
-  test.statistics0 <- TwoSample_test_statistic(x, y + d)
-  test.statistics1 <- numeric(n_bootstrap)
-  for (i in 1:n_bootstrap) {
-    sample1 <- sample(x, n1, replace = TRUE)
-    sample2 <- sample(y + d, n2, replace = TRUE)
-    test.statistics1[i] <- TwoSample_test_statistic(sample1, sample2)
-  }
-  
-  pval <- mean(abs(test.statistics1) >= abs(test.statistics0))
-  return(pval)
-}
-# example
-bootstrap_twosample.TypeI_error.test(x = rnorm(100), y = rnorm(100))
 
-# Bootstrap: two samples Type I error
-n_bootstrap = 1e4
-bootstrap_twosample.TypeI_error.test <- function(x, y) {
-  n1 <- length(x)
-  n2 <- length(y)
-  test.statistics0 <- TwoSample_test_statistic(x, y)
-  test.statistics1 <- numeric(n_bootstrap)
-  for (i in 1:n_bootstrap) {
-    sample1 <- sample(x, n1, replace = TRUE)
-    sample2 <- sample(y, n2, replace = TRUE)
-    test.statistics1[i] <- TwoSample_test_statistic(sample1, sample2)
-  }
-  
-  pval <- mean(abs(test.statistics1) >= abs(test.statistics0))
-  return(pval)
-}
+
+
+
+
