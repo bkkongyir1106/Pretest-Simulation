@@ -42,8 +42,8 @@ calculate_features <- function(samples) {
     Liliefors = calculate_lilliefors(samples),
     Cramer_Von_Mises = calculate_cramer_von_mises(samples),
     Sample_Size = calculate_sample_size(samples),
-    Range = calculate_range(samples),
-    Coefficient_of_Variation = calculate_cv(samples)
+    Range = calculate_range(samples)
+    #Coefficient_of_Variation = calculate_cv(samples)
     #Energy = calculate_energy(samples)
   )
 }

@@ -27,7 +27,7 @@ library(kableExtra)
 
 ```{r}
 rm(list = ls())
-load("/Users/benedictkongyir/Desktop/OSU/Research/Results from cluster/TwoSampleAreaUnderCurve_power.RData")
+#load("/Users/benedictkongyir/Desktop/OSU/Research/Results from cluster/TwoSampleAreaUnderCurve_power.RData")
 
 # Power of t-test
 Power_ttest <-data.frame(power_t_table)
@@ -215,8 +215,10 @@ legend("bottomright", legend=c("t","Wilcoxon", "Wilcoxon/ttest", "Permutation"),
 #### Compare Probability of Type I error rates for four Different test methods
 ```{r}
 rm(list = ls())
-#load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/COMBINE RESULTS_20240719/COMPARE METHODS/TwoSampleCompareTestMethods_error.RData")
-load("/Users/benedictkongyir/Desktop/OSU/Research/Results from cluster/TwoSampleAreaUnderCurve_error.RData")
+# load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/COMBINE RESULTS_20240719/COMPARE METHODS/TwoSampleCompareTestMethods_error.RData")
+# load("/Users/benedictkongyir/Desktop/OSU/Research/Results from cluster/TwoSampleAreaUnderCurve_error.RData")
+load("/Users/benedictkongyir/Desktop/OSU/Research/combined/Latest Codes/COMPARE METHODS/Area Under Curve/ERROR/TwoSampleAreaUnderCurve_error.RData")
+# load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/AREA UNDER CURVE/TYPE I ERROR/TwoSampleAUCTypeI.errorRate.RData")
 # Power of t-test
 error_ttest <-data.frame(error_t_table)
 # Power of Wilcoxon test:
@@ -226,19 +228,73 @@ error_t_wilcoxtest <-data.frame(error_t_wilcox_table)
 # Power of the permutation test:
 error_Permtest <-data.frame(error_perm_table)
 
-# Computation time for t-test 
-compTime_ttest <-data.frame(time_t_table)
-# Computation time for wilcoxon test
-CompTimewilcoxtest <-data.frame(time_wilcox_table)
-# Computation time for wilcoxon/ttest
-compTime_t_wilcoxtest <-data.frame(time_t_wilcox_table)
-# Computation time for permutation test (minutes):
-CompTimepermtest <-data.frame(time_perm_table)
+# # Computation time for t-test 
+# compTime_ttest <-data.frame(time_t_table)
+# # Computation time for wilcoxon test
+# CompTimewilcoxtest <-data.frame(time_wilcox_table)
+# # Computation time for wilcoxon/ttest
+# compTime_t_wilcoxtest <-data.frame(time_t_wilcox_table)
+# # Computation time for permutation test (minutes):
+# CompTimepermtest <-data.frame(time_perm_table)
+
+```
+
+```{r}
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/AREA UNDER CURVE/TYPE I ERROR/OneSampleconditionalTypeI_errorRate_04132025.RData")
+conditional_error <- data.frame(conditionalTypeI.errorRate)
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/AREA UNDER CURVE/TYPE I ERROR/TwoSampleAUCTypeI_errorRate_04132025.RData")
+error_ttest <-data.frame(TypeI.errorRate_t[-1, ])
+# Power of Wilcoxon test:
+error_wilcoxtest <-data.frame(TypeI.errorRate_wilcox[-1, ])
+# Power of t_test/wilcoxon test:
+error_t_wilcoxtest <-data.frame(TypeI.errorRate_t_wilcox[-1, ])
+error_t_permtest <-data.frame(TypeI.errorRate_t_perm[-1, ])
+# Power of the permutation test:
+error_Permtest <-data.frame(TypeI.errorRate_perm[-1, ])
+```
+
+
+```{r, fig.height=6, fig.width=12}
+par(mfrow = c(1,2))
+plot(sample_sizes, conditional_error$Exponential, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0.02, 0.5), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Type I error")
+lines(sample_sizes, error_ttest$Exponential, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+
+abline(h = 0.05)
+title(main = "Conditional vs Unconditional Type I error")
+legend("topright", legend=c("conditional","unconditional"), lwd = 3,
+       col=c("red", "blue"), lty = 1:2, pch =1:2, cex = 0.8, title = "Test Method")
 
 ```
 
 
-```{r}
+```{r, fig.height=6, fig.width=12}
+par(mfrow = c(1,2))
+sample_sizes <- sample_sizes[-1]
+plot(sample_sizes, error_ttest$Normal, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0.02, 0.06), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Type I error")
+lines(sample_sizes, error_wilcoxtest$Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+
+lines(sample_sizes, error_Permtest$Normal, type = "o", lty = 3, pch = 3, col = "orange", lwd = 3)
+abline(h = 0.05)
+title(main = "Normal Samples")
+legend("topright", legend=c("t","wilcoxon", "permutation"), lwd = 3,
+       col=c("red", "blue",  "orange"), lty = 1:3, pch =1:3, cex = 0.8, title = "Test Method")
+
+
+plot(sample_sizes, error_ttest$Exponential, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(0.02, 0.06), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Type I error")
+lines(sample_sizes, error_wilcoxtest$Exponential, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+
+lines(sample_sizes, error_Permtest$Exponential, type = "o", lty = 3, pch = 3, col = "orange", lwd = 3)
+abline(h = 0.05)
+title(main = "Exponential Samples")
+legend("topright", legend=c("t","wilcoxon", "permutation"), lwd = 3,
+       col=c("red", "blue",  "orange"), lty = 1:3, pch =1:3, cex = 0.8, title = "Test Method")
+```
+
+
+```{r, fig.height=10, fig.width=10}
 #par(mar = c(9, 4, 4, 1), xpd = TRUE)
 par(mfrow = c(2,2))
 # Adjust margins to reduce space between plots

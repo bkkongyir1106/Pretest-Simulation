@@ -27,6 +27,7 @@ Power loss and expected power loss are prominent for smaller sample sizes(n less
 ```{r}
 rm(list = ls())
 load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/EXPECTED POWER LOSS/TWO SAMPLE/TWOSAMPLES-EXPECTED-POWERLOSS-ATLEAST-ONE-SAMPLE-PAST-NORMALITY.RData")
+
 #Probability of SW test
 data_prob_SW <-data.frame(prob.non.sig.SW.test_par)
 # power loss
@@ -36,60 +37,47 @@ Expected_powerloss<-data_powerloss * data_prob_SW
 ```
 
 
-```{r}
-#par(mar = c(9, 4, 4, 1), xpd = TRUE)
-par(mfrow = c(2,2))
-# Adjust margins to reduce space between plots
-par(mai = c(0.75, 0.75, 0.2, 0.2))  # Adjust as needed
-plot(nvec, data_powerloss$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
-     ylim = c(-0.01, 0.1), xlim = range(nvec), xlab = "Sample Size", ylab = "Power Loss")
-lines(nvec, data_powerloss$Weibull, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
-lines(nvec, data_powerloss$Chi.Square, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
-lines(nvec, data_powerloss$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
-lines(nvec, data_powerloss$Gamma, type = "o", lty = 5, pch = 5, col = "purple", lwd = 3)
-lines(nvec, data_powerloss$Pareto, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
-abline(h = 0, lwd = 2, col = "black", xpd = F)
-title(main = "Power loss")
-legend("topright", legend=c("Exp", "Weibull", "Chisq", "LogNormal", "Gamma", "Pareto"), lwd = 3,
-       col=c("red", "blue", "green", "orange", "purple", "grey"), lty = 1:6, pch =c(1,2,8, 4,5, 6), cex = 0.8, title = "Distribution")
+### Expected Powerloss for 4 distributions
+```{r, fig.height = 8, fig.width = 10}
 
-plot(nvec, data_powerloss$Laplace, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
-     ylim = c(-0.01, 0.1), xlim = range(nvec), xlab = "Sample Size", ylab = "Power Loss")
-lines(nvec, data_powerloss$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
-lines(nvec, data_powerloss$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
-lines(nvec, data_powerloss$Contaminated, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
-lines(nvec, data_powerloss$Uniform, type = "o", lty = 5, pch = 4, col = "purple", lwd = 3)
-abline(h = 0, lwd = 2, col = "black", xpd = F)
-title(main = "Power loss")
-legend("topright", legend=c("Laplace", "Normal", "t", "Contaminated", "Uniform"), lwd = 3,
-       col=c( "red", "blue", "green", "grey", "purple"), lty = 1:5,cex = 0.8, pch = c(1,2,8, 6, 4),title = "Distribution")
-
-### Expected power loss
 plot(nvec, Expected_powerloss$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
      ylim = c(-0.01, 0.1), xlim = range(nvec), xlab = "Sample Size", ylab = "Expected Power Loss")
-lines(nvec, Expected_powerloss$Weibull, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
-lines(nvec, Expected_powerloss$Chi.Square, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
-lines(nvec, Expected_powerloss$LogNormal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
-lines(nvec, Expected_powerloss$Gamma, type = "o", lty = 5, pch = 5, col = "purple", lwd = 3)
-lines(nvec, data_powerloss$Pareto, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
-abline(h = 0, lwd = 2, col = "black", xpd = F)
-title(main = "Expected Power loss")
-legend("topright", legend=c("Exp", "Weibull", "Chisq", "LogNormal", "Gamma", "Pareto"), lwd = 3,
-       col=c("red", "blue", "green", "orange", "purple", "grey"), lty = 1:6, pch =c(1,2,8, 4,5, 6), cex = 0.8, title = "Distribution")
+lines(nvec, Expected_powerloss$LogNormal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(nvec, Expected_powerloss$Uniform, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(nvec, Expected_powerloss$Standard.Normal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
 
-plot(nvec, Expected_powerloss$Laplace, type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
-     ylim = c(-0.01, 0.1), xlim = range(nvec), xlab = "Sample Size", ylab = "Expected Power Loss")
-lines(nvec, Expected_powerloss$Standard.Normal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
-lines(nvec, Expected_powerloss$t, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
-lines(nvec, data_powerloss$Contaminated, type = "o", lty = 5, pch = 6, col = "grey", lwd = 3)
-lines(nvec, data_powerloss$Uniform, type = "o", lty = 5, pch = 4, col = "purple", lwd = 3)
 abline(h = 0, lwd = 2, col = "black", xpd = F)
-title(main = "Expected Power loss")
-legend("topright", legend=c("Laplace", "Normal", "t", "Contaminated", "Uniform"), lwd = 3,
-       col=c( "red", "blue", "green", "grey", "purple"), lty = 1:5,cex = 0.8, pch = c(1,2,8, 6, 4), title = "Distribution")
+title(main = "Expected power loss for two-sample t-test as against permutation test")
+legend("topright", legend=c("Exponential","Lognormal",  "Normal", "Uniform"), lwd = 3,
+       col=c( "red", "blue", "green", "orange"), lty = 1:4,cex = 0.8, pch = c(1,2,8, 6, 4), title = "Distribution")
 ```
 
 ### Power loss and  Expected Power loss
+
+```{r}
+rm(list = ls())
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/AREA UNDER CURVE/POWER/TwoSample_conditional_powerloss_04152025.RData")
+
+
+Expected_powerloss <-data.frame(expected_powerloss)
+```
+
+
+### Expected Powerloss for 4 distributions
+```{r, fig.height = 8, fig.width = 10}
+
+plot(sample_sizes, Expected_powerloss$Exponential,  type = "o", lty = 1, pch = 1, col = "red", lwd = 3, 
+     ylim = c(-0.01, 0.05), xlim = range(sample_sizes), xlab = "Sample Size", ylab = "Power Loss")
+lines(sample_sizes, Expected_powerloss$LogNormal, type = "o", lty = 2, pch = 2, col = "blue", lwd = 3)
+lines(sample_sizes, Expected_powerloss$Uniform, type = "o", lty = 3, pch = 8, col = "green", lwd = 3)
+lines(sample_sizes, Expected_powerloss$Normal, type = "o", lty = 4, pch = 4, col = "orange", lwd = 3)
+
+abline(h = 0, lwd = 2, col = "black", xpd = F)
+title(main = "Expected Power loss")
+legend("topright", legend=c("Exponential","Lognormal",  "Normal", "Uniform"), lwd = 3,
+       col=c( "red", "blue", "green", "orange"), lty = 1:4,cex = 0.8, pch = c(1,2,8, 6, 4), title = "Distribution")
+```
+
 
 ##### Both samples passed normality test
 

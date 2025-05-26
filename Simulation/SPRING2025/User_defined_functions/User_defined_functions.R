@@ -1,11 +1,11 @@
 # load necessary libraries
 rm(list = ls())
 if(!require("pacman")) install.packages("pacman")
-pacman::p_load(e1071, tseries, dgof,  nortest, ggplot2, dplyr, LaplacesDemon, VGAM)
+pacman::p_load(e1071, tseries, dgof,  nortest, ggplot2, dplyr, LaplacesDemon, VGAM, reshape2)
 
 #Generate data from different distribution 
 generate_data <- function(n, dist){
-    if(dist == "Standard Normal"){ 
+    if(dist == "Normal"){ 
       x <- rnorm(n, mean = 0, sd = 1)
     }
     if(dist == "Chi-Square"){

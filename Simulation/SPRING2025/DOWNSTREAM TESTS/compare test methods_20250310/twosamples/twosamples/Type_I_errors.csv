@@ -1,0 +1,5 @@
+"Sample_Size","t_test","Permutation_test","Adaptive_test","Conditional_test","t_test_split","Permutation_test_split","Adaptive_test_split","Conditional_test_split"
+10,0.033,0.054,0.02,0.09,0.019,0.147,0.013,0.017
+15,0.028,0.052,0.026,0.1,0.018,0.115,0.02,0.02
+20,0.032,0.047,0.031,0.25,0.035,0.13,0.038,0.034
+25,0.032,0.039,0.033,NA,0.022,0.096,0.041,0.025

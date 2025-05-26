@@ -1,0 +1,169 @@
+---
+title: "simultaneous confidence bands for Q-Q plot"
+author: "Benedict Kongyir"
+date: "`r format(Sys.time(), '%m/%d/%Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.height = 12, fig.width = 12, warning = FALSE, message = FALSE, verbose = FALSE)
+rm(list = ls())
+if(!require("pacman")) install.packages("pacman")
+pacman::p_load(ggplot2, qqplotr)
+```
+
+
+### Function to compute simultaneous confidence bands for Q-Q plot
+```{r}
+
+# Function to compute simultaneous confidence bands for Q-Q plot
+qq_plot_with_simultaneous_ci <- function(data, title = "Q-Q Plot with Simultaneous Confidence Bands", B = 1e4, conf_level = 0.95) {
+  n <- length(data)
+ 
+  sorted_data <- sort(data)  # Sort the sample data
+  theoretical_quantiles <- qnorm(ppoints(n))  # Theoretical quantiles under normality
+  
+  # Bootstrap to construct confidence bands
+  boot_samples <- replicate(B, sort(rnorm(n)))
+  lower_band <- apply(boot_samples, 1, function(x) quantile(x, (1 - conf_level) / 2))
+  upper_band <- apply(boot_samples, 1, function(x) quantile(x, 1 - (1 - conf_level) / 2))
+  
+  # Create a data frame
+  df <- data.frame(Theoretical = theoretical_quantiles, Sample = sorted_data,
+                   Lower = lower_band, Upper = upper_band)
+  
+  # Create the Q-Q plot with confidence bands
+  p <- ggplot(df, aes(x = Theoretical, y = Sample)) +
+    geom_point(color = "black") +  # Q-Q points
+    geom_abline(slope = 1, intercept = 0, color = "red", linetype = "dashed") +  # Reference line
+    geom_ribbon(aes(ymin = Lower, ymax = Upper), fill = "blue", alpha = 0.2) +  # Simultaneous CI bands
+    theme_minimal() +
+    labs(title = title, x = "Theoretical Quantiles (Normal)", y = "Sample Quantiles")
+  
+  print(p)
+}
+
+```
+
+### Examples, normally distributed sample N(0, 1)
+```{r}
+# Example usage with a normally distributed sample
+set.seed(12345)
+x <- rnorm(50, mean = 0, sd = 1)  # Normal data
+sample_data <- scale(x, center = TRUE, scale = TRUE)
+qq_plot_with_simultaneous_ci(sample_data)
+```
+
+
+### Example usage with a normally distributed sample N( 50, 50, 16)
+```{r}
+set.seed(123)
+x <- rnorm(50, mean = 50, sd = 16)  # Normal data
+sample_data <- scale(x, center = TRUE, scale = TRUE)
+qq_plot_with_simultaneous_ci(sample_data)
+
+```
+
+### Example usage with a non-normal sample t(3) for n = 50
+```{r}
+# Example usage with a non-normal sample
+x <- rt(50, df = 3)  # Heavy-tailed t-distribution
+sample_data_non_normal <- scale(x, center = TRUE, scale = TRUE)
+qq_plot_with_simultaneous_ci(sample_data_non_normal)
+
+```
+
+
+### Example usage with a non-normal sample Exp(3) for n=50
+```{r}
+# Example usage with a non-normal sample
+x <- rexp(50, rate = 3)  # Heavy-tailed t-distribution
+sample_data_non_normal <- scale(x, center = TRUE, scale = TRUE)
+qq_plot_with_simultaneous_ci(sample_data_non_normal)
+
+```
+
+
+### Example usage with a normally distributed sample N( 10, 50, 16)
+```{r}
+set.seed(123)
+x <- rnorm(10, mean = 50, sd = 16)  # Normal data
+sample_data <- scale(x, center = TRUE, scale = TRUE)
+qq_plot_with_simultaneous_ci(sample_data)
+
+```
+
+### Example usage with a non-normal sample t(3) for n= 10
+```{r}
+# Example usage with a non-normal sample
+x <- rt(10, df = 3)  # Heavy-tailed t-distribution
+sample_data_non_normal <- scale(x, center = TRUE, scale = TRUE)
+qq_plot_with_simultaneous_ci(sample_data_non_normal)
+
+```
+
+
+### Example usage with a non-normal sample Exp(3) for n=10
+```{r}
+# Example usage with a non-normal sample
+x <- rexp(10, rate = 3)  # Heavy-tailed t-distribution
+sample_data_non_normal <- scale(x, center = TRUE, scale = TRUE)
+qq_plot_with_simultaneous_ci(sample_data_non_normal)
+
+```
+
+```{r}
+# # Load necessary libraries
+# library(ggplot2)
+# 
+# # Function to compute simultaneous confidence bands for Q-Q plot using Beta distribution
+# qq_plot_with_simultaneous_ci <- function(data, title = "Q-Q Plot with Simultaneous Confidence Bands", conf_level = 0.95) {
+#   # Standardize the data to have mean 0 and sd 1
+#   data <- as.vector(scale(data))
+#   n <- length(data)
+#   sorted_data <- sort(data)
+#   theoretical_quantiles <- qnorm(ppoints(n))
+#   
+#   # Compute adjusted alpha for Šidák correction
+#   alpha <- 1 - conf_level
+#   adjusted_alpha <- 1 - (1 - alpha)^(1/n)
+#   
+#   # Calculate Beta quantiles for each order statistic
+#   i <- 1:n
+#   lower_beta <- qbeta(adjusted_alpha / 2, i, n - i + 1)
+#   upper_beta <- qbeta(1 - adjusted_alpha / 2, i, n - i + 1)
+#   
+#   # Convert Beta quantiles to Normal quantiles
+#   lower_band <- qnorm(lower_beta)
+#   upper_band <- qnorm(upper_beta)
+#   
+#   # Create data frame for plotting
+#   df <- data.frame(Theoretical = theoretical_quantiles, Sample = sorted_data,
+#                    Lower = lower_band, Upper = upper_band)
+#   
+#   # Generate the Q-Q plot with simultaneous confidence bands
+#   p <- ggplot(df, aes(x = Theoretical, y = Sample)) +
+#     geom_point(color = "black") +
+#     geom_abline(slope = 1, intercept = 0, color = "red", linetype = "dashed") +
+#     geom_ribbon(aes(ymin = Lower, ymax = Upper), fill = "blue", alpha = 0.2) +
+#     theme_minimal() +
+#     labs(title = title, x = "Theoretical Quantiles (Normal)", y = "Sample Quantiles")
+#   
+#   print(p)
+# }
+# 
+# # Example usage with a small normal sample
+# set.seed(123)
+# x <- rnorm(100)
+# qq_plot_with_simultaneous_ci(x)
+# 
+# # Example usage with a small non-normal sample
+# x <- rexp(100, rate = 3)
+# qq_plot_with_simultaneous_ci(x)
+```
+
