@@ -5,54 +5,75 @@ pacman::p_load(dgof, tseries, nortest,dplyr, moments, LaplacesDemon, VGAM, evd)
 
 #Generate data from different distribution
 generate_samples <- function(n, dist){
+  if(dist == "std_normal"){ 
+    x<- rnorm(n, mean = 0, sd = 1)
+    samples = (x - mean(x))/sd(x)
+  }
   if(dist == "normal"){ 
-    samples<- rnorm(n, mean = 100, sd = 25)
+    x<- rnorm(n, mean = 100, sd = 25)
+    samples = (x - mean(x))/sd(x)
   }
   if(dist == "Chi-Square"){
-    samples <- rchisq(n, df = 3)
+    x <- rchisq(n, df = 3)
+    samples = (x - mean(x))/sd(x)
   }
   if(dist == "Gamma"){
-    samples <- rgamma(n, shape = 3, rate = 0.1)
+    x <- rgamma(n, shape = 3, rate = 0.1)
+    samples = (x - mean(x))/sd(x)
   }
   if(dist == "Exponential"){
-    samples <- rexp(n, rate = 1) 
+    x <- resamplesp(n, rate = 1) 
+    samples = (x - mean(x))/sd(x)
   }
   if(dist == "t"){
-    samples <- rt(n, df = 7)
+    x <- rt(n, df = 3)
+    samples = (x - mean(x))/sd(x)
+  }
+  if(dist == "t_10"){
+    x <- rt(n, df = 10)
+    samples = (x - mean(x))/sd(x)
   }
   if(dist == "Uniform"){
-    samples <- runif(n, min = 0, max = 1)
+    x <- runif(n, min = 0, masamples = 1)
+    samples = (x - mean(x))/sd(x)
   }
   if(dist == "Laplace"){
-    samples <- rlaplace(n , location = 0, scale = 4)
+    x <- rlaplace(n , location = 0, scale = 4)
+    samples = (x - mean(x))/sd(x)
   }
   if(dist == "Weibull"){
-    samples <- rweibull(n, shape = 1, scale = 2) 
+    x <- rweibull(n, shape = 1, scale = 2) 
+    samples = (x - mean(x))/sd(x)
   }
   if(dist == "LogNormal"){
-    samples <- rlnorm(n, meanlog = 0, sdlog = 1)
+    x <- rlnorm(n, meanlog = 0, sdlog = 1)
+    samples = (x - mean(x))/sd(x)
   }
   if(dist == "Contaminated"){
     br <- rbinom(n , size = 1 , prob = 0.75)
     sd_br <- sqrt(1 + br * 24)
-    samples <- rnorm(n, mean = 0, sd = sd_br)
+    x <- rnorm(n, mean = 0, sd = sd_br)
+    samples = (x - mean(x))/sd(x)
   }
   if(dist == "beta"){
-    samples <- rbeta(n, shape1 = 2, shape2 = 5)
+    x <- rbeta(n, shape1 = 2, shape2 = 5)
+    samples = (x - mean(x))/sd(x)
   }
   if(dist == "Pareto"){
-    samples = VGAM::rpareto(n, scale = 1, shape = 2)
+    x = VGAM::rpareto(n, scale = 1, shape = 2)
+    samples = (x - mean(x))/sd(x)
   }
   if(dist == "F"){
-    samples = rf(n, df1 = 5, df2 = 10)
+    x = rf(n, df1 = 5, df2 = 10)
+    samples = (x - mean(x))/sd(x)
   }
   if(dist == "logistic"){
-    samples = rlogis(n, location = 0, scale = 1)
+    x = rlogis(n, location = 0, scale = 1)
+    samples = (x - mean(x))/sd(x)
   }
   if(dist == "Gumbel"){
-    samples = evd::rgumbel(n, loc = 0, scale = 1)
+    x = evd::rgumbel(n, loc = 0, scale = 1)
+    samples = (x - mean(x))/sd(x)
   }
   return(samples)
 }
-
-generate_samples(10, "Gumbel")

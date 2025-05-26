@@ -39,7 +39,7 @@ close_cluster <- function(cl) {
   N <- 1e3
   B <- 1e3
   alpha <- 0.05
-  dist_sum <- c("Standard Normal", "Exponential", "Chi-Square", "LogNormal")
+  dist_sum <- c("Normal", "Exponential", "Chi-Square", "LogNormal")
   nvec <- c(8, 10, 15, 20, 25, 30, 50)
   sig_level <- c(0.05)
 }
@@ -160,10 +160,10 @@ for (t in seq_along(nvec)) {
 }
 
 # Calculate areas under the Type I error rate curves
-area_t <- apply(TypeI.errorRate_t, 2, compute_area, x = nvec)
-area_wilcox <- apply(TypeI.errorRate_wilcox, 2, compute_area, x = nvec)
-area_t_wilcox <- apply(TypeI.errorRate_t_wilcox, 2, compute_area, x = nvec)
-area_perm <- apply(TypeI.errorRate_perm, 2, compute_area, x = nvec)
+area_t <- apply(error_t, 2, compute_area, x = nvec)
+area_wilcox <- apply(error_wilcox, 2, compute_area, x = nvec)
+area_t_wilcox <- apply(error_t_wilcox, 2, compute_area, x = nvec)
+area_perm <- apply(error_perm, 2, compute_area, x = nvec)
 
 # Print results
 TypeI.errorRate_t
@@ -184,7 +184,7 @@ area_t_wilcox
 area_perm
 
 # Save Data
-save.image(paste0("TwoSampleAUCTypeI.errorRate",".RData"))
+save.image(paste0("TwoSampleAUCTypeI_errorRate",".RData"))
 
 # # Write data to excel
 # library(writexl)

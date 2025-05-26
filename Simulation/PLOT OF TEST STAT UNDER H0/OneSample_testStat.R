@@ -5,7 +5,7 @@ setwd("~/Desktop/OSU/Research/Pretest-Simulation/Simulation/PLOT OF TEST STAT UN
 source("~/Desktop/OSU/Research/Pretest-Simulation/functions/User_defined_functions.R")
 source("~/Desktop/OSU/Research/Pretest-Simulation/functions/utility.R")
 
-dist_sum <- c("Standard Normal", "Uniform", "t", "Exponential", "Chi-Square", "LogNormal")
+dist_sum <- c("Normal", "Exponential",  "LogNormal")
 set.seed(12345)
 N <- 1e5
 alpha <- 0.05

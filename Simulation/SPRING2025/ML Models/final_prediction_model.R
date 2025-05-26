@@ -274,14 +274,14 @@ runtime <- system.time({
   # Generate data from distribution different from those 
   # used to build the mode to  validate the models
   set.seed(12345)
-  normal <- generate_data(8, 1000, "normal", "Normal")
+  normal <- generate_data(8, 2000, "normal", "Normal")
   Fdata <- generate_data(8, 300, "F", "Non_Normal")
   gumbel_data <- generate_data(8, 300, "Gumbel", "Non_Normal")
   logistic_data <- generate_data(8, 300, "logistic", "Non_Normal")
   fake_normal <- generate_data(8, 300, "normal", "Non_Normal")
   t <- generate_data(8, 300, "t", "Non_Normal")
   # Combine the validation data
-  nonnormal.data <- rbind(Fdata, t)
+  nonnormal.data <- rbind(Fdata, t, Gamma, Weibull, lognormal)
   validation_data <- rbind(normal, t)
   
   # Ensure that Label is a factor
