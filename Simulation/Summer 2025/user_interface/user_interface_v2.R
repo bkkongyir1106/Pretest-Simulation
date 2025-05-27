@@ -27,14 +27,14 @@ load_user_test_function <- function() {
   # Prompt user to choose one
   if (length(funs_only) == 1) {
     cat("Only one function found. Using it by default.\n")
-    return(env[[funs_only[1]]])
     cat("File loaded successfully.\n")
+    return(env[[funs_only[1]]])
   } else {
     repeat {
       choice <- as.integer(readline("Enter the number of the function to use: "))
       if (!is.na(choice) && choice >= 1 && choice <= length(funs_only)) {
-        return(env[[funs_only[choice]]])
         cat("File loaded successfully.\n")
+        return(env[[funs_only[choice]]])
       } else {
         cat("Invalid input. Please enter a number between 1 and", length(funs_only), "\n")
       }
@@ -71,7 +71,6 @@ extract_results <- function(obj) {
 
 # --- step 3: Main wrapper - normality check & test run ---
 normality_check <- function(test_func, ..., data = NULL, test = "SW", alpha = 0.05) {
-  # Collect all extra arguments into a list.
   args <- list(...)
   if (!"data" %in% names(args) && !is.null(data)) {
     args$data <- data
@@ -162,15 +161,14 @@ normality_check <- function(test_func, ..., data = NULL, test = "SW", alpha = 0.
   ))
 }
 
-
 # load functions
 test_func <- load_user_test_function()
 # Run test
 data <- list(x = generate_data(n = 10, dist = "Normal"),
-             y = generate_data(n = 10, dist = "Normal"))
+             y = generate_data(n = 10, dist = "Normal"),
+             z = generate_data(n = 10, dist = "Exponential"))
 
-normality_check(test_func, x = data$x, y = data$y, test = "AD", alpha = 0.05)
+normality_check(test_func, x = data$x,  test = "AD", alpha = 0.05)
 
-lm.data <- data.frame(y = rnorm(20), x1 = rnorm(20), x2 = rnorm(20))
-normality_check(test_func, formula = y ~ x1 + x2, data = lm.data, test = "SW")
+normality_check(test_func, formula = data$z ~ data$x + data$y, data = data, test = "SW")
 normality_check(test_func, formula = mpg ~ wt + hp + disp + drat, data = mtcars, test = "SW", alpha = 0.05)
