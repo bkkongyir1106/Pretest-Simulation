@@ -1,14 +1,14 @@
 # two-sample t-test
 two_ind_t_test <- function(x, y = NULL, mu = 0, paired = FALSE) {
-  t.test(x = x, y = y, mu = mu, paired = paired)
+  return(t.test(x = x, y = y, mu = mu, paired = paired))
 }
 
 two_dep_t_test <- function(x, y = NULL, mu = 0, paired = TRUE) {
-  t.test(x = x, y = y, mu = mu, paired = paired)
+  return(t.test(x = x, y = y, mu = mu, paired = paired))
 }
 
 one_dep_t_test <- function(x, mu = 0) {
-  t.test(x = x, mu = mu)
+  return(t.test(x = x, mu = mu))
 }
 # linear regression
 user_lm <- function(formula, data) {
@@ -18,5 +18,9 @@ user_lm <- function(formula, data) {
 
 # Mann Whithney U test
 mw_u_test <- function(){
-  wilcox.test(x, y)
+  return(wilcox.test(x, y))
+}
+
+anova <- function(formula, data){
+  return(aov(formula, data))
 }
