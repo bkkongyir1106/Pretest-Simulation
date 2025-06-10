@@ -4,8 +4,6 @@ source("~/Desktop/OSU/Research/Pretest-Simulation/functions/User_defined_functio
 setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/Summer 2025/ROC Curve")
 
 #-----------------------------------------------------------
-# Function: generate_pval
-# Purpose: Simulate hypothesis tests and return p-values
 # Parameters:
 #   n          - Sample size per group
 #   N          - Number of simulations
@@ -45,7 +43,7 @@ generate_pval <- function(n, N, dist, effect_size, B) {
 }
 #--------------------------------------------------------
 # Parameters
-alpha_pretest <- seq(from = 0.001, to = 0.95, by = 0.01)
+alpha_pretest <- seq(from = 0.001, to = 1, by = 0.01)
 n <- 10
 Nsim <- 1e3
 distributions <- c("Normal", "LogNormal")
@@ -84,7 +82,7 @@ for (dist in distributions) {
   }
 }
 #-------------------------------------------------------
-# # save RData
+# save RData
 save(
   power_results,
   n,
