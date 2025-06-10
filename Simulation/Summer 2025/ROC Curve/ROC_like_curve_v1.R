@@ -1,0 +1,97 @@
+# read in defined functions
+source("~/Desktop/OSU/Research/Pretest-Simulation/functions/User_defined_functions.R")
+# set wkdr:
+setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/Summer 2025/ROC Curve")
+
+#-----------------------------------------------------------
+# Function: generate_pval
+# Purpose: Simulate hypothesis tests and return p-values
+# Parameters:
+#   n          - Sample size per group
+#   N          - Number of simulations
+#   dist       - Data distribution ("Normal", "LogNormal")
+#   effect_size- True difference between groups
+#   B          - Permutation test iterations
+#-----------------------------------------------------------
+
+#----------------------------------------------------------
+# Generate p-values function
+generate_pval <- function(n, N, dist, effect_size, B) {
+  pval_t.test <- pval_u.test <- pval_perm.test <- numeric(N)
+  p_sw_x <- p_sw_y <- numeric(N)  
+  
+  for(i in 1:N) {
+    x <- generate_data(n, dist)
+    y <- generate_data(n, dist)
+    
+    # SW-test p-values
+    p_sw_x[i] <- shapiro.test(x)$p.value
+    p_sw_y[i] <- shapiro.test(y)$p.value
+    
+    # downstream test p-values
+    pval_t.test[i] <- t.test(x, y + effect_size)$p.value
+    pval_u.test[i] <- wilcox.test(x, y + effect_size)$p.value
+    pval_perm.test[i] <- two_sample_permutation_test(x, y + effect_size, B)
+  }
+  
+  # Return all p-values
+  return(list(
+    p_sw_x = p_sw_x,
+    p_sw_y = p_sw_y,
+    pval_t.test = pval_t.test,
+    pval_u.test = pval_u.test,
+    pval_perm.test = pval_perm.test
+  ))
+}
+#--------------------------------------------------------
+# Parameters
+alpha_pretest <- seq(from = 0.001, to = 0.95, by = 0.01)
+n <- 10
+Nsim <- 1e3
+distributions <- c("Normal", "LogNormal")
+effect_size <- 0.5
+perm <- 1e3
+#--------------------------------------------------------
+# store power values as list
+power_results <- list()
+
+for (dist in distributions) {
+  results <- generate_pval(n = n, N = Nsim, dist = dist, effect_size = effect_size, B = perm)
+  
+  power_results[[dist]] <- list(
+    power_t.test = mean(results$pval_t.test < 0.05),
+    power_wilcox.test = mean(results$pval_u.test < 0.05),
+    power_perm.test = mean(results$pval_perm.test < 0.05)
+  )
+  
+  for (j in seq_along(alpha_pretest)) {
+    alpha <- alpha_pretest[j]
+    
+    adaptive_pvals_wilcox <- ifelse(
+      results$p_sw_x > alpha & results$p_sw_y > alpha,
+      results$pval_t.test,
+      results$pval_u.test
+    )
+    
+    adaptive_pvals_perm <- ifelse(
+      results$p_sw_x > alpha & results$p_sw_y > alpha,
+      results$pval_t.test,
+      results$pval_perm.test
+    )
+    
+    power_results[[dist]]$adaptive_wilcox[j] <- mean(adaptive_pvals_wilcox < 0.05)
+    power_results[[dist]]$adaptive_perm[j] <- mean(adaptive_pvals_perm < 0.05)
+  }
+}
+#-------------------------------------------------------
+# # save RData
+save(
+  power_results,
+  n,
+  Nsim,
+  perm,
+  distributions,
+  alpha_pretest,
+  file = "ROC_like_curve_v1.RData"
+)
+#------------------------------------------------------
