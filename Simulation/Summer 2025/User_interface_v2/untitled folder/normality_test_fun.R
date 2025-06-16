@@ -47,7 +47,7 @@ normality_test <- function(data, test = "SW", alpha = 0.05) {
   
   # Case 4: Long-format data frame/matrix with 2 columns
   else if ((is.data.frame(data) || is.matrix(data)) && ncol(data) >= 2) {
-    grouped_samples <- split(data[[1]], data[[2]])
+    grouped_samples <- split(data[[2]], data[[1]])
     pvals <- sapply(grouped_samples, function(sample) {
       generate_tests(sample, test = test)$p.value
     })
@@ -67,8 +67,8 @@ normality_test <- function(data, test = "SW", alpha = 0.05) {
 }
 
 # Example
-samples <- list(norm = rnorm(5), exp = rexp(5), chisq = rchisq(5, df = 3), t = rt(5, df = 3))
-normality_test(samples, test = "SW", alpha = 0.05)
+samples <- data.frame(norm = rnorm(5), exp = rexp(5), chisq = rchisq(5, df = 3), t = rt(5, df = 3))
+normality_test(calculate_samples(all_data()), test = "SW", alpha = 0.05)
 
 # linear regression
 model <- lm(mpg ~ disp + hp + drat, data = mtcars)

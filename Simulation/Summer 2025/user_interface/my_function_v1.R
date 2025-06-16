@@ -1,71 +1,135 @@
-calculate_residuals <- function(model){
-  return(resid(model))
+# Two-Sample Independent t-test
+generate_ind_ttest_data <- function(
+    n1 = 20,         
+    n2 = 20,         
+    mean1 = 0,       
+    mean2 = 0.5,     
+    sd1 = 1,         
+    sd2 = 1,         
+    dist = "Normal"  
+) {
+  # Generate standardized data and scale to desired parameters
+  group1 <- mean1 + sd1 * generate_data(n1, dist)
+  group2 <- mean2 + sd2 * generate_data(n2, dist)
+  
+  return(data.frame(
+    group = factor(rep(c("x", "y"), c(n1, n2))),
+    value = c(group1, group2)
+  ))
 }
 
-calculate_samples <- function(data) {
-  if (is.data.frame(data) || is.matrix(data)) {
-    return(as.list(as.data.frame(data)))
-  } else if (is.list(data)) {
-    return(data)
-  } else {
-    return(list(data))  
-  }
+# Paired t-test
+generate_paired_data <- function(
+    n = 20,            
+    mean_diff = 0.3,   
+    sd_diff = 1,       
+    dist = "Normal"    
+) {
+  # Generate standardized differences and scale
+  diff <- mean_diff + sd_diff * generate_data(n, dist)
+  
+  return(diff)
 }
 
-# -----------------Downstream test ---------------
-# two-sample t-test
-two_ind_t_test <- function(x, y = NULL, mu = 0) {
-  return(t.test(x = x, y = y, mu = mu, paired = FALSE))
+# Simple Linear Regression
+generate_regression_data <- function(
+    n = 30,           
+    beta0 = 0,        
+    beta1 = 0.5, 
+    x_dist = "Exponential",
+    error_sd = 1,     
+    error_dist = "Normal"  
+) {
+  # Generate predictor
+  x <- generate_data(n, dist = x_dist)
+  
+  # Generate standardized errors and scale
+  error <- error_sd * generate_data(n, error_dist)
+  
+  y <- beta0 + beta1 * x + error
+  return(data.frame(x = x, y = y))
 }
 
-two_dep_t_test <- function(x, y = NULL, mu = 0) {
-  return(t.test(x = x, y = y, mu = mu, paired = TRUE))
+
+# One-Way ANOVA
+generate_anova_data <- function(
+    n_per_group = 20,  # Sample size per group
+    means = c(0, 0.2, 0.4),  # Group means
+    sd = 1,            # Common SD
+    dist = "Normal"     # Error distribution
+) {
+  k <- length(means)
+  group_labels <- LETTERS[1:k]
+  
+  # Generate data for each group
+  values <- unlist(lapply(means, function(m) {
+    m + sd * generate_data(n_per_group, dist)
+  }))
+  
+  return(data.frame(
+    group = factor(rep(group_labels, each = n_per_group)),
+    value = values
+  ))
 }
 
-one_sample_t_test <- function(x, mu = 0) {
-  return(t.test(x = x, mu = mu))
+
+# Logistic Regression (Unchanged - binary response)
+generate_logistic_data <- function(
+    n = 100,               # Sample size
+    beta0 = -1,            # Intercept
+    beta1 = 0.8,           # Slope (effect size)
+    x_sd = 1               # Predictor SD
+) {
+  x <- rnorm(n, sd = x_sd)
+  log_odds <- beta0 + beta1 * x
+  prob <- plogis(log_odds)  # More efficient than 1/(1+exp(-x))
+  y <- rbinom(n, size = 1, prob = prob)
+  
+  return(data.frame(x = x, y = factor(y)))
 }
 
-# linear regression
-simple_linear_regression <- function(formula, data) {
-  return(summary(lm(formula, data = data)))
-}
-
-# Mann Whitney U test
-Mann_Whitney_U_test <- function(x, y = NULL, mu = 0){
-  return(wilcox.test(x, y, mu = mu))
+#--------functions to generate data for normality test ---------
+regression_residuals <- function(data){
+  model <- lm(y ~ x , data = data)
+  return(residuals(model))
 }
 
 # ANOVA
-anova_test <- function(data){
-  return(residuals(aov(formula = value ~ group, data = all_data())))
+anova_residuals <- function(data){
+  return(residuals(aov(formula = value ~ group, data = data)))
 }
 
 
-# example data generation functions
-
-data_gen <- function(){
-  data <- data.frame(
-             x = rnorm(10, mean = 0, sd = 1),
-             y = rexp(10, rate = 1),
-             z = rchisq(10, df = 3))
-  return(data)
+# -----------------Downstream test ---------------
+# Two-sample t-test (fixed)
+two_ind_t_test <- function(data) {
+  x_data <- data$value[data$group == "x"]
+  y_data <- data$value[data$group == "y"]
+  return(t.test(x = x_data, y = y_data))
 }
 
-n <- 50
-all_data <- function(){
-  data <- list(a = generate_data(n = n, dist = "Gamma"),
-       b = generate_data(n = n, dist = "Uniform"),
-       c = generate_data(n = n, dist = "Normal"),
-       d = generate_data(n = n, dist = "Normal"),
-       x = generate_data(n = n, dist = "Normal"),
-       y = generate_data(n = n, dist = "Exponential"),
-       z = generate_data(n = n, dist = "LogNormal"))
-  
-  # Combine into a data frame for anova
-  group <- factor(rep(c("a","b" ,"x", "y", "z"), each = n))
-  value <- c(data$a, data$b, data$x, data$y, data$z)
-   return(data.frame(group, value))
+# One-sample t-test (fixed)
+one_sample_t_test <- function(data) {
+  return(t.test(data))
+}
+
+# Simple linear regression
+simple_linear_regression <- function(data) {
+  model <- lm(y ~ x, data = data)
+  return(broom::tidy(model))
+}
+
+# Mann-Whitney U Test (fixed)
+Mann_Whitney_U_test <- function(data){
+  x_data <- data$value[data$group == "x"]
+  y_data <- data$value[data$group == "y"]
+  return(wilcox.test(x_data, y_data))
+}
+
+# ANOVA Test (fixed to return actual test results)
+anova_main_test <- function(data) {
+  aov_model <- aov(value ~ group, data = data)
+  return(summary(aov_model))
 }
 
 

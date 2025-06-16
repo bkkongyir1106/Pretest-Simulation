@@ -37,33 +37,38 @@ load_user_test_function <- function() {
 }
 
 # ----------------------------------------------------------------
-# Main function to perform normality test using user-loaded functions
+# Main function to perform normality test and subsequent analysis
 normality_test <- function(test = "SW", alpha = 0.05) {
-  # Step 1: Load data-generating function
-  cat("Please load your data generation function\n")
+  # Step 1: Load data-generation function
+  cat("Please load your data generation function")
   generate_function <- load_user_test_function()
   
   # Generate data
   generated_data <- generate_function()
   
-  # Step 2: Load function that structures/extracts data for testing
-  cat("\nChoose a function to extract part of model/data to test for normality\n")
-  extractor_function <- load_user_test_function()
+  # Ask if normality should be tested on raw data
+  response <- tolower(readline(prompt = "\nIs normality to be assessed on the raw data? (yes/no):\n"))
   
-  # Extract target structure 
-  data <- extractor_function(generated_data)
+  if (response == "yes") {
+    data <- generated_data
+  } else {
+    # Step 2: Load function that structures/extracts data for testing
+    cat("\nChoose a function to extract part of model/data to test for normality\n")
+    extractor_function <- load_user_test_function()
+    
+    # Extract target structure
+    data <- extractor_function(generated_data)
+  }
   
-  # Step 3: Perform the normality test
+  # Initialize variables for results
   pvals <- NULL
+  all_normality_satisfied <- NULL
   
   # Case 1: Single numeric vector
   if (is.numeric(data) && is.atomic(data) && is.null(dim(data))) {
     pval <- generate_tests(data, test = test)$p.value
-    cat("\np-value for", test, "test for normality:\n")
-    return(list(
-      p_values = pval,
-      normality_satisfied = pval > alpha
-    ))
+    pvals <- pval
+    all_normality_satisfied <- pval > alpha
   }
   
   # Case 2: List of numeric vectors
@@ -74,20 +79,24 @@ normality_test <- function(test = "SW", alpha = 0.05) {
       generate_tests(sample, test = test)$p.value
     })
     names(pvals) <- names(data) %||% paste0("Sample", seq_along(pvals))
+    all_normality_satisfied <- all(pvals > alpha)
   }
   
   # Case 3: Wide-format data frame
   else if (is.data.frame(data) && all(sapply(data, is.numeric))) {
     pvals <- sapply(as.list(data), function(x) generate_tests(x, test = test)$p.value)
     names(pvals) <- names(data)
+    all_normality_satisfied <- all(pvals > alpha)
   }
   
   # Case 4: Long-format with group labels
   else if ((is.data.frame(data) || is.matrix(data)) && ncol(data) >= 2) {
-    grouped_samples <- split(data[[1]], data[[2]])
+    # We assume first column is group, second is value
+    grouped_samples <- split(data[[2]], data[[1]])
     pvals <- sapply(grouped_samples, function(sample) {
       generate_tests(sample, test = test)$p.value
     })
+    all_normality_satisfied <- all(pvals > alpha)
   }
   
   # Unsupported format
@@ -95,15 +104,43 @@ normality_test <- function(test = "SW", alpha = 0.05) {
     stop("Unsupported input type: must be numeric vector, list of vectors, or grouped data.")
   }
   
-  # Final output
-  cat("\np-values for", test, "test for normality:\n")
+  # Print normality results
+  cat("\nNormality test results:\n")
+  print(pvals)
+  cat("Normality satisfied:", all_normality_satisfied, "\n")
+  
+  # Ask if user wants to run main statistical test
+  run_main <- tolower(readline(prompt = "\nDo you want to run the main statistical test? (yes/no): \n"))
+  
+  if (run_main != "yes") {
+    cat("\nExiting without running main test.\n")
+    return(list(
+      normality_results = list(p_values = pvals, 
+                               normality_satisfied = all_normality_satisfied)
+    ))
+  }
+  
+  # Load main test function
+  cat("\nChoose the function for the main statistical test\n")
+  main_test_function <- load_user_test_function()
+  
+  # Run main test on original generated data
+  cat("\nRunning main statistical test...\n")
+  test_result <- main_test_function(generated_data)
+  
+  # Print the test results
+  cat("\nMain Test Results:\n")
+  print(test_result)
+  
+  # Return both sets of results
   return(list(
-    p_values = pvals,
-    normality_satisfied = all(pvals > alpha)
+    normality_results = list(p_values = pvals, 
+                             normality_satisfied = all_normality_satisfied),
+    main_test_results = test_result
   ))
 }
 
 # Example use
 set.seed(12345)
-normality_test(test = "AD", alpha = 0.05)
-
+results <- normality_test(test = "AD", alpha = 0.05)
+print(results)

@@ -79,6 +79,7 @@ for (dist in distributions) {
     
     power_results[[dist]]$adaptive_wilcox[j] <- mean(adaptive_pvals_wilcox < 0.05)
     power_results[[dist]]$adaptive_perm[j] <- mean(adaptive_pvals_perm < 0.05)
+    power_results[[dist]]$pr_sw_vec[j] <- mean(results$p_sw_x <= alpha | results$p_sw_y <= alpha)
   }
 }
 #-------------------------------------------------------
@@ -93,3 +94,7 @@ save(
   file = "ROC_like_curve_v1.RData"
 )
 #------------------------------------------------------
+
+EPG <- power_results$LogNormal$adaptive_wilcox - power_results$LogNormal$power_wilcox.test
+EPL <- abs(power_results$Normal$power_t.test - power_results$Normal$adaptive_wilcox)
+plot(EPL, EPG, type = "l", col = "red")
