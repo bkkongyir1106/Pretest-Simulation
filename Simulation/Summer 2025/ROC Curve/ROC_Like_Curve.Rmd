@@ -1,0 +1,25 @@
+---
+title: "ROC Like Curve"
+author: "Benedict Kongyir"
+date: "`r format(Sys.time(), '%m/%d/%Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: hide
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.height = 10, fig.width = 18, warning = FALSE, message = FALSE, verbose = FALSE)
+```
+
+```{r}
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/Summer 2025/ROC Curve/ROC_like_curve_v1.RData")
+
+EPG <- power_results$LogNormal$adaptive_wilcox - power_results$LogNormal$power_t.test
+EPL <- power_results$Normal$power_t.test - power_results$Normal$adaptive_wilcox
+plot(EPL, EPG, type = "l", col = "red")
+```
+

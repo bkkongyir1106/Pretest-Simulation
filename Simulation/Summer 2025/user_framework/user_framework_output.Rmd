@@ -1,0 +1,99 @@
+---
+title: "User Frame Work in Progress"
+author: "Benedict Kongyir"
+date: "`r format(Sys.time(), '%m/%d/%Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: hide
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.height = 8, fig.width = 12, warning = FALSE, message = FALSE, verbose = FALSE)
+
+# Source user-defined generator
+setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/Summer 2025/user_framework")
+source("~/Desktop/OSU/Research/Pretest-Simulation/functions/User_defined_functions.R")
+source("~/Desktop/OSU/Research/Pretest-Simulation/Simulation/Summer 2025/user_framework/my_functions_v2.R")
+```
+
+```{r}
+# ------------ Power Curve Plotting -----------
+plot_power_curve <- function(power_results, title = "Power Analysis") {
+  sample_sizes <- as.numeric(sub("n=", "", names(power_results)))
+  plot(sample_sizes, power_results, type = "b", lwd = 3,
+       xlab = "Sample Size", ylab = "Power",
+       main = title, cex.lab = 2.0, cex.axis = 2.0, cex.main = 1.6, ylim = c(0, 1), pch = 19)
+  abline(h = 0.8, lty = 2, lwd = 3)
+  grid(lwd = 1)
+}
+```
+
+### Two Samples Location Test
+The plot below compares the power of a two-sample location test for t-test, Wilcoxon, and the adaptive test for samples from exponential 1 with effect size of 0.5.
+```{r}
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/Summer 2025/user_framework/power_compare_t_test.RData")
+
+# Plot all three curves
+plot(sample_sizes, power_ttest_param,    type = "b", pch = 19, 
+     ylim = c(0,1), xlab = "Sample Size", ylab = "Power", col = "red", lwd = 3,
+     main = "t-test Power Comparison", cex.lab = 1.7, cex.axis = 1.7, cex.main = 2.0)
+lines(sample_sizes, power_ttest_nonpar, lwd = 3, type = "b", pch = 17, col = "blue")
+lines(sample_sizes, power_ttest_adapt, lwd = 3, type = "b", pch = 15, col = "green")
+legend("bottomright",
+       legend_labels <- c(
+         paste0("Parametric (AUC=", round(auc_table$AUC[1], 4), ")"),
+         paste0("Nonparametric (AUC=", round(auc_table$AUC[2], 4), ")"),
+         paste0("Adaptive (AUC=", round(auc_table$AUC[3], 4), ")")
+       ),
+       pch    = c(19,17,15), lwd = 3,cex = 2.0, col = c("red", "blue", "green"), lty = 1)
+
+```
+
+
+### Simple Linear Regression
+The plot below compares the power of three different strategies for a simple linear regression test with one predictor variable: the simple linear regression, bootstrap regression, and adaptive procedure with effect size of 0.5. Independent variable is taken from exponential 1, and the error term from a standard normal distribution.
+```{r}
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/Summer 2025/user_framework/power_compare_reg_test.RData")
+
+# Plot all three curves
+plot(sample_sizes, power_reg_param,    type = "b", pch = 19, 
+     ylim = c(0,1), xlab = "Sample Size", ylab = "Power", col = "red", lwd = 3,
+     main = "Power Comparison for Regression Test", cex.lab = 1.7, cex.axis = 1.7, cex.main = 2.0)
+lines(sample_sizes, power_reg_nonpar, lwd = 3, type = "b", pch = 17, col = "blue")
+lines(sample_sizes, power_reg_adapt, lwd = 3, type = "b", pch = 15, col = "green")
+legend("bottomright",
+       legend_labels <- c(
+         paste0("Parametric (AUC=", round(auc_table$AUC[1], 4), ")"),
+         paste0("Nonparametric (AUC=", round(auc_table$AUC[2], 4), ")"),
+         paste0("Adaptive (AUC=", round(auc_table$AUC[3], 4), ")")
+       ),
+       pch    = c(19,17,15), lwd = 3,cex = 2.0, col = c("red", "blue", "green"), lty = 1)
+
+```
+
+
+### One Way ANOVA
+The plot below compares the power of one-way ANOVA, Kruskal-Wallis test and the adaptive procedure for three groups with means 0, 0.5, and 0.8, each taken from standard normal distribution.
+```{r}
+load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/Summer 2025/user_framework/power_compare_anova_test.RData")
+
+# Plot all three curves
+plot(sample_sizes, power_anova_param,    type = "b", pch = 19, 
+     ylim = c(0,1), xlab = "Sample Size", ylab = "Power", col = "red", lwd = 3,
+     main = "Power Comparison for One-Way ANOVA", cex.lab = 1.7, cex.axis = 1.7, cex.main = 2.0)
+lines(sample_sizes, power_anova_nonpar, lwd = 3, type = "b", pch = 17, col = "blue")
+lines(sample_sizes, power_anova_adapt, lwd = 3, type = "b", pch = 15, col = "green")
+legend("bottomright",
+       legend_labels <- c(
+         paste0("Parametric (AUC=", round(auc_table$AUC[1], 4), ")"),
+         paste0("Nonparametric (AUC=", round(auc_table$AUC[2], 4), ")"),
+         paste0("Adaptive (AUC=", round(auc_table$AUC[3], 4), ")")
+       ),
+       pch    = c(19,17,15), lwd = 3,cex = 2.0, col = c("red", "blue", "green"), lty = 1)
+
+```
+

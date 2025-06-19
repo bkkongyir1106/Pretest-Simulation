@@ -29,7 +29,7 @@ generate_pval <- function(n, N, dist, effect_size, B) {
     # downstream test p-values
     pval_t.test[i] <- t.test(x, y + effect_size)$p.value
     pval_u.test[i] <- wilcox.test(x, y + effect_size)$p.value
-    pval_perm.test[i] <- two_sample_permutation_test(x, y + effect_size, B)
+    #pval_perm.test[i] <- two_sample_permutation_test(x, y + effect_size, B)
   }
   
   # Return all p-values
@@ -37,15 +37,15 @@ generate_pval <- function(n, N, dist, effect_size, B) {
     p_sw_x = p_sw_x,
     p_sw_y = p_sw_y,
     pval_t.test = pval_t.test,
-    pval_u.test = pval_u.test,
-    pval_perm.test = pval_perm.test
+    pval_u.test = pval_u.test
+    #pval_perm.test = pval_perm.test
   ))
 }
 #--------------------------------------------------------
 # Parameters
 alpha_pretest <- seq(from = 0.001, to = 1, by = 0.01)
 n <- 10
-Nsim <- 1e3
+Nsim <- 1e6
 distributions <- c("Normal", "LogNormal")
 effect_size <- 0.5
 perm <- 1e3
@@ -58,8 +58,8 @@ for (dist in distributions) {
   
   power_results[[dist]] <- list(
     power_t.test = mean(results$pval_t.test < 0.05),
-    power_wilcox.test = mean(results$pval_u.test < 0.05),
-    power_perm.test = mean(results$pval_perm.test < 0.05)
+    power_wilcox.test = mean(results$pval_u.test < 0.05)
+    #power_perm.test = mean(results$pval_perm.test < 0.05)
   )
   
   for (j in seq_along(alpha_pretest)) {
@@ -71,14 +71,14 @@ for (dist in distributions) {
       results$pval_u.test
     )
     
-    adaptive_pvals_perm <- ifelse(
-      results$p_sw_x > alpha & results$p_sw_y > alpha,
-      results$pval_t.test,
-      results$pval_perm.test
-    )
+    # adaptive_pvals_perm <- ifelse(
+    #   results$p_sw_x > alpha & results$p_sw_y > alpha,
+    #   results$pval_t.test,
+    #   results$pval_perm.test
+    # )
     
     power_results[[dist]]$adaptive_wilcox[j] <- mean(adaptive_pvals_wilcox < 0.05)
-    power_results[[dist]]$adaptive_perm[j] <- mean(adaptive_pvals_perm < 0.05)
+    #power_results[[dist]]$adaptive_perm[j] <- mean(adaptive_pvals_perm < 0.05)
     power_results[[dist]]$pr_sw_vec[j] <- mean(results$p_sw_x <= alpha | results$p_sw_y <= alpha)
   }
 }
@@ -88,13 +88,16 @@ save(
   power_results,
   n,
   Nsim,
-  perm,
   distributions,
   alpha_pretest,
   file = "ROC_like_curve_v1.RData"
 )
 #------------------------------------------------------
 
-EPG <- power_results$LogNormal$adaptive_wilcox - power_results$LogNormal$power_wilcox.test
-EPL <- abs(power_results$Normal$power_t.test - power_results$Normal$adaptive_wilcox)
+EPG <- power_results$LogNormal$adaptive_wilcox - power_results$LogNormal$power_t.test
+EPL <- power_results$Normal$power_t.test - power_results$Normal$adaptive_wilcox
 plot(EPL, EPG, type = "l", col = "red")
+par(mfrow = c(1, 2))
+plot(alpha_pretest, EPL, type = "l")
+plot(alpha_pretest, EPG, type = "l")
+
