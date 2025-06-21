@@ -1,33 +1,33 @@
 setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/Summer 2025/user_framework")
 source("~/Desktop/OSU/Research/Pretest-Simulation/Simulation/Summer 2025/user_framework/my_functions_v2.R")
-# -------- User Interface & Power Calculation --------
-user_interface <- function(
-    gen_data = generate_regression_data,
-    fn_to_get_norm_obj = regression_residuals,
-    fn_for_norm_test = normality_test,
-    fn_for_ds_test_1 = simple_linear_regression,
-    fn_for_ds_test_2 = bootstrap_regression,
-    paras = NULL,
-    alpha = 0.05,
-    test_method = "SW",
-    ...
-) {
-  # generate dataset
-  data <- if (!is.null(paras)) do.call(gen_data, paras) else gen_data()
-  
-  # residuals & normality check
-  resid     <- fn_to_get_norm_obj(data)
-  norm_res  <- fn_for_norm_test(data = resid, test = test_method, alpha = alpha)
-  
-  # choose test
-  if (isTRUE(norm_res$normality_satisfied)) {
-    result <- fn_for_ds_test_1(data)        
-  } else {
-    result <- fn_for_ds_test_2(data, ...)   
-  }
-  
-  return(result$p.value)
-}
+# # -------- User Interface & Power Calculation --------
+# user_interface <- function(
+#     gen_data = generate_regression_data,
+#     fn_to_get_norm_obj = regression_residuals,
+#     fn_for_norm_test = normality_test,
+#     fn_for_ds_test_1 = simple_linear_regression,
+#     fn_for_ds_test_2 = bootstrap_regression,
+#     paras = NULL,
+#     alpha = 0.05,
+#     test_method = "SW",
+#     ...
+# ) {
+#   # generate dataset
+#   data <- if (!is.null(paras)) do.call(gen_data, paras) else gen_data()
+#   
+#   # residuals & normality check
+#   resid     <- fn_to_get_norm_obj(data)
+#   norm_res  <- fn_for_norm_test(data = resid, test = test_method, alpha = alpha)
+#   
+#   # choose test
+#   if (isTRUE(norm_res$normality_satisfied)) {
+#     result <- fn_for_ds_test_1(data)        
+#   } else {
+#     result <- fn_for_ds_test_2(data, ...)   
+#   }
+#   
+#   return(result$p.value)
+# }
 
 calculate_power <- function(
     sample_sizes    = c(10, 20, 30, 40, 50),
@@ -159,14 +159,14 @@ print(auc_table)
 
 #-------------------------------------------------------
 # save RData
-save(
-  sample_sizes,
-  power_anova_param,
-  power_anova_nonpar,
-  power_anova_adapt,
-  auc_table,
-  file = "power_compare_anova_test.RData"
-)
+# save(
+#   sample_sizes,
+#   power_anova_param,
+#   power_anova_nonpar,
+#   power_anova_adapt,
+#   auc_table,
+#   file = "power_compare_anova_test.RData"
+# )
 #------------------------------------------------------
 
 

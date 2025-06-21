@@ -85,6 +85,8 @@ for (dist in distributions) {
 #-------------------------------------------------------
 # save RData
 save(
+  results,
+  adaptive_pvals_wilcox,
   power_results,
   n,
   Nsim,
@@ -97,7 +99,7 @@ save(
 EPG <- power_results$LogNormal$adaptive_wilcox - power_results$LogNormal$power_t.test
 EPL <- power_results$Normal$power_t.test - power_results$Normal$adaptive_wilcox
 plot(EPL, EPG, type = "l", col = "red")
-par(mfrow = c(1, 2))
-plot(alpha_pretest, EPL, type = "l")
-plot(alpha_pretest, EPG, type = "l")
+# par(mfrow = c(1, 2))
+# plot(alpha_pretest, EPL, type = "l")
+# plot(alpha_pretest, EPG, type = "l")
 

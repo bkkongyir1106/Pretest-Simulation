@@ -6,12 +6,10 @@ pacman::p_load(e1071, tseries, dgof,  nortest, ggplot2, dplyr, tidyverse, Laplac
 # ----------------------------------------------------
 #   Generate data from different distribution 
 # ---------------------------------------------------
-generate_data <- function(n, dist, par = NULL) {
+generate_data <- function(n, dist) {
   if (dist == "Normal") {
-    if (is.null(par)){par <- c(0,1)}
-    x <- rnorm(n, mean = par[1], sd = par[2])
+    x <- rnorm(n, mean = 0, sd = 1)
   } else if (dist == "Chi-Square") {
-    par <- 3
     x <- (rchisq(n, df = 3) - 3) / sqrt(6)
   } else if (dist == "Gamma") {
     x <- (rgamma(n, shape = 3, rate = 0.1) - 30) / sqrt(300)
