@@ -164,7 +164,7 @@ sample_size <- 10
 N <- 100            
 
 normal_data1 <- generate_data(sample_size, 4*N, "normal", "Normal")
-normal_data2 <- generate_data(sample_size, 3*N, "normal_25", "Normal")
+normal_data2 <- generate_data(sample_size, 3*N, "normal_50", "Normal")
 normal_data3 <- generate_data(sample_size, 3*N, "normal_5", "Normal")
 # Generate non-normal data from several distributions
 lognormal <- generate_data(sample_size, N, "LogNormal", "Non_Normal")

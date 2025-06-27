@@ -1,12 +1,12 @@
 rm(list = ls())
-if(!require("pacman")) install.packages("pacman")
-pacman::p_load(e1071, tseries, nortest, gbm, lawstat, infotheo, ineq, caret, pROC, ROCR, randomForest, evd, discretization, nnet, ggplot2)
-
 # ---------------------------
 # Set Directories & Load Functions
 # ---------------------------
 setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/SPRING2025/ML Models/version 5")
 source("~/Desktop/OSU/Research/Pretest-Simulation/Simulation/SPRING2025/ML Models/fun.R")
+
+if(!require("pacman")) install.packages("pacman")
+pacman::p_load(e1071, tseries, nortest, gbm, lawstat, infotheo, ineq, caret, pROC, ROCR, randomForest, evd, discretization, nnet, ggplot2)
 
 # ---------------------------
 # Define Feature Extraction Functions
@@ -28,89 +28,70 @@ calculate_outliers <- function(samples) {
   return(sum(samples < (qnt[1] - H) | samples > (qnt[2] + H)))
 }
 
-calculate_shapiro_wilk <- function(samples) {
-  return(as.numeric(shapiro.test(samples)$statistic))
-}
-
-calculate_shapiro_francia <- function(samples) {
-  return(as.numeric(lawstat::sf.test(samples)$statistic))
-}
-
-calculate_lilliefors <- function(samples) {
-  return(as.numeric(nortest::lillie.test(samples)$statistic))
-}
-
-calculate_cramer_von_mises <- function(samples) {
-  return(as.numeric(nortest::cvm.test(samples)$statistic))
-}
-
 calculate_entropy <- function(samples) {
   return(infotheo::entropy(discretize(samples, nbins = 10)))
-}
-
-calculate_mad <- function(samples) {
-  return(mean(abs(samples - mean(samples))))
-}
-
-calculate_peak_to_trough <- function(samples) {
-  return(max(samples) / abs(min(samples)))
-}
-
-calculate_sample_size <- function(samples) {
-  return(length(samples))
-}
-
-calculate_range <- function(samples) {
-  return(max(samples) - min(samples))
-}
-
-calculate_cv <- function(samples) {
-  return(sd(samples) / mean(samples))
-}
-
-calculate_energy <- function(samples) {
-  return(sum(samples^2))
 }
 
 calculate_features <- function(samples) {
   skewness <- e1071::skewness(samples)
   kurtosis <- e1071::kurtosis(samples)
+  mean_val <-  mean(samples)
+  median_val  <- median(samples)
+  variance <- var(samples)
+  calculate_iqr  <- IQR(samples)
+  calculate_mad   <- mad(samples)
+  calculate_rms   <- sqrt(mean(samples^2))
+  range <- max(samples) - min(samples)
+  cv <- sd(samples) / mean(samples)
+  energy <- sum(samples^2)
+  
+  # Statistical tests for normality
+  shapiro_wilk  <- as.numeric(shapiro.test(samples)$statistic)
+  shapiro_francia <- as.numeric(nortest::sf.test(samples)$statistic)
+  lilliefors_stat <- as.numeric(nortest::lillie.test(samples)$statistic)
+  cramer_von_mises <-  as.numeric(nortest::cvm.test(samples)$statistic)
   jb_stat <- as.numeric(tseries::jarque.bera.test(samples)$statistic)
   ad_stat <- as.numeric(nortest::ad.test(samples)$statistic)
+
   zero_crossing_rate <- calculate_zero_crossing_rate(samples)
   gini_coefficient <- calculate_gini_coefficient(samples)
   outliers <- calculate_outliers(samples)
-  shapiro_wilk <- calculate_shapiro_wilk(samples)
-  lilliefors_stat <- calculate_lilliefors(samples)
-  cramer_von_mises <- calculate_cramer_von_mises(samples)
-  range_val <- calculate_range(samples)
-  cv <- calculate_cv(samples)
-  energy <- calculate_energy(samples)
-  
+  peak_to_trough <- max(samples) / abs(min(samples))
+  entropy_rate <- calculate_entropy(samples)
   
   features <- data.frame(
     #JB_Statistics incorporate both skewness and kurtosis, so we can exclude them
     Skewness = skewness,
     Kurtosis = kurtosis,
+    mean_val = mean_val,
+    median_val = median_val,
+    variance = variance,
+    calculate_iqr = calculate_iqr,
+    calculate_mad = calculate_mad,
+    calculate_rms = calculate_rms,
+    range = range,
+    Energy = energy,
+    sd = sd(samples),
+    Coefficient_of_Variation = cv,
+    Shapiro_Wilk = shapiro_wilk,
+    shapiro_francia = shapiro_francia,
+    Liliefors = lilliefors_stat,
+    Cramer_Von_Mises = cramer_von_mises,
     JB_Statistic = jb_stat,
     AD_Statistic = ad_stat,
     Zero_Crossing_Rate = zero_crossing_rate,
     Outliers = outliers,
-    Shapiro_Wilk = shapiro_wilk,
-    Liliefors = lilliefors_stat,
-    Cramer_Von_Mises = cramer_von_mises,
-    Range = range_val,
-    Coefficient_of_Variation = cv,
-    Energy = energy,
-    mean_val = mean(samples),
-    sd = sd(samples)
+    peak_to_trough = peak_to_trough,
+    gini_coefficient = gini_coefficient,
+    entropy_rate = entropy_rate
+  
   )
   return(features)
 }
 
-# ---------------------------
+# ------------------------------------------
 # Standardization & Normalization Function
-# ---------------------------
+# ------------------------------------------
 preprocess_data <- function(train_data) {
   numeric_train <- train_data[, sapply(train_data, is.numeric)]
   
@@ -121,17 +102,17 @@ preprocess_data <- function(train_data) {
   # Step 2: Normalization (Rescale to [0,1])
   preProcNorm <- preProcess(train_std, method = "range")
   train_norm <- predict(preProcNorm, train_std)
-  
+  # add labels back
   train_norm$Label <- train_data$Label
   
   return(list(train = train_norm, preProcStandard = preProcStandard, preProcNorm = preProcNorm))
 }
 
 # ---------------------------
-# Data Generation Function (balanced sample size across groups)
+# Data Generation Function 
 # ---------------------------
-generate_data <- function(sample_size, N, dist = "normal", label) {
-  data <- do.call(rbind, lapply(1:N, function(x) {
+generate_data <- function(sample_size, num.sim, dist = "normal", label) {
+  data <- do.call(rbind, lapply(1:num.sim, function(x) {
     samples <- generate_samples(sample_size, dist) 
     features <- calculate_features(samples)
     features$Label <- label
@@ -144,28 +125,32 @@ generate_data <- function(sample_size, N, dist = "normal", label) {
 # Set Seed for Reproducibility and Generate Training Data
 # ---------------------------
 set.seed(12345)
-sample_size <- 8  
-N <- 100            
+sample_size <- 10 
+num.sim <- 100            
 
-normal_data1 <- generate_data(sample_size, 4*N, "normal", "Normal")
-normal_data2 <- generate_data(sample_size, 3*N, "normal_5", "Normal")
-normal_data3 <- generate_data(sample_size, 3*N, "normal_100", "Normal")
-# Generate non-normal data from several distributions
-lognormal <- generate_data(sample_size, N, "LogNormal", "Non_Normal")
-chisq_data   <- generate_data(sample_size, N, "Chi-Square", "Non_Normal")
-exp_data     <- generate_data(sample_size, N, "Exponential", "Non_Normal")
-Weibull      <- generate_data(sample_size, N, "Weibull", "Non_Normal")
-Pareto      <- generate_data(sample_size, N, "Pareto", "Non_Normal")
-Laplace      <- generate_data(sample_size, N, "Laplace", "Non_Normal")
-Gamma        <- generate_data(sample_size, N, "Gamma", "Non_Normal")
-Uniform      <- generate_data(sample_size, N, "Uniform", "Non_Normal")
-t       <- generate_data(sample_size, N, "t", "Non_Normal")
-t_15       <- generate_data(sample_size, N, "t_15", "Non_Normal")
-t_25       <- generate_data(sample_size, N, "t_25", "Non_Normal")
-beta       <- generate_data(sample_size, N, "beta", "Non_Normal")
+# Normal data
+normal_data1 <- generate_data(sample_size, 2*num.sim, "normal", "Normal")
+normal_data2 <- generate_data(sample_size, 2*num.sim, "normal_5", "Normal")
+normal_data3 <- generate_data(sample_size, 2*num.sim, "normal_15", "Normal")
+normal_data4 <- generate_data(sample_size, 2*num.sim, "normal_25", "Normal")
+normal_data5 <- generate_data(sample_size, 2*num.sim, "normal_50", "Normal")
+normal_data6 <- generate_data(sample_size, 2*num.sim, "normal_100", "Normal")
+# non-normal data 
+lognormal <- generate_data(sample_size, num.sim, "LogNormal", "Non_Normal")
+chisq_data   <- generate_data(sample_size, num.sim, "Chi_Square", "Non_Normal")
+exp_data     <- generate_data(sample_size, num.sim, "Exponential", "Non_Normal")
+Weibull      <- generate_data(sample_size, num.sim, "Weibull", "Non_Normal")
+Pareto      <- generate_data(sample_size, num.sim, "Pareto", "Non_Normal")
+Laplace      <- generate_data(sample_size, num.sim, "Laplace", "Non_Normal")
+Gamma        <- generate_data(sample_size, num.sim, "Gamma", "Non_Normal")
+Uniform      <- generate_data(sample_size, num.sim, "Uniform", "Non_Normal")
+t       <- generate_data(sample_size, num.sim, "t", "Non_Normal")
+t_15       <- generate_data(sample_size, num.sim, "t_5", "Non_Normal")
+t_25       <- generate_data(sample_size, num.sim, "t_15", "Non_Normal")
+beta       <- generate_data(sample_size, num.sim, "beta", "Non_Normal")
 
-non_normal_data <- rbind(lognormal, chisq_data,  exp_data, Weibull, Pareto, Laplace, Gamma, Uniform, t, t_25)
-normal_data <- rbind(normal_data1, normal_data2, normal_data3)
+non_normal_data <- rbind(lognormal, chisq_data,  exp_data, Weibull, Pareto, Laplace, Gamma, Uniform, t, t_15)
+normal_data <- rbind(normal_data1, normal_data3, normal_data4, normal_data5, normal_data6)
 
 data_all <- rbind(normal_data, non_normal_data)
 data_all$Label <- as.factor(data_all$Label)
@@ -180,18 +165,16 @@ train_norm <- norm_result$train
 train_norm$Label <- relevel(train_norm$Label, ref = "Non_Normal")
 
 ### Train the models
-# ---------------------------
+# ---------------------------------------------------
 # Define Common Training Control for Cross-Validation
 set.seed(12345)
-# ---------------------------
+# ---------------------------------------------------
 ctrl <- trainControl(method = "cv", number = 10, 
                      summaryFunction = twoClassSummary,
                      classProbs = TRUE, 
                      savePredictions = "final")
 
-# ---------------------------
-# Train Machine Learning Models
-# ---------------------------
+
 # Logistic Regression
 log_model <- train(Label ~ .,
                    data = train_norm,
@@ -237,29 +220,6 @@ knn_model <- train(Label ~ .,
                    trControl = ctrl, 
                    metric = "ROC")
 
-
-# Extract and display the tuning parameters for each model
-list(
-  Logistic_Regression = log_model$bestTune,
-  Random_Forest = rf_model$bestTune,
-  Neural_Network = ann_model$bestTune,
-  Gradient_Boosting = gbm_model$bestTune,
-  Support_Vector_Machine = svm_model$bestTune,
-  K_Nearest_Neighbors = knn_model$bestTune
-)
-
-# Extract accuracy for each fold
-list(
-  Logistic_Regression = log_model$results$Accuracy,
-  Random_Forest = rf_model$results$Accuracy,
-  Neural_Network = ann_model$results$Accuracy,
-  Gradient_Boosting = gbm_model$results$Accuracy,
-  Support_Vector_Machine = svm_model$results$Accuracy,
-  K_Nearest_Neighbors = knn_model$results$Accuracy
-)
-
-
-
 # Collect all models into a list for later use
 models_list <- list(
   "Logistic Regression" = log_model,
@@ -271,7 +231,7 @@ models_list <- list(
 )
 
 ### Predictions on unseen data row - by - row
-simulate_predictions <- function(distributions ,n_iter = 1000, n = 8,
+simulate_predictions <- function(distributions ,n_iter = 1000, n = sample_size,
                                  trained_models, preProcStandard, preProcNorm) {
   
   # Initialize storage for all model predictions
@@ -325,6 +285,7 @@ simulate_predictions <- function(distributions ,n_iter = 1000, n = 8,
   # Compute confusion matrices and metrics for each model
   evaluation_results <- list()
   for (model_name in names(all_predictions)) {
+    
     pred_df <- all_predictions[[model_name]]
     
     # Convert to factors with consistent levels
@@ -347,14 +308,16 @@ simulate_predictions <- function(distributions ,n_iter = 1000, n = 8,
   
   return(evaluation_results)
 }
-
+# --------------------------------------------
+#             Example predictions
+# --------------------------------------------
 set.seed(12345)
 
-distribution_set <- c("normal", "normal_15", "beta", "Chi-Square")
+distribution_set <- c("normal", "normal_15", "t_10", "beta")
 eval_results <- simulate_predictions(
   distributions = distribution_set,
   n_iter = 1000,
-  n = 8,
+  n = sample_size,
   trained_models = models_list,
   preProcStandard = norm_result$preProcStandard,
   preProcNorm = norm_result$preProcNorm
@@ -515,3 +478,4 @@ plot_combined_roc_ggplot <- function(eval_results) {
     theme(legend.title = element_blank())
 }
 plot_combined_roc_ggplot(eval_results)
+

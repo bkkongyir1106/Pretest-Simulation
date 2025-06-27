@@ -43,9 +43,10 @@ generate_pval <- function(n, N, dist, effect_size, B) {
 }
 #--------------------------------------------------------
 # Parameters
-alpha_pretest <- seq(from = 0.001, to = 1, by = 0.01)
+alpha_pretest <- seq(from = 0.001, to = 1, by = 0.001)
+#alpha_pretest <- c(0.01, 0.05, 0.1)
 n <- 10
-Nsim <- 1e6
+Nsim <- 1e7
 distributions <- c("Normal", "LogNormal")
 effect_size <- 0.5
 perm <- 1e3
@@ -99,7 +100,7 @@ save(
 EPG <- power_results$LogNormal$adaptive_wilcox - power_results$LogNormal$power_t.test
 EPL <- power_results$Normal$power_t.test - power_results$Normal$adaptive_wilcox
 plot(EPL, EPG, type = "l", col = "red")
-# par(mfrow = c(1, 2))
-# plot(alpha_pretest, EPL, type = "l")
-# plot(alpha_pretest, EPG, type = "l")
+par(mfrow = c(1, 2))
+plot(alpha_pretest, EPL, type = "l")
+plot(alpha_pretest, EPG, type = "l")
 

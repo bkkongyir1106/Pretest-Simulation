@@ -6,7 +6,7 @@ pacman::p_load(e1071, tseries, nortest, gbm, lawstat, infotheo, ineq, caret, pRO
 # ---------------------------
 # Set Directories & Load Functions
 # ---------------------------
-setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/MACHINE LEARNING APPROACH")
+setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/SPRING2025/ML Models/version 5")
 source("~/Desktop/OSU/Research/Pretest-Simulation/Simulation/SPRING2025/ML Models/fun.R") 
 
 # ---------------------------

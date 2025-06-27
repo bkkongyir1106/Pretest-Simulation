@@ -20,8 +20,8 @@ ui <- fluidPage(
       fileInput("gen_data_file", "Upload Data Generation Function"),
       fileInput("get_params_file", "Upload Parameter Function"),
       fileInput("norm_obj_file", "Upload Normality Object Function"),
-      fileInput("test1_file", "Upload Parametric Test Function"),
-      fileInput("test2_file", "Upload Nonparametric Test Function"),
+      fileInput("test1_file", "Upload Test 1 Function"),
+      fileInput("test2_file", "Upload Test 2 Function"),
       
       selectInput("norm_test", "Normality Test:",
                   choices = c("Shapiro-Wilk" = "SW",
@@ -33,7 +33,7 @@ ui <- fluidPage(
                               "Cramer-Von-Mises" = "CVM")),
       numericInput("alpha", "Significance Level (α):", 0.05, min = 0.01, max = 0.2, step = 0.01),
       sliderInput("sample_sizes", "Sample Sizes Range:", min = 5, max = 200, value = c(10, 50), step = 5),
-      numericInput("n_sim", "Number of Simulations:", 1000, min = 100, max = 10000),
+      numericInput("n_sim", "Number of Simulations:", value =  1000, min = 100, max = 10000),
       actionButton("run", "Run Simulation", class = "btn-primary"),
       
       tags$hr(),
@@ -42,8 +42,8 @@ ui <- fluidPage(
         tags$li("gen_data: Data generation function"),
         tags$li("get_parameters: Parameter setup function"),
         tags$li("fn_get_norm_obj: Normality object extractor"),
-        tags$li("fn_for_ds_test_1: Parametric test"),
-        tags$li("fn_for_ds_test_2: Nonparametric test")
+        tags$li("fn_for_ds_test_1: Test 1 function"),
+        tags$li("fn_for_ds_test_2: Test 2 function")
       )
     ),
     
@@ -53,12 +53,14 @@ ui <- fluidPage(
         tabPanel("AUC Results", tableOutput("auc_table")),
         tabPanel("Documentation",
                  tags$h3("User Framework for Statistical Analysis"),
-                 tags$p("This app simulates power for parametric, nonparametric, and adaptive (normality-based) testing approaches."),
+                 tags$p("This app simulates power/Type I error for different statistical test approaches."),
                  tags$h4("Inputs:"),
                  tags$ul(
                    tags$li("Downstream test: t-test, ANOVA, or regression, etc"),
                    tags$li("Normality test: SW, KS, JB, etc."),
-                   tags$li("α, sample size range, number of simulations, error distribution")
+                   tags$li("Significance levels,α"),
+                   tags$li("Sample size range"),
+                   tags$li("Number of simulations(N)")
                  ),
                  tags$h4("Outputs:"),
                  tags$ul(
@@ -80,24 +82,23 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
-  # wrapper that always lets get_parameters() override gen_data() defaults:
   gen_data_override <- function(n) {
-    # 1) grab the user’s parameter list
+    
+    # grab the user’s parameter
     user_args <- get_parameters(n)
     
-    # 2) grab the default arguments of gen_data()
+    # otherwise grab the default arguments of gen_data()
     default_args <- formals(gen_data)
     
-    # 3) merge them (get_parameters wins)
-    
+    # merge them 
     final_args <- modifyList(as.list(default_args), user_args)
     
-    # 4) call gen_data() with that named list
+    # call gen_data() 
     do.call(gen_data, final_args)
   }
   
   results <- eventReactive(input$run, {
- 
+    # range of sample sizes
     sizes <- seq(input$sample_sizes[1], input$sample_sizes[2], by = 5)
     
     # Create environment for user functions
@@ -124,11 +125,11 @@ server <- function(input, output, session) {
     # Verify required functions exist
     required_funcs <- c("gen_data", "get_parameters", "fn_get_norm_obj", 
                         "fn_for_ds_test_1", "fn_for_ds_test_2")
+    
     missing_funcs <- setdiff(required_funcs, ls(envir = user_env))
     
     if (length(missing_funcs) > 0) {
-      showNotification(paste("Missing functions:", paste(missing_funcs, collapse = ", ")), 
-                       type = "error")
+      showNotification(paste("Missing functions:", paste(missing_funcs, collapse = ", ")), type = "error")
       return(NULL)
     }
     
@@ -205,7 +206,7 @@ server <- function(input, output, session) {
     
     
     auc_df <- data.frame(
-      Method = c("Parametric", "Nonparametric", "Adaptive"),
+      Method = c("Test 1", "Test 2", "Test 3(Adaptive)"),
       AUC = c(
         compute_area(sizes, power_param),
         compute_area(sizes, power_nonpar),
@@ -228,12 +229,17 @@ server <- function(input, output, session) {
     res <- results()
     if (is.null(res)) return(NULL)
     
-    # decide threshold & legend position &  y-limits
+    # isolate create a non-reactive scope
+    metric    <- isolate(input$metric)
+    test_type <- isolate(input$test_type)
+    norm_test <- isolate(input$norm_test)
+    
+    # dynamically decide y-limits and labels
     is_power   <- input$metric == "Power"
     threshold  <- if (is_power) 0.8 else 0.05
     legend_pos <- if (is_power) "bottomright" else "topleft"
-    # set y-limits dynamically
     y_limits <- if (is_power) c(0, 1) else c(0, 0.1)
+    y_label <- if (is_power) "Power" else "Type I error"
     
     # unpack
     sizes     <- res$sizes
@@ -243,15 +249,15 @@ server <- function(input, output, session) {
     auc_vals  <- res$auc$AUC
     
     # main + subtitle
-    main_title <- paste(is_power, "vs Sample Size")
+    main_title <- paste(input$metric, "vs Sample Size")
     sub_title  <- paste("Test Type:", input$test_type, 
                         "| Normality Test:", input$norm_test)
     
-    # plot parametric
+    # create the plot 
     plot(sizes, p_param, type = "b", pch = 19,
          col  = "red",
          ylim = y_limits,
-         xlab = "Sample Size", ylab = is_power,
+         xlab = "Sample Size", ylab = y_label,
          main = main_title, sub = sub_title)
     
     # add the others
@@ -261,25 +267,20 @@ server <- function(input, output, session) {
     # reference line
     abline(h = threshold, lty = 2, col = "gray50")
     
-
-    
     # legend with AUC
-    legend(legend_pos,
-           legend = paste0(
-             c("Parametric","Nonparametric","Adaptive"),
-             " (AUC=", 
-             formatC(res$auc$AUC, format = "f", digits = 4),
-             ")"
-           ),
-           title    = paste("AUC for", input$metric),
-           col      = c("red","blue","green"),
-           pch      = c(19,17,15),
-           lty      = 1,
-           bty      = "o",        
-           box.lwd  = 1.5         
+legend(legend_pos,
+      legend = paste0(
+      c("Test1(Parametric)","Test2(Nonparametric)","Test3(Adaptive)"),
+      " (AUC=", formatC(res$auc$AUC, format = "f", digits = 4),")"
+      ),
+      title    = paste("AUC for", input$metric),
+      col      = c("red","blue","green"),
+      pch      = c(19,17,15),
+      lty      = 1,
+      bty      = "o",        
+      box.lwd  = 1.5         
     )
   })
-  
   
   output$auc_table <- renderTable({
     res <- results()

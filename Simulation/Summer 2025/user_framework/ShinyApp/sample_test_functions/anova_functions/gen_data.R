@@ -1,8 +1,8 @@
 gen_data <- function(
     n_per_group = 20,  
-    means = c(0, 0.2, 0.4),  
+    means = c(0, 0.2, 0.4, 0.5, 0.8),  
     sd = 1,            
-    dist = "Normal"     
+    dist = "LogNormal"     
 ) {
   k <- length(means)
   group_labels <- LETTERS[1:k]

@@ -11,39 +11,48 @@ generate_data <- function(n, dist, par = NULL) {
     if (is.null(par)){par <- c(0,1)}
     x <- rnorm(n, mean = par[1], sd = par[2])
   } else if (dist == "Chi-Square") {
-    par <- 3
-    x <- (rchisq(n, df = 3) - 3) / sqrt(6)
+      if(is.null(par)){par <- 3}
+    x <- (rchisq(n, df = par) - par) / sqrt(2*par)
   } else if (dist == "Gamma") {
-    x <- (rgamma(n, shape = 3, rate = 0.1) - 30) / sqrt(300)
+      if (is.null(par)){par <- c(3, 0.1)}
+    x <- (rgamma(n, shape = par[1], rate = par[2]) - par[1]/par[2]) / sqrt(par[1]/par[2]^2)
   } else if (dist == "Exponential") {
-    x <- rexp(n, rate = 1) - 1
+      if (is.null(par)){par <- 1}
+    x <- rexp(n, rate = par) - par
   } else if (dist == "t") {
-    x <- rt(n, df = 7) / sqrt(7/5)  # Variance = df/(df-2) = 7/5
+      if (is.null(par)){par <- 3}
+    x <- rt(n, df = par) / sqrt(par/(par - 1))  # Variance = df/(df-2) = 7/5
   } else if (dist == "Uniform") {
-    x <- (runif(n, min = 0, max = 1) - 0.5) * sqrt(12)
+    if (is.null(par)){par <- c(0,1)}
+    x <- (runif(n, min = par[1], max = par[2]) - (par[1] + par[2])/2) * sqrt((par[2] - par[1])^2/12)
   } else if (dist == "Laplace") {
-    # Variance = 2*scale^2 = 2*16=32
-    x <- rlaplace(n, location = 0, scale = 4) / sqrt(32)
+    # Variance = 2*scale^2 
+    if (is.null(par)){par <- c(0, 4)}
+    x <- rlaplace(n, location = par[1], scale = par[2]) / sqrt(2 * par[2]^2)
   } else if (dist == "Weibull") {
+    if (is.null(par)){par <- c(1, 2)}
     shape <- 1
     scale <- 2
-    mean_w <- scale * gamma(1 + 1/shape)  # = 2*gamma(2) = 2
-    var_w <- scale^2 * (gamma(1 + 2/shape) - gamma(1 + 1/shape)^2)  # = 4*(gamma(3)-gamma(2)^2) = 4*(2-1) = 4
-    x <- (rweibull(n, shape = shape, scale = scale) - mean_w) / sqrt(var_w)
+    mean_w <- par[2] * gamma(1 + 1/par[1])  
+    var_w <- par[2]^2 * (gamma(1 + 2/par[1]) - gamma(1 + 1/par[1])^2)  
+    x <- (rweibull(n, shape = par[1], scale = par[2]) - mean_w) / sqrt(var_w)
   } else if (dist == "LogNormal") {
-    mean_ln <- exp(0 + 0.5)  # exp(μ + σ²/2)
-    var_ln <- (exp(1) - 1) * exp(2*0 + 1)  # (e^{σ²}-1)e^{2μ+σ²}
-    x <- (rlnorm(n, meanlog = 0, sdlog = 1) - mean_ln) / sqrt(var_ln)
+    if (is.null(par)){par <- c(0, 1)}
+    mean_ln <- exp(par[1] + (par[2]^2)/2)  # exp(μ + σ²/2)
+    var_ln <- (exp(par[2]^2) - 1) * exp(2*par[1] + par[2])  # (e^{σ²}-1)e^{2μ+σ²}
+    x <- (rlnorm(n, meanlog = par[1], sdlog = par[2]) - mean_ln) / sqrt(var_ln)
   } else if (dist == "Contaminated") {
-    br <- rbinom(n, size = 1, prob = 0.75)
-    sd_br <- ifelse(br == 1, 5, 1)  # SD=1 (75%), SD=5 (25%)
-    x <- rnorm(n, sd = sd_br) / sqrt(7)  # Total variance = 0.75*1 + 0.25*25 = 7
+    if (is.null(par)){par <- c(0.75, 0, 1, 5)}
+    br <- rbinom(n, size = 1, prob = par)
+    sd_br <- ifelse(br == 1, par[4], par[3])  
+    x <- rnorm(n, mean = par[2],  sd = sd_br) / sqrt(par[1] * par[3]^2 + (1-par[1]) * par[4]^2)  
   } else if (dist == "Pareto") {
+    if (is.null(par)){par <- c(1, 3)}
     scale <- 1
     shape <- 3
-    mean_p <- scale / (shape - 1)  # = 1/2
-    var_p <- (scale^2 * shape) / ((shape-1)^2 * (shape-2))  # = (1*3)/(4*1) = 3/4
-    x <- (VGAM::rpareto(n, scale = scale, shape = shape) - mean_p) / sqrt(var_p)
+    mean_p <- par[1] / (par[2] - 1) 
+    var_p <- (par[1]^2 * par[2]) / ((par[2]-1)^2 * (par[2]-2))  
+    x <- (VGAM::rpareto(n, scale = par[1], shape = par[2]) - mean_p) / sqrt(var_p)
   } else {
     stop("Unsupported distribution: ", dist)
   }
