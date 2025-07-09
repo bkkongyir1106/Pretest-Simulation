@@ -60,16 +60,21 @@ calculate_sample_size    <- function(samples) length(samples)
 calculate_acf1           <- function(samples) {
   stats::acf(samples, plot=FALSE, lag.max=1)$acf[2]
 }
-calculate_box_test       <- function(samples) {
+calculate_box_test  <- function(samples) {
   as.numeric(Box.test(samples, lag = 1, type = "Ljung-Box")$statistic)
 }
 
 # Frequency-domain features
+calculate_sample_entropy <- function(samples) {
+  return(infotheo::entropy(discretize(samples, nbins = 10)))
+}
+
 calculate_spectral_entropy <- function(samples) {
   spec <- stats::spec.pgram(samples, plot = FALSE)
   p <- spec$spec / sum(spec$spec)
   -sum(p * log(p))
 }
+
 calculate_spectral_centroid <- function(samples) {
   spec <- stats::spec.pgram(samples, plot = FALSE)
   p <- spec$spec / sum(spec$spec)
@@ -85,9 +90,7 @@ calculate_hjorth <- function(samples) {
   c(Activity = activity, Mobility = mobility, Complexity = complexity)
 }
 
-calculate_sample_entropy <- function(samples) {
-  return(infotheo::entropy(discretize(samples, nbins = 10)))
-}
+
 calculate_fractal_dimension <- function(samples) {
   res <- fractaldim::fd.estimate(samples, methods = "madogram")
   as.numeric(res$fd)
@@ -211,7 +214,7 @@ generate_data <- function(sample_size, N, dist = "normal", label) {
 # Generate the Data
 # ---------------------------
 set.seed(12345)
-sample_size <- 50  
+sample_size <- 10  
 N <- 100            
 
 normal_data1 <- generate_data(sample_size, 4*N, "normal", "Normal")
@@ -219,7 +222,7 @@ normal_data2 <- generate_data(sample_size, 3*N, "normal_50", "Normal")
 normal_data3 <- generate_data(sample_size, 3*N, "normal_5", "Normal")
 # non-normal data 
 lognormal <- generate_data(sample_size, N, "LogNormal", "Non_Normal")
-chisq_data   <- generate_data(sample_size, N, "Chi-Square", "Non_Normal")
+chisq_data   <- generate_data(sample_size, N, "Chi_Square", "Non_Normal")
 exp_data     <- generate_data(sample_size, N, "Exponential", "Non_Normal")
 Weibull      <- generate_data(sample_size, N, "Weibull", "Non_Normal")
 Pareto      <- generate_data(sample_size, N, "Pareto", "Non_Normal")
@@ -421,7 +424,7 @@ distribution_set <- c("normal_15", "normal_100", "beta", "extremeskew")
 eval_results <- simulate_predictions(
   distributions = distribution_set,
   n_iter = 1000,
-  n = 50,
+  n = 10,
   trained_models = models_list,
   preProcStandard = norm_result$preProcStandard,
   preProcNorm = norm_result$preProcNorm

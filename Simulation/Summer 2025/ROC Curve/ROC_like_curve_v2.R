@@ -1,0 +1,120 @@
+# Read in user-defined functions
+source("~/Desktop/OSU/Research/Pretest-Simulation/functions/User_defined_functions.R")
+
+# Set working directory
+setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Simulation/Summer 2025/ROC Curve")
+
+#-----------------------------------------------------------
+# Parameters
+alpha_pretest <- seq(from = 0.009, to = 0.1, by = 0.005)
+n <- 10
+Nsim <- 1e7
+distributions <- c("Normal", "LogNormal")
+effect_size <- 0.85
+perm <- 1e3
+
+#-----------------------------------------------------------
+# Generate p-values function
+generate_pval <- function(n, N, dist, effect_size, B) {
+  pval_t.test <- pval_u.test <- pval_perm.test <- numeric(N)
+  p_sw_x <- p_sw_y <- numeric(N)
+  
+  for (i in 1:N) {
+    x <- generate_data(n, dist)
+    y <- generate_data(n, dist)
+    
+    # SW-test p-values
+    p_sw_x[i] <- shapiro.test(x)$p.value
+    p_sw_y[i] <- shapiro.test(y)$p.value
+    
+    # downstream test p-values
+    pval_t.test[i] <- t.test(x, y + effect_size)$p.value
+    pval_u.test[i] <- wilcox.test(x, y + effect_size)$p.value
+    #pval_perm.test[i] <- two_sample_permutation_test(x, y + effect_size, B)
+  }
+  
+  # Return all p-values
+  return(list(
+    p_sw_x = p_sw_x,
+    p_sw_y = p_sw_y,
+    pval_t.test = pval_t.test,
+    pval_u.test = pval_u.test
+    #pval_perm.test = pval_perm.test
+  ))
+}
+#-----------------------------------------------------------
+# Store power values
+power_results <- list()
+results <- list()
+
+for (dist in distributions) {
+  results[[dist]] <- generate_pval(n = n, N = Nsim, dist = dist, effect_size = effect_size, B = perm)
+  
+  # Calculate power
+  power_results[[dist]] <- list(
+    power_t.test = mean(results[[dist]]$pval_t.test < 0.05),
+    power_wilcox.test = mean(results[[dist]]$pval_u.test < 0.05)
+    #power_perm.test = mean(results[[dist]]$pval_perm.test < 0.05)
+  )
+  
+  for (j in seq_along(alpha_pretest)) {
+    alpha <- alpha_pretest[j]
+    
+    adaptive_pvals_wilcox <- ifelse(
+      results[[dist]]$p_sw_x > alpha & results[[dist]]$p_sw_y > alpha,
+      results[[dist]]$pval_t.test,
+      results[[dist]]$pval_u.test
+    )
+
+    # adaptive_pvals_perm <- ifelse(
+    #   results[[dist]]$p_sw_x > alpha & results[[dist]]$p_sw_y > alpha,
+    #   results[[dist]]$pval_t.test,
+    #   results[[dist]]$pval_perm.test
+    # )
+
+    power_results[[dist]]$adaptive_wilcox[j] <- mean(adaptive_pvals_wilcox < 0.05)
+    #power_results[[dist]]$adaptive_perm[j] <- mean(adaptive_pvals_perm < 0.05)
+    power_results[[dist]]$pr_sw_vec[j] <- mean(results[[dist]]$p_sw_x <= alpha 
+                                               | results[[dist]]$p_sw_y <= alpha)
+  }
+}
+
+#-----------------------------------------------------------
+# Save results
+save(
+  results,
+  power_results,
+  n,
+  Nsim,
+  distributions,
+  alpha_pretest,
+  file = "ROC_like_curve_v1.RData"
+)
+
+#-------------------------------------------------------------------------------------------
+# Evaluate Efficiency Gains/Losses
+EPG  <- power_results$LogNormal$adaptive_wilcox - power_results$LogNormal$power_t.test
+EPL  <- power_results$Normal$power_t.test - power_results$Normal$adaptive_wilcox
+
+# Calculate Point estimates
+EPG_lognormal = power_results$LogNormal$power_wilcox.test - power_results$LogNormal$power_t.test
+EPL_normal = power_results$Normal$power_t.test - power_results$Normal$power_wilcox.test 
+
+#----------------------Plot results-----------------------------
+# Save the  plots
+pdf("efficiency_comparison.pdf", width = 12, height = 6)
+par(mfrow = c(1, 2))
+plot(alpha_pretest, EPL, type = "l", col = "blue", ylab = "EPL", xlab = expression(alpha), main = "Expected Power Loss (Normal)")
+plot(alpha_pretest, EPG, type = "l", col = "red", ylab = "EPG", xlab = expression(alpha), main = "Expected Power Gain (LogNormal)")
+dev.off()
+
+# Save the ROC like curve plot
+pdf("ROC_like_curve.pdf", width = 6, height = 6)
+plot(EPL, EPG, type = "l", col = "blue",
+     xlab = "Power Loss (Normal)",
+     ylab = "Power Gain (LogNormal)",
+     main = "ROC like Curve: EPG vs EPL")
+points(x = EPL_normal, y = EPG_lognormal)
+dev.off()
+
+

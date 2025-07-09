@@ -171,7 +171,7 @@ normal_data2 <- generate_data(sample_size, 3*N, "normal_25", "Normal")
 normal_data3 <- generate_data(sample_size, 3*N, "normal_5", "Normal")
 # Generate non-normal data from several distributions
 lognormal <- generate_data(sample_size, N, "LogNormal", "Non_Normal")
-chisq_data   <- generate_data(sample_size, N, "Chi-Square", "Non_Normal")
+chisq_data   <- generate_data(sample_size, N, "Chi_Square", "Non_Normal")
 exp_data     <- generate_data(sample_size, N, "Exponential", "Non_Normal")
 Weibull      <- generate_data(sample_size, N, "Weibull", "Non_Normal")
 Pareto      <- generate_data(sample_size, N, "Pareto", "Non_Normal")
