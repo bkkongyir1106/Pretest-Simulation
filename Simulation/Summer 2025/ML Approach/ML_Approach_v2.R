@@ -98,13 +98,6 @@ calculate_features <- function(samples) {
     Lilliefors = normality_tests$Lilliefors,
     Cramer_Von_Misse = normality_tests$Cramer_Von_Misse,
     
-    # Information and complexity
-    #Entropy = information_features$Entropy,
-    #Spectral_Entropy = information_features$Spectral_Entropy,
-    #Fractal_Dimension = complexity_features$Fractal_Dimension,
-    #Hjorth_Mobility = complexity_features$Hjorth_Mobility,
-    #Hjorth_Complexity = complexity_features$Hjorth_Complexity,
-    
     # Tail behavior
     Gini_Coefficient = tail_features$Gini_Coefficient,
     Energy = tail_features$Energy
@@ -120,11 +113,11 @@ calculate_features <- function(samples) {
 preprocess_data <- function(train_data) {
   numeric_train <- train_data[, sapply(train_data, is.numeric)]
   
-  # Step 1: Standardization (Z-score scaling: mean = 0, std = 1)
+  # Standardization & impute missing values
   preProcStandard <- preProcess(numeric_train, method = c("medianImpute","center", "scale"))
   train_std <- predict(preProcStandard, numeric_train)
   
-  # Step 2: Normalization (Rescale to [0,1])
+  # Normalization (Rescale to [0,1])
   preProcNorm <- preProcess(train_std, method = "range")
   train_norm <- predict(preProcNorm, train_std)
   
@@ -147,36 +140,29 @@ generate_data <- function(sample_size, N, dist = "normal", label) {
 }
 
 set.seed(12345)
-sample_size <- 30 
-num.sim <- 100            
+sample_size <- 8 
+num.sim <- 100
 
-# Normal data
-normal_data1 <- generate_data(sample_size, 2*num.sim, "normal", "Normal")
-normal_data2 <- generate_data(sample_size, 2*num.sim, "normal_5", "Normal")
-normal_data3 <- generate_data(sample_size, 2*num.sim, "normal_15", "Normal")
-normal_data4 <- generate_data(sample_size, 2*num.sim, "normal_25", "Normal")
-normal_data5 <- generate_data(sample_size, 2*num.sim, "normal_50", "Normal")
-normal_data6 <- generate_data(sample_size, 2*num.sim, "normal_100", "Normal")
-# non-normal data 
-lognormal <- generate_data(sample_size, num.sim, "LogNormal", "Non_Normal")
-chisq_data   <- generate_data(sample_size, num.sim, "Chi_Square", "Non_Normal")
-exp_data     <- generate_data(sample_size, num.sim, "Exponential", "Non_Normal")
-Weibull      <- generate_data(sample_size, num.sim, "Weibull", "Non_Normal")
-Pareto      <- generate_data(sample_size, num.sim, "Pareto", "Non_Normal")
-Laplace      <- generate_data(sample_size, num.sim, "Laplace", "Non_Normal")
-Gamma        <- generate_data(sample_size, num.sim, "Gamma", "Non_Normal")
-Uniform      <- generate_data(sample_size, num.sim, "Uniform", "Non_Normal")
-t       <- generate_data(sample_size, num.sim, "t", "Non_Normal")
-t_15       <- generate_data(sample_size, num.sim, "t_5", "Non_Normal")
-t_25       <- generate_data(sample_size, num.sim, "t_15", "Non_Normal")
-beta       <- generate_data(sample_size, num.sim, "beta", "Non_Normal")
+# Define all distributions and their parameters
+normal_variants <- c("normal", "normal_5", "normal_25", "normal_50", "normal_100")
+non_normal_variants <- c("LogNormal", "Chi_Square", "Exponential", "Weibull", 
+                         "Pareto", "Laplace", "Gamma", "Uniform","t_15", "cauchy")
 
-non_normal_data <- rbind(lognormal, chisq_data,  exp_data, Weibull, Pareto, Laplace, Gamma, Uniform, t, t_15)
-normal_data <- rbind(normal_data1, normal_data2, normal_data3, normal_data5, normal_data6)
+# Generate all normal data at once using lapply
+normal_data_list <- lapply(normal_variants, function(v) {
+  generate_data(sample_size, 2*num.sim, v, "Normal")
+})
+normal_data <- do.call(rbind, normal_data_list)
 
+# Generate all non-normal data at once using lapply
+non_normal_data_list <- lapply(non_normal_variants, function(v) {
+  generate_data(sample_size, num.sim, v, "Non_Normal")
+})
+non_normal_data <- do.call(rbind, non_normal_data_list)
+
+# Combine all data
 data_all <- rbind(normal_data, non_normal_data)
 data_all$Label <- as.factor(data_all$Label)
-
 # -----------------------------
 # Standardize & Normalize Data
 # -----------------------------
@@ -238,7 +224,6 @@ models_list <- list(
 ### Predictions on unseen data row - by - row
 simulate_predictions <- function(distributions ,n_iter = 1000, n = sample_size,
                                  trained_models, preProcStandard, preProcNorm) {
-  
   # Initialize storage for all model predictions
   all_predictions <- lapply(names(trained_models), function(x) {
     data.frame(True_Class = character(),
@@ -256,6 +241,7 @@ simulate_predictions <- function(distributions ,n_iter = 1000, n = sample_size,
   
   # predict for each sample data individually
   for (dist in distributions) {
+    
     for (i in 1:n_iter) {
       
       # generate data and identify the class
@@ -319,7 +305,7 @@ simulate_predictions <- function(distributions ,n_iter = 1000, n = sample_size,
 }
 
 set.seed(12345)
-distribution_set <- c("normal_5", "normal_25" ,"Gumbel", "triangular")
+distribution_set <- c("normal_15", "beta")
 
 eval_results <- simulate_predictions(
   distributions = distribution_set,
@@ -415,8 +401,9 @@ plot_combined_roc_base <- function(eval_results) {
   legend("bottomright",
          legend = legend_labels,
          col = legend_colors,
-         lty = 1, lwd = 2,
-         bty = "o",  # 'o' adds a box
+         lty = 1, 
+         lwd = 2,
+         bty = "o", 
          cex = 0.85,
          title = "Models")
   

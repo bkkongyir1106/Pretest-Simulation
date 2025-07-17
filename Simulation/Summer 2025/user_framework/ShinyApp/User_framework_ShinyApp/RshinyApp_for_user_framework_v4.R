@@ -31,7 +31,7 @@ ui <- fluidPage(
                               "D'Agostino Pearson" = "DAP",
                               "Anderson-Darling" = "AD",
                               "Cramer-Von-Mises" = "CVM")),
-      numericInput("alpha", "Significance Level (α):", 0.05, min = 0.01, max = 0.2, step = 0.01),
+      numericInput("alpha", "Significance Level (α):", value =  0.05, min = 0.01, max = 0.2, step = 0.01),
       sliderInput("sample_sizes", "Sample Sizes Range:", min = 5, max = 200, value = c(10, 50), step = 5),
       numericInput("n_sim", "Number of Simulations:", value =  1000, min = 100, max = 10000),
       actionButton("run", "Run Simulation", class = "btn-primary"),
@@ -49,7 +49,7 @@ ui <- fluidPage(
     
     mainPanel(
       tabsetPanel(
-        tabPanel("Power Curves", plotOutput("power_plot")),
+        tabPanel("Power/Type I error Curves", plotOutput("power_plot")),
         tabPanel("AUC Results", tableOutput("auc_table")),
         tabPanel("Documentation",
                  tags$h3("User Framework for Statistical Analysis"),

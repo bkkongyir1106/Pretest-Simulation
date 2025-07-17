@@ -96,9 +96,9 @@ save(
 EPG  <- Type_one_error$LogNormal$adaptive_wilcox - Type_one_error$LogNormal$Type_one_error_t.test
 EPL  <- Type_one_error$Normal$adaptive_wilcox - Type_one_error$Normal$Type_one_error_t.test 
 
-# Calculate Point estimates
-EPG_lognormal = Type_one_error$LogNormal$Type_one_error_wilcoxon.test - Type_one_error$LogNormal$Type_one_error_t.test
-EPL_normal = Type_one_error$Normal$Type_one_error_t.test - Type_one_error$Normal$Type_one_error_wilcoxon.test 
+# # Calculate Point estimates
+# EPG_lognormal = Type_one_error$LogNormal$Type_one_error_wilcoxon.test - Type_one_error$LogNormal$Type_one_error_t.test
+# EPL_normal = Type_one_error$Normal$Type_one_error_t.test - Type_one_error$Normal$Type_one_error_wilcoxon.test 
 
 #----------------------Plot results-----------------------------
 # Save the  plots

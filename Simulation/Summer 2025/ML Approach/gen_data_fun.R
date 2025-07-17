@@ -1,5 +1,5 @@
 # Load necessary libraries
-rm(list = ls())
+#rm(list = ls())
 if(!require("pacman")) install.packages("pacman")
 pacman::p_load(dgof, tseries, nortest, dplyr, moments, LaplacesDemon, VGAM, extraDistr, statmod, evd)
 
@@ -24,7 +24,7 @@ generate_samples <- function(n, dist){
     samples <- rnorm(n, mean = 5, sd = 2)
   }
   if(dist == "normal_a"){
-    samples <- rnorm(n, mean = 0, sd = 20)
+    samples <- rnorm(n, mean = 2, sd = 1)
   }
   if(dist == "Chi_Square"){
     samples <- rchisq(n, df = 3)
@@ -52,6 +52,9 @@ generate_samples <- function(n, dist){
   }
   if(dist == "Uniform_100"){
     samples <- runif(n, min = 20, max = 100)
+  }
+  if(dist == "Uniform_10"){
+    samples <- runif(n, min = 10, max = 50)
   }
   if(dist == "Laplace"){
     samples <- LaplacesDemon::rlaplace(n, 0, 4)

@@ -73,82 +73,103 @@ calculate_entropy        <- function(samples) {
   infotheo::entropy(discretize(samples, nbins = 10))
 }
 
-# ---------------------------
-# extract all features
-# ---------------------------
 calculate_features <- function(samples) {
-# Central & spread
-mean_val        <- mean(samples)
-median_val      <- median(samples)
-var_val         <- var(samples)
-iqr_val         <- IQR(samples)
-mad_val         <- mad(samples)
-range_val       <- max(samples) - min(samples)
-cv_val          <- calculate_cv(samples)
-rms_val         <- sqrt(mean(samples^2))
-
-# Normality & shape
-skewness        <- e1071::skewness(samples)
-kurtosis        <- e1071::kurtosis(samples)
-jb_stat         <- as.numeric(tseries::jarque.bera.test(samples)$statistic)
-ad_stat         <- as.numeric(nortest::ad.test(samples)$statistic)
-sw_stat         <- shapiro.test(samples)$statistic
-sf_stat         <- nortest::sf.test(samples)$statistic
-lf_stat         <- nortest::lillie.test(samples)$statistic
-cvm_stat        <- nortest::cvm.test(samples)$statistic
-
-# Time & distributional
-zcr             <- calculate_zero_crossing_rate(samples)
-gini            <- calculate_gini_coefficient(samples)
-outliers        <- calculate_outliers(samples)
-
-# Entropy & size
-entropy_val     <- calculate_entropy(samples)
-# Time-domain signal features
-pt_ratio        <- calculate_peak_to_trough(samples)
-box_val         <- calculate_box_test(samples)
-# Frequency-domain
-spec_entropy    <- calculate_spectral_entropy(samples)
-spec_centroid   <- calculate_spectral_centroid(samples)
-
-# Fractal & complexity
-fd_val          <- calculate_fractal_dimension(samples)
-hjorth_vals     <- calculate_hjorth(samples)
-energy <- calculate_energy(samples)
-
-# create a dataframe
-features <- data.frame(
-  Skewness                = skewness,
-  Kurtosis                = kurtosis,
-  Jarque_Bera             = jb_stat,
-  Anderson_Darling        = ad_stat,
-  Shapiro_Wilk            = sw_stat,
-  Shapiro_Francia         = sf_stat,
-  Lilliefors              = lf_stat,
-  Cramer_Von_Misse        = cvm_stat,
-  Zero_Cross_Rate         = zcr,
-  Gini_Coefficient        = gini,
-  #Outliers                = outliers,
-  Mean                     = mean_val,
-  Median                   = median_val,
-  Variance                 = var_val,
-  IQR                      = iqr_val,
-  MAD                      = mad_val,
-  Range                    = range_val,
-  CV                       = cv_val,
-  Root_Mean_Square         = rms_val,
-  energy                   = energy,
-  Peak_to_Trough           = pt_ratio,
-  Enropy                   = entropy_val,
-  Spectral_Entropy         = spec_entropy,
-  Spectral_Centroid        = spec_centroid,
-  Box_Ljung_Stat           = box_val,
-  Fractal_Dimension        = fd_val,
-  Hjorth_Activity          = hjorth_vals["Activity"],
-  Hjorth_Mobility          = hjorth_vals["Mobility"],
-  Hjorth_Complexity        = hjorth_vals["Complexity"]
-)
-return(features)
+  # Central & spread
+  mean_val        <- mean(samples)
+  median_val      <- median(samples)
+  var_val         <- var(samples)
+  iqr_val         <- IQR(samples)
+  mad_val         <- mad(samples)
+  range_val       <- max(samples) - min(samples)
+  cv_val          <- calculate_cv(samples)
+  rms_val         <- sqrt(mean(samples^2))
+  
+  # Normality & shape
+  skewness        <- e1071::skewness(samples)
+  kurtosis        <- e1071::kurtosis(samples)
+  jb_stat         <- as.numeric(tseries::jarque.bera.test(samples)$statistic)
+  
+  # Normality tests (with p-values)
+  sw_test         <- shapiro.test(samples)
+  ad_test         <- nortest::ad.test(samples)
+  sf_test         <- nortest::sf.test(samples)
+  lf_test         <- nortest::lillie.test(samples)
+  cvm_test        <- nortest::cvm.test(samples)
+  
+  # Binary features based on p-values
+  Shapiro_Wilk_Reject     <- ifelse(sw_test$p.value < 0.05, "yes", "no")
+  Anderson_Darling_Reject <- ifelse(ad_test$p.value < 0.05, "yes", "no")
+  Shapiro_Francia_Reject  <- ifelse(sf_test$p.value < 0.05, "yes", "no")
+  Lilliefors_Reject       <- ifelse(lf_test$p.value < 0.05, "yes", "no")
+  Cramer_Von_Misse_Reject <- ifelse(cvm_test$p.value < 0.05, "yes", "no")
+  
+  # Binary flags for skewness/kurtosis normal range
+  Skew_Approx_Normal <- ifelse(skewness >= -0.5 & skewness <= 0.5, "yes", "no")
+  Kurt_Approx_Normal <- ifelse(kurtosis >= -2 & kurtosis <= 2, "yes", "no")
+  
+  # Time & distributional
+  zcr      <- calculate_zero_crossing_rate(samples)
+  gini     <- calculate_gini_coefficient(samples)
+  outliers <- calculate_outliers(samples)
+  
+  # Entropy & size
+  entropy_val     <- calculate_entropy(samples)
+  spec_entropy    <- calculate_spectral_entropy(samples)
+  spec_centroid   <- calculate_spectral_centroid(samples)
+  
+  # Time-domain signal features
+  pt_ratio  <- calculate_peak_to_trough(samples)
+  box_val   <- calculate_box_test(samples)
+  
+  # Fractal & complexity
+  fd_val        <- calculate_fractal_dimension(samples)
+  hjorth_vals   <- calculate_hjorth(samples)
+  energy_val    <- calculate_energy(samples)
+  
+  # Create a dataframe
+  features <- data.frame(
+    Skewness                 = skewness,
+    Kurtosis                 = kurtosis,
+    Jarque_Bera              = jb_stat,
+    Anderson_Darling         = as.numeric(ad_test$statistic),
+    Shapiro_Wilk             = as.numeric(sw_test$statistic),
+    Shapiro_Francia          = as.numeric(sf_test$statistic),
+    Lilliefors               = as.numeric(lf_test$statistic),
+    Cramer_Von_Misse         = as.numeric(cvm_test$statistic),
+    
+    # Binary flags
+    Shapiro_Wilk_Reject      = Shapiro_Wilk_Reject,
+    Anderson_Darling_Reject  = Anderson_Darling_Reject,
+    Shapiro_Francia_Reject   = Shapiro_Francia_Reject,
+    Lilliefors_Reject        = Lilliefors_Reject,
+    Cramer_Von_Misse_Reject  = Cramer_Von_Misse_Reject,
+    Skew_Approx_Normal       = Skew_Approx_Normal,
+    Kurt_Approx_Normal       = Kurt_Approx_Normal,
+    
+    # Other features
+    Zero_Cross_Rate          = zcr,
+    Gini_Coefficient         = gini,
+    Mean                     = mean_val,
+    Median                   = median_val,
+    Variance                 = var_val,
+    IQR                      = iqr_val,
+    MAD                      = mad_val,
+    Range                    = range_val,
+    CV                       = cv_val,
+    Root_Mean_Square         = rms_val,
+    Energy                   = energy_val,
+    Peak_to_Trough           = pt_ratio,
+    Entropy                  = entropy_val,
+    Spectral_Entropy         = spec_entropy,
+    Spectral_Centroid        = spec_centroid,
+    Box_Ljung_Stat           = box_val,
+    Fractal_Dimension        = fd_val,
+    Hjorth_Activity          = hjorth_vals["Activity"],
+    Hjorth_Mobility          = hjorth_vals["Mobility"],
+    Hjorth_Complexity        = hjorth_vals["Complexity"]
+  )
+  
+  return(features)
 }
 
 
@@ -186,7 +207,7 @@ generate_data <- function(sample_size, N, dist = "normal", label) {
 
 set.seed(12345)
 sample_size <- 50 
-num.sim <- 500            
+num.sim <- 100            
 
 # Normal data
 normal_data1 <- generate_data(sample_size, 2*num.sim, "normal", "Normal")
@@ -286,12 +307,12 @@ svm_model <- train(Label ~ .,
 
 # Collect all models into a list for later use
 models_list <- list(
- # "LR" = log_model,
+  # "LR" = log_model,
   "RF" = rf_model,
   "ANN" = ann_model,
   "GBM" = gbm_model,
   "SVM" = svm_model
- # "KNN" = knn_model
+  # "KNN" = knn_model
 )
 
 
@@ -379,7 +400,7 @@ simulate_predictions <- function(distributions ,n_iter = 1000, n = sample_size,
 }
 
 set.seed(12345)
-distribution_set <- c("normal_5", "normal_100" ,"Gumbel", "cauchy")
+distribution_set <- c("normal_5", "normal_25" ,"t_5", "cauchy")
 
 eval_results <- simulate_predictions(
   distributions = distribution_set,
