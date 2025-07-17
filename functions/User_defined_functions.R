@@ -1,5 +1,5 @@
 # load necessary libraries
-rm(list = ls())
+#rm(list = ls())
 if(!require("pacman")) install.packages("pacman")
 pacman::p_load(e1071, tseries, dgof,  nortest, ggplot2, dplyr, tidyverse, LaplacesDemon, VGAM, patchwork, reshape2)
 
@@ -24,7 +24,7 @@ generate_data <- function(n, dist, par = NULL) {
     x <- rt(n, df = par) / sqrt(par/(par - 1))  # Variance = df/(df-2) = 7/5
   } else if (dist == "Uniform") {
     if (is.null(par)){par <- c(0,1)}
-    x <- (runif(n, min = par[1], max = par[2]) - (par[1] + par[2])/2) * sqrt((par[2] - par[1])^2/12)
+    x <- (runif(n, min = par[1], max = par[2]) - (par[1] + par[2])/2) / sqrt((par[2] - par[1])^2/12)
   } else if (dist == "Laplace") {
     # Variance = 2*scale^2 
     if (is.null(par)){par <- c(0, 4)}
@@ -43,7 +43,7 @@ generate_data <- function(n, dist, par = NULL) {
     x <- (rlnorm(n, meanlog = par[1], sdlog = par[2]) - mean_ln) / sqrt(var_ln)
   } else if (dist == "Contaminated") {
     if (is.null(par)){par <- c(0.75, 0, 1, 5)}
-    br <- rbinom(n, size = 1, prob = par)
+    br <- rbinom(n, size = 1, prob = par[1])
     sd_br <- ifelse(br == 1, par[4], par[3])  
     x <- rnorm(n, mean = par[2],  sd = sd_br) / sqrt(par[1] * par[3]^2 + (1-par[1]) * par[4]^2)  
   } else if (dist == "Pareto") {
@@ -119,35 +119,62 @@ Generate_data <- function(datagen.type, n = NULL, dist = NULL, two_samples = FAL
 # Define function to perform different Normality tests
 # ---------------------------------------------------------------------------
 generate_tests <- function(x, test){
-  if(test == "KS"){
+  if(test == "KS"){  # Kolmogorov-Smirnov test (Lilliefors)
     output <- nortest::lillie.test(x)
-  }
-  else if(test == "SW"){
+    
+  } else if(test == "SW"){  # Shapiro-Wilk
     output <- shapiro.test(x)
-  }
-  else if(test == "JB"){
+    
+  } else if(test == "JB"){  # Jarque-Bera
     output <- tseries::jarque.bera.test(x)
-  }
-  else if(test == "DAP"){
+    
+  } else if(test == "DAP"){  # D'Agostino test (skewness)
     output <- moments::agostino.test(x)
-  }
-  else if(test == "AD"){
+    
+  } else if(test == "ANS"){  # Anscombe-Glynn test (kurtosis)
+    output <- moments::anscombe.test(x)
+    
+  } else if(test == "AD"){  # Anderson-Darling
     output <- nortest::ad.test(x)
-  }
-  else if(test == "SF"){
+    
+  } else if(test == "AD2"){  # Anderson-Darling from DescTools (more options)
+    output <- DescTools::AndersonDarlingTest(x)
+    
+  } else if(test == "SF"){  # Shapiro-Francia
     output <- nortest::sf.test(x)
-  }
-  else if(test == "CVM"){
+    
+  } else if(test == "CVM"){  # Cramer-von Mises
     output <- nortest::cvm.test(x)
+    
+  } else if(test == "CHISQ"){  # Pearson Chi-Square
+    # Need to bin data since chisq.test is for frequencies
+    breaks <- pretty(x, n = sqrt(length(x)))  # Sturges rule
+    observed <- table(cut(x, breaks = breaks))
+    expected <- dnorm(breaks[-length(breaks)], mean(x), sd(x))
+    expected <- expected / sum(expected) * sum(observed)
+    output <- chisq.test(x = observed, p = expected, rescale.p = TRUE, simulate.p.value = TRUE)
+    
+  } else if(test == "SKEW"){  # Skewness test (z-test)
+    s <- moments::skewness(x)
+    se <- sqrt(6/length(x))
+    z <- s / se
+    p <- 2 * (1 - pnorm(abs(z)))
+    output <- list(statistic = z, p.value = p, method = "Skewness z-test")
+    
+  } else if(test == "KURT"){  # Kurtosis test (z-test)
+    k <- moments::kurtosis(x)
+    se <- sqrt(24/length(x))
+    z <- (k - 3) / se
+    p <- 2 * (1 - pnorm(abs(z)))
+    output <- list(statistic = z, p.value = p, method = "Kurtosis z-test")
+    
+  } else {
+    stop("Unknown test name. Choose from: KS, SW, JB, DAP, ANS, AD, AD2, SF, CVM, CHISQ, SKEW, KURT.")
   }
-  else if(test == "CHISQ"){
-    output <- chisq.test(x)
-  }else
-  {
-    stop("Unknown test name. Choose from: KS, SW, JB, DAP, AD, SF, CVM, CHISQ.")
-  }
-return(output)
+  
+  return(output)
 }
+
 
 # ------------------------------------
 # Define simple calculation functions 
