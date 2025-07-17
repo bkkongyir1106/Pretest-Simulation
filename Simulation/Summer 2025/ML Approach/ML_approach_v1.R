@@ -185,8 +185,8 @@ generate_data <- function(sample_size, N, dist = "normal", label) {
 }
 
 set.seed(12345)
-sample_size <- 50 
-num.sim <- 500            
+sample_size <- 30 
+num.sim <- 100            
 
 # Normal data
 normal_data1 <- generate_data(sample_size, 2*num.sim, "normal", "Normal")
