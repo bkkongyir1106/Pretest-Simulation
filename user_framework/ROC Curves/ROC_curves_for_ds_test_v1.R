@@ -5,7 +5,7 @@ library(pbapply)
 source("~/Desktop/OSU/Research/Pretest-Simulation/functions/User_defined_functions.R")
 
 # Set working directory
-setwd("/Users/benedictkongyir/Library/Mobile Documents/com~apple~CloudDocs/PhD Thesis/user_framework/ROC Curves")
+setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/user_framework/ROC Curves")
 
 # Parameters
 alpha_pretest <- seq(from = 0.009, to = 0.1, by = 0.005)

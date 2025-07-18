@@ -2,10 +2,10 @@ library(shiny)
 
 # Load helper source files
 source("~/Desktop/OSU/Research/Pretest-Simulation/functions/User_defined_functions.R")
-source("~/Library/Mobile Documents/com~apple~CloudDocs/PhD Thesis/user_framework/ROC Curves/ROC_curves_for_ds_test_v1.R")
-source("~/Desktop/OSU/Research/Pretest-Simulation/Simulation/Summer 2025/user_framework/my_functions_v2.R")
+source("~/Desktop/OSU/Research/Pretest-Simulation/user_framework/ROC Curves/ROC_curves_for_ds_test_v1.R")
+source("~/Desktop/OSU/Research/Pretest-Simulation/user_framework/ShinyApp/general_functions/my_functions_v2.R")
 compute_area <- compute_area
-source("~/Library/Mobile Documents/com~apple~CloudDocs/PhD Thesis/Normality Tests/Normality_test_ROC_Curve.R")
+setwd("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/user_framework/ShinyApp")
 
 # Modify plotting functions to support NULL filename (display in Shiny)
 plot_power_error_tradeoff <- function(alpha_pretest, metrics, file_name = NULL) {
@@ -75,9 +75,16 @@ plot_roc_like_curves <- function(metrics, file_name = NULL) {
   if (!is.null(file_name)) dev.off()
 }
 
-plot_ROC <- function(FPR, TPR, tests_to_plot = rownames(FPR), alpha = NULL, title = "ROC Curves") {
+# ROC Curves for Normality Tests
+plot_ROC <- function(FPR, 
+                     TPR, 
+                     tests_to_plot = rownames(FPR), 
+                     alpha = NULL, 
+                     title = "ROC Curves") {
+  
   colors <- rainbow(length(tests_to_plot))
   plot_chars <- 1:length(tests_to_plot)
+  
   par(mar = c(5, 5, 4, 2))
   plot(0, 0, 
        type = "n", 
@@ -88,14 +95,20 @@ plot_ROC <- function(FPR, TPR, tests_to_plot = rownames(FPR), alpha = NULL, titl
        main = title)
   for (i in seq_along(tests_to_plot)) {
     test <- tests_to_plot[i]
-    lines(FPR[test, ], TPR[test, ], col = colors[i], lwd = 2)
-    points(FPR[test, ], TPR[test, ], col = colors[i], pch = plot_chars[i], cex = 0.75)
+    lines(FPR[test, ], TPR[test, ], 
+          col = colors[i], lwd = 2,
+          lty = 1)
+    points(FPR[test, ], TPR[test, ], 
+           col = colors[i], 
+           pch = plot_chars[i], 
+           cex = 0.75)
   }
   abline(0, 1, lty = 2, col = "gray")
   legend("bottomright", 
          legend = tests_to_plot, 
          col = colors, 
          pch = plot_chars, 
+         lty = 1,
          lwd = 2, 
          title = "Tests")
 }
@@ -144,13 +157,26 @@ ui <- fluidPage(
         tabPanel("AUC Results", tableOutput("auc_table")),
         tabPanel("ROC Curve Analysis",
                  fluidRow(
-                   column(4,
-                          checkboxGroupInput("roc_tests", "Select Normality Tests:",
-                                             choices = c("SW", "KS", "AD", "DAP", "SF", "JB", "CVM", "SKEW"),
-                                             selected = c("SW", "KS", "AD", "DAP")),
-                          numericInput("roc_sample_size", "Sample Size for ROC:", value = 10, min = 5, max = 200),
-                          numericInput("roc_Nsim", "Number of Simulations:", value = 1000, min = 100, max = 1e6),
-                          actionButton("run_roc", "Run ROC Analysis", class = "btn-success")
+                   column(
+                     4,
+                     checkboxGroupInput("roc_tests", "Select Normality Tests:",
+                                        choices  = c("SW","KS","AD","DAP","SF","JB","CVM","SKEW"),
+                                        selected = c("SW","KS","AD","DAP")),
+                     
+                     numericInput("roc_sample_size", "Sample Size for ROC:", 10, 5, 200),
+                     numericInput("roc_Nsim",        "Number of Simulations:", 1000, 100, 1e6),
+                     
+                     sliderInput("alpha_range", HTML("&alpha;<sub>pretest</sub> range"),
+                                 min = 0.001, max = 1, value = c(0.001, 1), step = 0.001),
+                     numericInput("alpha_by", HTML("&alpha;<sub>pretest</sub> step"),
+                                  value = 0.01, min = 0.001, max = 0.5, step = 0.001),
+                     
+                     sliderInput("sig_range", "sig_level range",
+                                 min = 0.01,  max = 1, value = c(0.01, 1), step = 0.01),
+                     numericInput("sig_by", "sig_level step",
+                                  value = 0.01, min = 0.001, max = 0.5, step = 0.001),
+                     
+                     actionButton("run_roc", "Run ROC Analysis", class = "btn-success")
                    ),
                    column(8,
                           tabsetPanel(
@@ -357,8 +383,12 @@ server <- function(input, output, session) {
     tests <- input$roc_tests
     Nsim <- input$roc_Nsim
     n <- input$roc_sample_size
-    alpha_pretest <- seq(from = 0.001, to = 1, by = 0.01)
-    sig_level <- seq(from = 0.01, to = 1, by = 0.01)
+    alpha_pretest <- seq(from = input$alpha_range[1], to   = input$alpha_range[2], by   = input$alpha_by
+    )
+    
+    sig_level <- seq(from = input$sig_range[1], to   = input$sig_range[2], by   = input$sig_by
+    )
+    
     
     withProgress(message = "Running ROC Analysis...", value = 0, {
       roc_res <- ROC_curve_function(sample_size = n,
