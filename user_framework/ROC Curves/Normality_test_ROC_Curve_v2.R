@@ -1,10 +1,7 @@
 # Load custom test and data functions
 source("~/Desktop/OSU/Research/Pretest-Simulation/functions/User_defined_functions.R")
 
-<<<<<<< HEAD:user_framework/ROC Curves/Normality_test_ROC_Curve_v2.R
 setwd("/Users/benedictkongyir/Library/Mobile Documents/com~apple~CloudDocs/PhD Thesis/user_framework/ROC Curves")
-=======
->>>>>>> origin/main:Simulation/Summer 2025/ROC Curve/Normality_test_ROC_Curve_v2.R
 # Parameters
 Nsim <- 1e4
 sample_size <- 10
@@ -61,11 +58,6 @@ plot_ROC <- function(FPR, TPR, tests_to_plot = rownames(FPR), alpha = NULL,
   colors <- rainbow(length(tests_to_plot))
   plot_chars <- 1:length(tests_to_plot)
   
-<<<<<<< HEAD:user_framework/ROC Curves/Normality_test_ROC_Curve_v2.R
-=======
-  #Set margins and text sizes
-  par(mar = c(5, 5, 4, 2))  # bottom, left, top, right
->>>>>>> origin/main:Simulation/Summer 2025/ROC Curve/Normality_test_ROC_Curve_v2.R
   plot(0, 0, type = "n", xlim = c(0, 1), ylim = c(0, 1),
        xlab = "False Positive Rate (FPR)", ylab = "True Positive Rate (TPR)",
        main = title)
@@ -73,11 +65,7 @@ plot_ROC <- function(FPR, TPR, tests_to_plot = rownames(FPR), alpha = NULL,
   for (i in seq_along(tests_to_plot)) {
     test <- tests_to_plot[i]
     lines(FPR[test, ], TPR[test, ], col = colors[i], lwd = 2)
-<<<<<<< HEAD:user_framework/ROC Curves/Normality_test_ROC_Curve_v2.R
     points(FPR[test, ], TPR[test, ], col = colors[i], pch = plot_chars[i], cex = 0.5)
-=======
-    points(FPR[test, ], TPR[test, ], col = colors[i], pch = plot_chars[i], cex = 0.75)
->>>>>>> origin/main:Simulation/Summer 2025/ROC Curve/Normality_test_ROC_Curve_v2.R
   }
   
   abline(0, 1, lty = 2, col = "gray")
@@ -86,22 +74,13 @@ plot_ROC <- function(FPR, TPR, tests_to_plot = rownames(FPR), alpha = NULL,
 }
 
 # Plot ROC using selected tests
-<<<<<<< HEAD:user_framework/ROC Curves/Normality_test_ROC_Curve_v2.R
 selected_tests <- c("SW", "KS", "AD", "DAP", "SF", "JB", "CVM", "SKEW")
-=======
-pdf("ROC_curves_for_normality_tests.pdf", width = 8, height = 6)
-selected_tests <- c("SW", "KS", "AD", "DAP") #, "SF", "JB", "CVM", "SKEW")
->>>>>>> origin/main:Simulation/Summer 2025/ROC Curve/Normality_test_ROC_Curve_v2.R
 plot_ROC(FPR = roc_results$FPR,
          TPR = roc_results$TPR,
          tests_to_plot = selected_tests,
          alpha = roc_results$alpha)
 
-<<<<<<< HEAD:user_framework/ROC Curves/Normality_test_ROC_Curve_v2.R
 
-=======
-dev.off()
->>>>>>> origin/main:Simulation/Summer 2025/ROC Curve/Normality_test_ROC_Curve_v2.R
 # -------------------- save RData ---------------------
 save(
   Nsim,
@@ -110,9 +89,4 @@ save(
   tests,
   roc_results,
   file = "ROC_curve_for_different_normality_test_methods.RData"
-<<<<<<< HEAD:user_framework/ROC Curves/Normality_test_ROC_Curve_v2.R
 )
-=======
-)
-
->>>>>>> origin/main:Simulation/Summer 2025/ROC Curve/Normality_test_ROC_Curve_v2.R
