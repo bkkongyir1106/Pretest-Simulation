@@ -1,63 +1,90 @@
-# load necessary libraries
-#rm(list = ls())
-if(!require("pacman")) install.packages("pacman")
-pacman::p_load(e1071, tseries, dgof,  nortest, ggplot2, dplyr, tidyverse, LaplacesDemon, VGAM, patchwork, reshape2)
+# Load necessary libraries
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(
+  e1071, tseries, dgof, nortest, ggplot2, dplyr,
+  tidyverse, LaplacesDemon, VGAM, patchwork, reshape2
+)
 
 # ----------------------------------------------------
-#   Generate data from different distribution 
-# ---------------------------------------------------
+#   Generate standardized data from various distributions
+# ----------------------------------------------------
 generate_data <- function(n, dist, par = NULL) {
-  if (dist == "Normal") {
-    if (is.null(par)){par <- c(0,1)}
+  # Input validation
+  if (!is.numeric(n) || n <= 0) stop("n must be a positive integer")
+  dist <- tolower(dist)
+  
+  if (dist == "normal") {
+    if (is.null(par)) par <- c(0, 1)
     x <- rnorm(n, mean = par[1], sd = par[2])
-  } else if (dist == "Chi-Square") {
-      if(is.null(par)){par <- 3}
-    x <- (rchisq(n, df = par) - par) / sqrt(2*par)
-  } else if (dist == "Gamma") {
-      if (is.null(par)){par <- c(3, 0.1)}
-    x <- (rgamma(n, shape = par[1], rate = par[2]) - par[1]/par[2]) / sqrt(par[1]/par[2]^2)
-  } else if (dist == "Exponential") {
-      if (is.null(par)){par <- 1}
-    x <- rexp(n, rate = par) - par
+    
+  } else if (dist == "chi_square") {
+    if (is.null(par)) par <- 3
+    x <- (rchisq(n, df = par) - par) / sqrt(2 * par)
+    
+  } else if (dist == "gamma") {
+    if (is.null(par)) par <- c(3, 0.1)
+    mean_g <- par[1] / par[2]
+    sd_g <- sqrt(par[1] / par[2]^2)
+    x <- (rgamma(n, shape = par[1], rate = par[2]) - mean_g) / sd_g
+    
+  } else if (dist == "exponential") {
+    if (is.null(par)) par <- 1
+    mean_e <- 1 / par
+    sd_e <- 1 / par
+    x <- (rexp(n, rate = par) - mean_e) / sd_e
+    
   } else if (dist == "t") {
-      if (is.null(par)){par <- 3}
-    x <- rt(n, df = par) / sqrt(par/(par - 1))  # Variance = df/(df-2) = 7/5
-  } else if (dist == "Uniform") {
-    if (is.null(par)){par <- c(0,1)}
-    x <- (runif(n, min = par[1], max = par[2]) - (par[1] + par[2])/2) / sqrt((par[2] - par[1])^2/12)
-  } else if (dist == "Laplace") {
-    # Variance = 2*scale^2 
-    if (is.null(par)){par <- c(0, 4)}
-    x <- rlaplace(n, location = par[1], scale = par[2]) / sqrt(2 * par[2]^2)
-  } else if (dist == "Weibull") {
-    if (is.null(par)){par <- c(1, 2)}
-    shape <- 1
-    scale <- 2
-    mean_w <- par[2] * gamma(1 + 1/par[1])  
-    var_w <- par[2]^2 * (gamma(1 + 2/par[1]) - gamma(1 + 1/par[1])^2)  
+    if (is.null(par)) par <- 3
+    if (par <= 1) stop("Degrees of freedom must be > 1")
+    x <- rt(n, df = par) / sqrt(par / (par - 2))
+    
+  } else if (dist == "uniform") {
+    if (is.null(par)) par <- c(0, 1)
+    mean_u <- (par[1] + par[2]) / 2
+    sd_u <- sqrt((par[2] - par[1])^2 / 12)
+    x <- (runif(n, min = par[1], max = par[2]) - mean_u) / sd_u
+    
+  } else if (dist == "laplace") {
+    if (is.null(par)) par <- c(0, 4)
+    sd_l <- sqrt(2 * par[2]^2)
+    x <- (rlaplace(n, location = par[1], scale = par[2]) - par[1]) / sd_l
+    
+  } else if (dist == "weibull") {
+    if (is.null(par)) par <- c(1, 2)
+    mean_w <- par[2] * gamma(1 + 1 / par[1])
+    var_w <- par[2]^2 * (gamma(1 + 2 / par[1]) - gamma(1 + 1 / par[1])^2)
     x <- (rweibull(n, shape = par[1], scale = par[2]) - mean_w) / sqrt(var_w)
-  } else if (dist == "LogNormal") {
-    if (is.null(par)){par <- c(0, 1)}
-    mean_ln <- exp(par[1] + (par[2]^2)/2)  # exp(μ + σ²/2)
-    var_ln <- (exp(par[2]^2) - 1) * exp(2*par[1] + par[2])  # (e^{σ²}-1)e^{2μ+σ²}
+    
+  } else if (dist == "lognormal") {
+    if (is.null(par)) par <- c(0, 1)
+    mean_ln <- exp(par[1] + par[2]^2 / 2)
+    var_ln <- (exp(par[2]^2) - 1) * exp(2 * par[1] + par[2]^2)
     x <- (rlnorm(n, meanlog = par[1], sdlog = par[2]) - mean_ln) / sqrt(var_ln)
-  } else if (dist == "Contaminated") {
-    if (is.null(par)){par <- c(0.75, 0, 1, 5)}
+    
+  } else if (dist == "contaminated") {
+    # par = c(prob_good, mean, sd_good, sd_bad)
+    if (is.null(par)) par <- c(0.75, 0, 1, 5)
     br <- rbinom(n, size = 1, prob = par[1])
-    sd_br <- ifelse(br == 1, par[4], par[3])  
-    x <- rnorm(n, mean = par[2],  sd = sd_br) / sqrt(par[1] * par[3]^2 + (1-par[1]) * par[4]^2)  
-  } else if (dist == "Pareto") {
-    if (is.null(par)){par <- c(1, 3)}
-    scale <- 1
-    shape <- 3
-    mean_p <- par[1] / (par[2] - 1) 
-    var_p <- (par[1]^2 * par[2]) / ((par[2]-1)^2 * (par[2]-2))  
+    sd_br <- ifelse(br == 1, par[3], par[4])
+    x_raw <- rnorm(n, mean = par[2], sd = sd_br)
+    # Variance: weighted avg of variances (mean is constant)
+    var_c <- par[1] * par[3]^2 + (1 - par[1]) * par[4]^2
+    x <- (x_raw - par[2]) / sqrt(var_c)
+    
+  } else if (dist == "pareto") {
+    if (is.null(par)) par <- c(1, 3)
+    if (par[2] <= 2) stop("Shape parameter for Pareto must be > 2 for variance to exist")
+    mean_p <- par[1] * par[2] / (par[2] - 1)
+    var_p <- (par[1]^2 * par[2]) / ((par[2] - 1)^2 * (par[2] - 2))
     x <- (VGAM::rpareto(n, scale = par[1], shape = par[2]) - mean_p) / sqrt(var_p)
+    
   } else {
     stop("Unsupported distribution: ", dist)
   }
+  
   return(x)
 }
+
 
 # ---------------------------------------
 # Define the functions to generate data 

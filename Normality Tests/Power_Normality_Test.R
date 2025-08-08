@@ -2,7 +2,7 @@
 source("~/Desktop/OSU/Research/Pretest-Simulation/functions/User_defined_functions.R")
 source("~/Desktop/OSU/Research/Pretest-Simulation/functions/utility.R")
 
-setwd("/Users/benedictkongyir/Library/Mobile Documents/com~apple~CloudDocs/PhD Thesis/Normality_test_Methods")
+setwd("~/Desktop/OSU/Research/Pretest-Simulation/Normality Tests")
 # set up cores for parallel processing
 par_set <- function(cores_reserve = 2) {
   cores <- parallel::detectCores()
@@ -97,7 +97,7 @@ layout(matrix(c(1:6, 7, 7, 7), nrow = 3, byrow = TRUE), heights = c(1, 1, 0.2))
 
 # Plotting symbols and colors
 shapes <- 1:length(testvec)
-colors <- rainbow(length(testvec))
+colors <- 1: length(testvec)
 
 # Set common margins
 par(mar = c(4, 4, 2, 1))

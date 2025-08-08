@@ -1,9 +1,9 @@
 # Load custom test and data functions
 source("~/Desktop/OSU/Research/Pretest-Simulation/functions/User_defined_functions.R")
 
-setwd("/Users/benedictkongyir/Library/Mobile Documents/com~apple~CloudDocs/PhD Thesis/Normality Tests")
+setwd("~/Desktop/OSU/Research/Pretest-Simulation/Normality Tests")
 # Parameters
-Nsim <- 1e2
+Nsim <- 1e4
 sample_size <- 10
 alpha_pretest <- seq(from = 0.001, to = 1, by = 0.01)
 tests <- c("SW", "KS", "AD", "DAP", "SF", "JB", "CVM", "SKEW") 
@@ -71,7 +71,7 @@ plot_ROC <- function(FPR,
                      alpha = NULL,
                      title = "ROC Curves for Different Normality Tests") {
   
-  colors <- rainbow(length(tests_to_plot))
+  colors <- 1: length(tests_to_plot)
   plot_chars <- 1:length(tests_to_plot)
   
   #Set margins and text sizes
