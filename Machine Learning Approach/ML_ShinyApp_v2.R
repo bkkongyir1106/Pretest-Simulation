@@ -3,7 +3,6 @@ library(DT)
 library(caret)
 library(pROC)
 
-
 source("~/Desktop/OSU/Research/Pretest-Simulation/Machine Learning Approach/gen_data_fun.R")
 
 if(!require("pacman")) install.packages("pacman")
@@ -11,9 +10,8 @@ pacman::p_load(e1071, tseries, nortest, gbm, lawstat, infotheo, ineq, caret, pRO
                evd, discretization, nnet, ggplot2, mlbench, infotheo, dplyr)
 
 # Load pre-trained models and objects
-# load data
 load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Machine Learning Approach/trained_models.RData")
-#load("/Users/benedictkongyir/Desktop/OSU/Research/Pretest-Simulation/Machine Learning Approach/trained_models_30.RData")
+
 # ---------------------------
 # Define Feature Extraction Functions
 # ---------------------------
@@ -44,7 +42,6 @@ calculate_box_test  <- function(samples) {
   as.numeric(Box.test(samples, lag = 1, type = "Ljung-Box")$statistic)
 }
 
-
 calculate_spectral_entropy <- function(samples) {
   spec <- stats::spec.pgram(samples, plot = FALSE)
   p <- spec$spec / sum(spec$spec)
@@ -58,14 +55,12 @@ calculate_spectral_centroid <- function(samples) {
   sum(freq * p) / sum(p)
 }
 
-# Fractal & complexity measures
 calculate_hjorth <- function(samples) {
   activity   <- var(samples)
   mobility   <- sqrt(var(diff(samples)) / activity)
   complexity <- (sqrt(var(diff(diff(samples))) / var(diff(samples)))) / mobility
   c(Activity = activity, Mobility = mobility, Complexity = complexity)
 }
-
 
 calculate_fractal_dimension <- function(samples) {
   res <- fractaldim::fd.estimate(samples, methods = "madogram")
@@ -76,7 +71,6 @@ calculate_energy <- function(samples) {
   return(sum(samples^2))
 }
 
-# Dispersion & variation
 calculate_cv             <- function(samples) sd(samples) / mean(samples)
 calculate_range          <- function(samples) max(samples) - min(samples)
 calculate_entropy        <- function(samples) {
@@ -87,7 +81,6 @@ calculate_entropy        <- function(samples) {
 # extract all features
 # ---------------------------
 calculate_features <- function(samples) {
-  # Central & spread
   mean_val        <- mean(samples)
   median_val      <- median(samples)
   var_val         <- var(samples)
@@ -97,7 +90,6 @@ calculate_features <- function(samples) {
   cv_val          <- calculate_cv(samples)
   rms_val         <- sqrt(mean(samples^2))
   
-  # Normality & shape
   skewness        <- e1071::skewness(samples)
   kurtosis        <- e1071::kurtosis(samples)
   jb_stat         <- as.numeric(tseries::jarque.bera.test(samples)$statistic)
@@ -107,12 +99,10 @@ calculate_features <- function(samples) {
   lf_stat         <- nortest::lillie.test(samples)$statistic
   cvm_stat        <- nortest::cvm.test(samples)$statistic
   
-  # Time & distributional
   zcr             <- calculate_zero_crossing_rate(samples)
   gini            <- calculate_gini_coefficient(samples)
   outliers        <- calculate_outliers(samples)
   
-  # Others
   entropy_val     <- calculate_entropy(samples)
   pt_ratio        <- calculate_peak_to_trough(samples)
   box_val         <- calculate_box_test(samples)
@@ -122,7 +112,6 @@ calculate_features <- function(samples) {
   hjorth_vals     <- calculate_hjorth(samples)
   energy          <- calculate_energy(samples)
   
-  # create a dataframe
   features <- data.frame(
     Skewness                = skewness,
     Kurtosis                = kurtosis,
@@ -134,7 +123,6 @@ calculate_features <- function(samples) {
     Cramer_Von_Misse        = cvm_stat,
     Zero_Cross_Rate         = zcr,
     Gini_Coefficient        = gini,
-    #Outliers                = outliers,
     Mean                     = mean_val,
     Median                   = median_val,
     Variance                 = var_val,
@@ -157,18 +145,15 @@ calculate_features <- function(samples) {
   return(features)
 }
 
-
 # ---------------------------
 # Standardization & Normalization Function
 # ---------------------------
 preprocess_data <- function(train_data) {
   numeric_train <- train_data[, sapply(train_data, is.numeric)]
   
-  # Step 1: Standardization (Z-score scaling: mean = 0, std = 1)
   preProcStandard <- preProcess(numeric_train, method = c("center", "scale"))
   train_std <- predict(preProcStandard, numeric_train)
   
-  # Step 2: Normalization (Rescale to [0,1])
   preProcNorm <- preProcess(train_std, method = "range")
   train_norm <- predict(preProcNorm, train_std)
   
@@ -291,7 +276,7 @@ ui <- fluidPage(
         fileInput("file", "Choose CSV File",
                   accept = c("text/csv", ".csv")),
         helpText("File format: Single column with numeric values"),
-        textOutput("uploaded_sample_size")  # Add this line
+        textOutput("uploaded_sample_size")
       ),
       
       conditionalPanel(
@@ -316,19 +301,16 @@ ui <- fluidPage(
     
     mainPanel(
       tabsetPanel(
-        # tabPanel("Input Data", 
-        #          plotOutput("data_plot"),
-        #          dataTableOutput("data_table")),
-        
+  
         tabPanel("Predictions", 
                  dataTableOutput("pred_table")),
         
         tabPanel("Feature Importance", 
-                 plotOutput("varimp_plot" , width = "700px", height = "800px")),
+                 plotOutput("varimp_plot", width = "700px", height = "800px")),
         
         tabPanel("Model Performance",
-                 plotOutput("roc_plot" , width = "800px", height = "600px"),
-                 dataTableOutput("metrics_table") )
+                 plotOutput("roc_plot", width = "800px", height = "600px"),
+                 dataTableOutput("metrics_table"))
       )
     )
   )
@@ -338,6 +320,16 @@ ui <- fluidPage(
 # Shiny App Server
 # ---------------------------
 server <- function(input, output) {
+  
+  # Display uploaded sample size
+  output$uploaded_sample_size <- renderText({
+    if (input$data_source == "upload") {
+      req(input$file)
+      df <- read.csv(input$file$datapath, header = FALSE)
+      if (ncol(df) != 1) return(NULL)
+      paste("Uploaded sample size:", length(df[, 1]))
+    }
+  })
   
   # Reactive data input
   sample_data <- reactive({
@@ -361,9 +353,7 @@ server <- function(input, output) {
   processed_samples <- reactive({
     data <- sample_data()
     req(data)
-    samples <- split(data, ceiling(seq_along(data)/8))
-    samples <- samples[lengths(samples) == 8]  # Keep only complete samples
-    samples
+    list(data) 
   })
   
   # Classification results
@@ -383,24 +373,6 @@ server <- function(input, output) {
     })
     
     do.call(rbind, results)
-  })
-  
-  # Output: Input data plot (base R)
-  output$data_plot <- renderPlot({
-    samples <- processed_samples()
-    req(samples)
-    plot_input_data(samples)
-  })
-  
-  # Output: Input data table
-  output$data_table <- renderDataTable({
-    samples <- processed_samples()
-    req(samples)
-    sample_matrix <- do.call(rbind, samples)
-    colnames(sample_matrix) <- paste0("X", 1:8)
-    datatable(sample_matrix, 
-              options = list(pageLength = 5, scrollX = TRUE),
-              caption = "Input Data Samples")
   })
   
   # Output: Prediction table

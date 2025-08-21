@@ -1,9 +1,9 @@
 # Set directories in local computer
 source("~/Desktop/OSU/Research/Pretest-Simulation/functions/User_defined_functions.R")
 source("~/Desktop/OSU/Research/Pretest-Simulation/functions/utility.R")
+setwd("~/Desktop/OSU/Research/Pretest-Simulation/Expected Power loss & Expected Inflation of Error")
 
-setwd("/Users/benedictkongyir/Library/Mobile Documents/com~apple~CloudDocs/PhD Thesis/Expected Power loss & Expected Inflation of Error")
-
+# define parameters
 {
   Nsim <- 1e4
   B <- 1e3
@@ -13,10 +13,12 @@ setwd("/Users/benedictkongyir/Library/Mobile Documents/com~apple~CloudDocs/PhD T
   effect_size <- 0.5
 }
 
+# test statistic function
 calculate_test_statistic <- function(x, y) {
   (mean(x) - mean(y)) / sqrt(var(x)/length(x) + var(y)/length(y))
 }
 
+# permutation test function
 permutation_test <- function(x, y, B = 1000) {
   observed <- calculate_test_statistic(x, y)
   combined <- c(x, y)
@@ -29,9 +31,9 @@ permutation_test <- function(x, y, B = 1000) {
   mean(abs(perm_stats) >= abs(observed))
 }
 
-
+# function to run simulation
 run_simulation <- function(sample_sizes, distributions, Nsim, effect_size, alpha, B) {
-  
+# set progress bar
   total_steps <- length(sample_sizes) * length(distributions) * Nsim
   current_step <- 0
   pb <- txtProgressBar(min = 0, max = total_steps, style = 3)
@@ -52,6 +54,7 @@ run_simulation <- function(sample_sizes, distributions, Nsim, effect_size, alpha
       pval_sw_x <- pval_sw_y <- numeric(Nsim)
     
       for (s in 1:Nsim) {
+        
         x <- generate_data(n, dist)
         y <- generate_data(n, dist)
         
@@ -105,11 +108,9 @@ results <- run_simulation(
 dims <- c(length(sample_sizes), length(distributions))
 dimnames_list <- list(as.character(sample_sizes), distributions)
 
-TypeIerror_t_test <- TypeIerror_perm_test <- TypeIerror_Adaptive_test <- array(NA, dim = dims, dimnames = dimnames_list
-)
+TypeIerror_t_test <- TypeIerror_perm_test <- TypeIerror_Adaptive_test <- array(NA, dim = dims, dimnames = dimnames_list)
 
-power_t_test <- power_perm_test <- power_Adaptive_test <- array(NA, dim = dims, dimnames = dimnames_list
-)
+power_t_test <- power_perm_test <- power_Adaptive_test <- array(NA, dim = dims, dimnames = dimnames_list)
 
 for(i in seq_along(sample_sizes)){
   for(j in seq_along(distributions)){
@@ -259,8 +260,8 @@ plot_test_comparison(
                    power_Adaptive_test),
   sample_sizes = sample_sizes,
   distributions = distributions,
-  y_label = "Power",
-  file_name = "Power_Comparison.pdf"
+  y_label = "Power"
+ # file_name = "Power_Comparison.pdf"
 )
 
 # Type I error
@@ -270,8 +271,8 @@ plot_test_comparison(
                    TypeIerror_Adaptive_test),
   sample_sizes = sample_sizes,
   distributions = distributions,
-  y_label = "Type I Error",
-  file_name = "TypeIError_Comparison.pdf"
+  y_label = "Type I Error"
+ # file_name = "TypeIError_Comparison.pdf"
 )
 
 # --------------------------------------------
@@ -326,8 +327,8 @@ plot_difference_metrics(
   sample_sizes = sample_sizes,
   distributions = distributions,
   y_label = "Power Loss",
-  main_title_prefix = "Power Loss vs Expected Power Loss for",
-  file_name = "PowerLoss_vs_Expected.pdf"
+  main_title_prefix = "Power Loss vs Expected Power Loss for"
+ # file_name = "PowerLoss_vs_Expected.pdf"
 )
 
 
@@ -339,3 +340,54 @@ plot_difference_metrics(
   main_title_prefix = "Inflation vs Expected Inflation for",
   file_name = "TypeIErrorInflation_vs_Expected.pdf"
 )
+
+# ====================== plot =============================
+dist_color <- c("blue", "red", "green", "orange")
+test_lty <- c(1, 2, 3, 4)
+pch_ch <- c(8, 16, 17, 18)
+
+power_loss_EPL_func <- function(file_name = NULL) {
+  
+  # Set up layout: 2x2 plots + 1 extra space for legend
+  layout(matrix(c(1, 2, 3, 4, 5, 5), nrow = 3, byrow = TRUE), heights = c(1, 1, 0.3))
+  par(mar = c(4, 4, 2, 2))  # plot margins
+  
+  # Power loss ----
+  plot(sample_sizes, powerloss[, 1], type = "o", pch = pch_ch[1], lty = test_lty[1],col = dist_color[1], ylim = c(-0.04, 0.08),xlab = "Sample Size (n)", ylab = "Power Loss", lwd = 2)
+  for (i in 2:4) {
+    lines(sample_sizes, powerloss[, i], type = "o", pch = pch_ch[i], lty = test_lty[i], col = dist_color[i], lwd = 2)
+  }
+  title(main = "Difference in Power: Permutation - t-test")
+  
+  # Expected power loss ----
+  plot(sample_sizes, Expected_power_loss[, 1], type = "o", pch = pch_ch[1], lty = test_lty[1],col = dist_color[1], ylim = c(-0.02, 0.05), xlab = "Sample Size (n)", ylab = "Expected Power Loss" , lwd = 2)
+  for (i in 2:4) {
+    lines(sample_sizes, Expected_power_loss[, i], type = "o", pch = pch_ch[i], lty = test_lty[i], col = dist_color[i] , lwd = 2)
+  }
+  title(main = "Expected Power Loss: Permutation - t-test")
+  
+  # Type I error inflation ----
+  plot(sample_sizes, Inflation_TypeI_error[, 1], type = "o", pch = pch_ch[1], lty = test_lty[1],col = dist_color[1], ylim = c(-0.04, 0.05), xlab = "Sample Size (n)", ylab = "Inflation of Type I Error" , lwd = 2)
+  for (i in 2:4) {
+    lines(sample_sizes, Inflation_TypeI_error[, i], type = "o", pch = pch_ch[i], lty = test_lty[i], col = dist_color[i] , lwd = 2)
+  }
+  title(main = "Difference in Type I Error of t-test from Alpha")
+  
+  # Expected inflation of Type I error ----
+  plot(sample_sizes, Expected_Inflation_TypeI_error[, 1], type = "o", pch = pch_ch[1], lty = test_lty[1], col = dist_color[1], ylim = c(-0.03, 0.05), xlab = "Sample Size (n)", ylab = "Expected Inflation of Type I Error" , lwd = 2)
+  for (i in 2:4) {
+    lines(sample_sizes, Expected_Inflation_TypeI_error[, i], type = "o", pch = pch_ch[i], lty = test_lty[i], col = dist_color[i] , lwd = 2)
+  }
+  title(main = "Expected Inflation of Type I Error Rate")
+  
+  # Single Legend ----
+  par(mar = c(0, 0, 0, 0))
+  plot.new()
+  legend("center", legend = distributions, title = "Test Method",col = dist_color, lty = test_lty, pch = pch_ch, bty = "n", horiz = TRUE , lwd = 2)
+}
+
+
+# Save plots to PDF
+pdf("power_loss_plots.pdf", width = 10, height = 8)
+power_loss_EPL_func(file_name = "Expected_powerloss_and_TypeI_error.pdf")
+dev.off()
