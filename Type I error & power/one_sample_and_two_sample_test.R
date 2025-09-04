@@ -30,11 +30,11 @@ one_sample_bootstrap_test <- function(x, mu0 = 0, B = 1000) {
 
 # Parameters
 {
-  Nsim <- 1e4
+  Nsim <- 1e3
   alpha <- 0.05
   B <- 1e3
   effect_size <- 0.5  
-  distributions <- c("Normal", "Uniform", "t", "Exponential", "Chi-Square", "LogNormal")
+  distributions <- c("Normal", "Uniform", "t", "Exponential") #, "Chi_Square", "LogNormal")
   sample_size <- c(8, 10, 15, 20, 25, 30, 50)
 }
 
@@ -45,7 +45,7 @@ create_plots <- function(results, y_var, title, ylab, filename,
                          tests = c("t-test", "Wilcoxon test", "Bootstrap test"),
                          hline = NULL) {
   
-  pdf(filename, width = 10, height = 8)
+ # pdf(filename, width = 10, height = 8)
   
   # Layout: 2 rows x 3 columns for plots, 1 row for shared legend
   layout_matrix <- matrix(1:9, nrow = 3, byrow = TRUE)
@@ -98,7 +98,7 @@ create_plots <- function(results, y_var, title, ylab, filename,
          bty = "n", 
          cex = 1.2)
   
-  dev.off()
+ # dev.off()
 }
 
 # Progress bar
@@ -189,11 +189,11 @@ save(Nsim, B, effect_size, distributions, sample_size,
 # Create plots for one-sample case
 create_plots(list(TypeI_error_t.test, TypeI_error_wilcox.test, TypeI_error_bootstrap.test),
              y_var = "error", title = "Type I Error Rates", ylab = "Type I Error Rate",
-             filename = "one_sample_typeI_error.pdf", hline = 0.05)
+              hline = 0.05)
 
 create_plots(list(power_t.test, power_wilcox.test, power_bootstrap.test),
              y_var = "power", title = "Power", ylab = "Power",
-             filename = "one_sample_power.pdf", hline = 0.8)
+              hline = 0.8)
 
 # ----------------------------
 # Two-sample case simulation

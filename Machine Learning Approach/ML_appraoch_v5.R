@@ -3,7 +3,7 @@ source("~/Desktop/OSU/Research/Pretest-Simulation/Machine Learning Approach/gen_
 
 if(!require("pacman")) install.packages("pacman")
 pacman::p_load(e1071, tseries, nortest, gbm, lawstat, infotheo, ineq, caret, pROC, ROCR, randomForest,
-               evd, discretization, nnet, ggplot2, mlbench, infotheo, dplyr)
+               evd, discretization, nnet, ggplot2, mlbench, infotheo, dplyr, fractaldim)
 
 # ---------------------------
 # Define Feature Extraction Functions
@@ -25,9 +25,9 @@ calculate_outliers <- function(samples) {
   return(sum(samples < (qnt[1] - H) | samples > (qnt[2] + H)))
 }
 
-calculate_entropy <- function(samples) {
-  return(infotheo::entropy(discretize(samples, nbins = 10)))
-}
+# calculate_entropy <- function(samples) {
+#   return(infotheo::entropy(discretize(samples, nbins = 10)))
+# }
 
 calculate_peak_to_trough <- function(samples) max(samples) / abs(min(samples))
 
@@ -126,7 +126,7 @@ calculate_features <- function(samples) {
     Zero_Cross_Rate         = zcr,
     Gini_Coefficient        = gini,
     #Outliers                = outliers,
-    Mean                     = mean_val,
+    #Mean                     = mean_val,
     Median                   = median_val,
     Variance                 = var_val,
     IQR                      = iqr_val,
@@ -134,9 +134,13 @@ calculate_features <- function(samples) {
     Range                    = range_val,
     CV                       = cv_val,
     Root_Mean_Square         = rms_val,
-    energy                   = energy,
-    Peak_to_Trough           = pt_ratio,
-    Enropy                   = entropy_val
+   # energy                   = energy,
+   # Peak_to_Trough           = pt_ratio,
+   # Enropy                   = entropy_val
+   spec_entropy               = spec_entropy,
+   #spec_centroid              = spec_centroid,
+   #fd_val                     = fd_val,
+   hjorth                 = hjorth_vals
   )
   return(features)
 }
@@ -175,7 +179,7 @@ generate_data <- function(sample_size, N, dist = "normal", label) {
 }
 
 set.seed(12345)
-sample_size <- 30 
+sample_size <- 10
 num.sim <- 100            
 
 # Normal data
@@ -255,7 +259,7 @@ ann_model <- train(Label ~ .,
 # Gradient Boosting
 gbm_model <- train(Label ~ ., 
                    data = train_norm, 
-                   method = "gbm", 
+                   method = "gbm",  
                    trControl = ctrl, 
                    metric = "Accuracy", 
                    verbose = FALSE)
@@ -369,7 +373,8 @@ simulate_predictions <- function(distributions ,n_iter = 1000, n = sample_size,
 }
 
 set.seed(12345)
-distribution_set <- c("normal_5", "normal_100" ,"cauchy", "beta")
+distribution_set <- c("normal_5", "normal_100" ,"cauchy", "t_10")
+#distribution_set <- c("normal", "t_10")
 
 eval_results <- simulate_predictions(
   distributions = distribution_set,
@@ -426,8 +431,8 @@ varImplot <- function(rf_model, top_n = NULL){
 plot_combined_roc_base <- function(eval_results) {
   # Prepare plotting symbols and colors
   model_names <- names(eval_results)
-  n_models <- length(model_names)
-  colors <- rainbow(n_models)
+  #colors <- rainbow(length(model_names))
+  colors <- c("cyan", "brown", "blueviolet", "red", "green", "blue")
   
   # Plot frame
   plot(0, 0, type = "n", xlim = c(0, 1), ylim = c(0, 1),
@@ -472,13 +477,17 @@ plot_combined_roc_base <- function(eval_results) {
 }
 
 # generate plots
+pdf("vip.pdf", width=8, height=8)
 varImplot(models_list$RF)
+dev.off()
 
+pdf("roc_curve.pdf", width=8, height=6)
 plot_combined_roc_base(eval_results)
-
+dev.off()
 # save results
-save(models_list, norm_result, eval_results, file = "trained_models_30.RData")
 
+save(models_list, norm_result, eval_results, file = "trained_models_n10.RData")
+save.image(paste0("models_n10", ".RData"))
 # --------------------------------
 # classify a single data set
 # --------------------------------
@@ -513,7 +522,7 @@ classify_sample <- function(sample_data, trained_models, preProcStandard, prePro
 # ========================
 
 # Generate test data (replace with user's actual data)
-test_sample <- generate_samples(n = sample_size, dist = "LogNormal")
+test_sample <- generate_samples(n = sample_size, dist = "Laplace")
 
 # Classify the sample
 classification_results <- classify_sample(
