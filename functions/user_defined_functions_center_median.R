@@ -18,7 +18,7 @@ generate_data <- function(n, dist, par = NULL) {
     if (is.null(par)) par <- c(0, 1)
     x <- rnorm(n, mean = par[1], sd = par[2])
     # Center around median (same as mean for normal)
-    #x <- x - median(x)
+    x <- x - median(x)
     
   } else if (dist == "chi_square") {
     if (is.null(par)) par <- 3

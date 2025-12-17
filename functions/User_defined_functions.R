@@ -21,7 +21,11 @@ generate_data <- function(n, dist, par = NULL) {
     if (is.null(par)) par <- 3
     x <- (rchisq(n, df = par) - par) / sqrt(2 * par)
     
-  } else if (dist == "gamma") {
+  }else if (dist == "chi_sq7") {
+    if (is.null(par)) par <- 7
+    x <- (rchisq(n, df = par) - par) / sqrt(2 * par)
+    
+  }else if (dist == "gamma") {
     if (is.null(par)) par <- c(3, 0.1)
     mean_g <- par[1] / par[2]
     sd_g <- sqrt(par[1] / par[2]^2)
@@ -35,10 +39,13 @@ generate_data <- function(n, dist, par = NULL) {
     
   } else if (dist == "t") {
     if (is.null(par)) par <- 3
-    if (par <= 1) stop("Degrees of freedom must be > 1")
     x <- rt(n, df = par) / sqrt(par / (par - 2))
     
-  } else if (dist == "uniform") {
+  } else if (dist == "t_5") {
+  if (is.null(par)) par <- 5
+  x <- rt(n, df = par) / sqrt(par / (par - 2))
+  
+}else if (dist == "uniform") {
     if (is.null(par)) par <- c(0, 1)
     mean_u <- (par[1] + par[2]) / 2
     sd_u <- sqrt((par[2] - par[1])^2 / 12)
@@ -179,10 +186,7 @@ generate_tests <- function(x, test){
     
   } else if(test == "AD"){  # Anderson-Darling
     output <- nortest::ad.test(x)
-    
-  } else if(test == "AD2"){  # Anderson-Darling from DescTools (more options)
-    output <- DescTools::AndersonDarlingTest(x)
-    
+  
   } else if(test == "SF"){  # Shapiro-Francia
     output <- nortest::sf.test(x)
     

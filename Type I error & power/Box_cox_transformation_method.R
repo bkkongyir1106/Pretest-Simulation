@@ -28,46 +28,110 @@ one_sample_bootstrap_test <- function(x, mu0 = 0, B = 1000) {
   return(p_val)
 }
 
-# Box-Cox transformation function
-box_cox_transform <- function(x) {
-  # Find optimal lambda using MLE
-  bc_result <- MASS::boxcox(x ~ 1, plotit = FALSE)
-  lambda <- bc_result$x[which.max(bc_result$y)]
-  
-  # Apply transformation
-  if (abs(lambda) < 1e-6) {
-    transformed_x <- log(x)
+# # Box-Cox transformation function
+# box_cox_transform <- function(x) {
+#   # Find optimal lambda using MLE
+#   bc_result <- MASS::boxcox(x ~ 1, plotit = FALSE)
+#   lambda <- bc_result$x[which.max(bc_result$y)]
+# 
+#   # Apply transformation
+#   if (abs(lambda) < 1e-6) {
+#     transformed_x <- log(x)
+#   } else {
+#     transformed_x <- (x^lambda - 1) / lambda
+#   }
+# 
+#   return(transformed_x)
+# }
+# 
+# # Modified t-test with Box-Cox transformation if needed
+# t_test_with_boxcox <- function(x, mu0 = 0) {
+#   # Test for normality using Shapiro-Wilk
+#   shapiro_test <- shapiro.test(x)
+# 
+#   # If data is not normal, apply Box-Cox transformation
+#   if (shapiro_test$p.value < 0.05) {
+#     # Check if data is positive (required for Box-Cox)
+#     if (all(x > 0)) {
+#       x_transformed <- box_cox_transform(x)
+#       # Test transformed data for normality
+#       shapiro_transformed <- shapiro.test(x_transformed)
+# 
+#       # If transformation improves normality, use transformed data
+#       if (shapiro_transformed$p.value > shapiro_test$p.value) {
+#         x <- x_transformed
+#       }
+#     }
+#   }
+# 
+#   # Perform t-test
+#   t_test_result <- t.test(x, mu = mu0)
+#   return(t_test_result$p.value)
+# }
+
+
+# ---- Yeo–Johnson (vectorized) ----
+yeo_johnson <- function(y, lambda) {
+  out <- numeric(length(y))
+  nonneg <- y >= 0
+
+  # y >= 0
+  if (abs(lambda) < 1e-8) {
+    out[nonneg] <- log1p(y[nonneg])
   } else {
-    transformed_x <- (x^lambda - 1) / lambda
+    out[nonneg] <- ((y[nonneg] + 1)^lambda - 1) / lambda
   }
-  
-  return(transformed_x)
+
+  # y < 0
+  if (abs(lambda - 2) < 1e-8) {
+    out[!nonneg] <- -log1p(-y[!nonneg])
+  } else {
+    out[!nonneg] <- -(((1 - y[!nonneg])^(2 - lambda) - 1) / (2 - lambda))
+  }
+  out
 }
 
-# Modified t-test with Box-Cox transformation if needed
-t_test_with_boxcox <- function(x, mu0 = 0) {
-  # Test for normality using Shapiro-Wilk
-  shapiro_test <- shapiro.test(x)
-  
-  # If data is not normal, apply Box-Cox transformation
-  if (shapiro_test$p.value < 0.05) {
-    # Check if data is positive (required for Box-Cox)
-    if (all(x > 0)) {
-      x_transformed <- box_cox_transform(x)
-      # Test transformed data for normality
-      shapiro_transformed <- shapiro.test(x_transformed)
-      
-      # If transformation improves normality, use transformed data
-      if (shapiro_transformed$p.value > shapiro_test$p.value) {
-        x <- x_transformed
-      }
-    }
+# ---- Estimate λ (try 'car', else MLE fallback) ----
+estimate_yj_lambda <- function(x) {
+  # try MLE via 'car' if available
+  lam <- tryCatch({
+    if (!requireNamespace("car", quietly = TRUE)) stop("no car")
+    as.numeric(car::powerTransform(x, family = "yjPower")$lambda)
+  }, error = function(e) NA_real_)
+
+  if (!is.na(lam)) return(lam)
+
+  # fallback: maximize normal log-likelihood + Jacobian term
+  obj <- function(l) {
+    z <- yeo_johnson(x, l)
+    n <- length(z)
+    s2 <- mean((z - mean(z))^2)
+    J  <- sum(ifelse(x >= 0, (l - 1) * log1p(x), (1 - l) * log1p(-x)))
+    # negative (profile) log-likelihood up to constants (minimize)
+    -( - (n/2) * log(s2) + J )
   }
-  
-  # Perform t-test
-  t_test_result <- t.test(x, mu = mu0)
-  return(t_test_result$p.value)
+  optimize(obj, interval = c(-5, 5))$minimum
 }
+
+# ---- YJ transform wrapper: estimates λ then transforms ----
+yeo_johnson_transform <- function(x) {
+  lambda <- estimate_yj_lambda(x)
+  yeo_johnson(x, lambda)
+}
+
+# ---- Modified t-test (uses YJ instead of Box–Cox) ----
+t_test_with_boxcox <- function(x, mu0 = 0) {
+  shapiro_raw <- shapiro.test(x)
+
+  if (shapiro_raw$p.value < 0.05) {
+    x_yj <- yeo_johnson_transform(x)
+    shapiro_yj <- shapiro.test(x_yj)
+    if (shapiro_yj$p.value > shapiro_raw$p.value) x <- x_yj
+  }
+
+  t.test(x, mu = mu0)$p.value
+}
+
 
 # Parameters
 {
@@ -77,69 +141,6 @@ t_test_with_boxcox <- function(x, mu0 = 0) {
   effect_size <- 0.5  
   distributions <- c("Normal", "Uniform", "t", "Exponential") #, "Chi_Square", "LogNormal")
   sample_size <- c(8, 10, 15, 20, 25, 30, 50)
-}
-
-# Define plot function
-create_plots <- function(results, y_var, title, ylab, filename, 
-                         colors = c("blue", "green", "red"), 
-                         pchs = c(16, 17, 21),
-                         tests = c("t-test", "Wilcoxon test", "Bootstrap test"),
-                         hline = NULL) {
-  
-  # pdf(filename, width = 10, height = 8)
-  
-  # Layout: 2 rows x 3 columns for plots, 1 row for shared legend
-  layout_matrix <- matrix(1:9, nrow = 3, byrow = TRUE)
-  layout(mat = layout_matrix, heights = c(1, 1, 0.3))
-  
-  # Plotting setup
-  par(mar = c(4, 4, 2, 1))
-  
-  for (j in seq_along(distributions)) {
-    dist_name <- distributions[j]
-    
-    # Get data for each test
-    y_t <- results[[1]][, j]
-    y_w <- results[[2]][, j]
-    y_b <- results[[3]][, j]
-    
-    # Determine ylim
-    y_max <- if(y_var == "power") 1 else max(y_t, y_w, y_b, 0.2)
-    
-    # Create base plot
-    plot(sample_size, y_t, 
-         type = "b", 
-         col = colors[1], 
-         lty = 1, 
-         pch = pchs[1],
-         lwd = 2,
-         ylim = c(0, y_max),
-         xlab = "Sample Size", 
-         ylab = ylab,
-         main = dist_name)
-    
-    # Add other tests
-    lines(sample_size, y_w, type = "b", col = colors[2], lty = 1, pch = pchs[2], lwd = 2)
-    lines(sample_size, y_b, type = "b", col = colors[3], lty = 1, pch = pchs[3], lwd = 2)
-    
-    # Add reference line if specified
-    if(!is.null(hline)) abline(h = hline, col = "gray", lty = 3, lwd = 2)
-  }
-  
-  # Legend (bottom row)
-  par(mar = c(0, 0, 0, 0))
-  plot.new()
-  legend("center", legend = tests,
-         title = "Test Method", 
-         col = colors, 
-         lty = 1,
-         lwd = 2,
-         pch = pchs,
-         horiz = TRUE,
-         bty = "n", 
-         cex = 1.2)
-  
-  # dev.off()
 }
 
 # Progress bar
@@ -168,7 +169,7 @@ system.time({
       
       for (i in 1:Nsim) {
         x <- generate_data(n, dist)
-        
+  
         # Type I error
         pval_t_H0[i] <- t.test(x)$p.value
         pval_wilcox_H0[i] <- wilcox.test(x)$p.value
@@ -183,10 +184,12 @@ system.time({
       }
       
       list(
+        # Type I error
         error_t_test = mean(pval_t_H0 < alpha),
         error_wilcox_test = mean(pval_wilcox_H0 < alpha),
         error_bootstrap_test = mean(pval_boot_H0 < alpha),
         error_t_boxcox_test = mean(pval_t_boxcox_H0 < alpha),
+        # power
         power_t_test = mean(pval_t_H1 < alpha),
         power_wilcox_test = mean(pval_wilcox_H1 < alpha),
         power_bootstrap_test = mean(pval_boot_H1 < alpha),
@@ -198,12 +201,10 @@ system.time({
   
   # Store results
   errorvec <- numeric(length(sample_size) * length(distributions))
-  TypeI_error_t.test <- TypeI_error_wilcox.test <- TypeI_error_bootstrap.test <- TypeI_error_t_boxcox.test <- 
-    array(errorvec, dim = c(length(sample_size), length(distributions)),
-          dimnames = list(sample_size, distributions))
-  power_t.test <- power_wilcox.test <- power_bootstrap.test <- power_t_boxcox.test <- 
-    array(errorvec, dim = c(length(sample_size), length(distributions)),
-          dimnames = list(sample_size, distributions))
+  df_name <- array(errorvec, dim = c(length(sample_size), length(distributions)), dimnames = list(sample_size, distributions))
+  TypeI_error_t.test <- TypeI_error_wilcox.test <- TypeI_error_bootstrap.test <- TypeI_error_t_boxcox.test <- df_name
+
+  power_t.test <- power_wilcox.test <- power_bootstrap.test <- power_t_boxcox.test <- df_name
   
   for (i in seq_along(sample_size)) {
     for (j in seq_along(distributions)) {

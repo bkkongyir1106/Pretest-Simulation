@@ -91,6 +91,7 @@ for (i in seq_along(distribution)) {
 # -------------------------
 # Plotting: LogNormal Case
 # -------------------------
+
 pdf("tstat_density_lognormal.pdf", width = 12, height = 6)
 
 i <- which(distribution == "LogNormal")
@@ -105,7 +106,15 @@ dens_2s_uncond <- density(tstat_2s_uncond[[i]])
 dens_2s_cond   <- density(tstat_2s_cond[[i]])
 
 # Plotting layout
-par(mfrow = c(1, 2), mar = c(4, 4, 3, 1), oma = c(2, 0, 2, 0))
+par(mfrow = c(1, 2),
+    mar = c(5, 5, 3, 1),    # a bit more room for bigger labels
+    oma = c(2, 0, 2, 0),
+    cex.lab = 1.5,          # AXIS TITLE SIZE (xlab/ylab)
+    cex.axis = 1.1,         # tick label size
+    cex.main = 1.2,         # main title size
+    font.lab = 2,           # bold axis titles (optional)
+    mgp = c(2.6, 0.8, 0))   # move titles slightly away from axes
+
 
 # One-sample plot
 plot(x_vals, dens_theoretical, 
@@ -133,15 +142,15 @@ lines(dens_2s_uncond, col = "orange", lwd = 2)
 lines(dens_2s_cond, col = "steelblue", lwd = 2, lty = 2)
 abline(v = crit_vals, lty = 3)
 
-mtext("Comparison of the true and empirical test statistics", outer = TRUE, cex = 1.5, line = 0)
+mtext("Comparison of the true and empirical test statistics", outer = TRUE, cex = 1.75, line = 0)
 
 # Shared legend
 par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE)
 plot.new()
 legend("bottom", legend = c("Theoretical t", "Unconditional", "Conditional", "Critical values"),
        col = c("red", "orange", "steelblue", "black"),
-       lty = c(1, 1, 2, 3), lwd = c(2, 2, 2, 1),
-       horiz = TRUE, bty = "n", cex = 1.2)
+       lty = c(1, 1, 2, 3), lwd = c(3, 3, 3, 2),
+       horiz = TRUE, bty = "n", cex = 1.5)
 
 dev.off()
 
@@ -151,7 +160,15 @@ pdf("tstat_density_all_distributions.pdf", width = 12, height = 9)
 
 # Plot layout: each distribution gets one row (2 columns: 1s and 2s)
 n_dist <- length(distribution)
-par(mfrow = c(n_dist, 2), mar = c(4, 4, 3, 1), oma = c(2, 0, 3, 0))
+par(mfrow = c(n_dist, 2),
+    mar = c(5, 5, 3, 1),
+    oma = c(2, 0, 3, 0),
+    cex.lab = 1.4,
+    cex.axis = 1.2,
+    cex.main = 1.2,
+    font.lab = 2,
+    mgp = c(2.6, 0.8, 0))
+
 
 # Critical values
 crit_vals <- qt(c(0.025, 0.975), df = df)
@@ -187,14 +204,18 @@ for (i in seq_along(distribution)) {
   abline(v = crit_vals, lty = 3)
 }
 
-mtext("Comparison of the true and empirical test statistics", outer = TRUE, cex = 1.5, line = 0)
+mtext("Comparison of the true and empirical test statistics", outer = TRUE, cex = 1.75, line = 0)
 
 # Add shared legend at bottom
 par(fig = c(0, 1, 0, 1), mar = c(0, 0, 0, 0), oma = c(0, 0, 0, 0), new = TRUE)
 plot.new()
 legend("bottom", legend = c("Theoretical t", "Unconditional", "Conditional", "Critical values"),
        col = c("red", "orange", "steelblue", "black"),
-       lty = c(1, 1, 2, 3), lwd = c(2, 2, 2, 1),
-       horiz = TRUE, bty = "n", cex = 1.2)
+       lty = c(1, 1, 2, 3), lwd = c(3, 3, 3, 2),
+       horiz = TRUE, bty = "n", cex = 1.5)
 
 dev.off()
+
+# save workspace
+save.image("test_stat.RData")
+

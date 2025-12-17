@@ -19,86 +19,30 @@ par_set <- function(cores_reserve = 2) {
 }
 close_cluster <- function(cl) parallel::stopCluster(cl)
 
-# Bootstrap test for the mean
-one_sample_bootstrap_test <- function(x, mu0 = 0, B = 1000) {
-  T_obs <- mean(x) - mu0
-  x_centered <- x - mean(x) + mu0
-  boot_stats <- replicate(B, mean(sample(x_centered, replace = TRUE)) - mu0)
-  p_val <- mean(abs(boot_stats) >= abs(T_obs))
-  return(p_val)
+# one sample bootstrap function
+one_sample_bootstrap_test <- function(x, n_bootstrap){
+  # observe test stats
+  observe_test_stat <- sqrt(n) * (mean(x) - 0)/sd(x)
+  # bootstrap test stats
+  x <- x - mean(x) + mu0
+  bootstrap_test_stat <- numeric(n_bootstrap)
+  for(b in 1 : n_bootstrap){
+    sample1 <- sample(x, n, replace = TRUE)
+    bootstrap_test_stat[b] <- sqrt(n) * (mean(sample1) - 0)/sd(sample1)
+    bootstrap_p_val <- mean(abs(bootstrap_test_stat) >= abs(observe_test_stat))
+  }
+  return(bootstrap_p_val)
 }
+
 
 # Parameters
 {
-  Nsim <- 1e3
+  Nsim <- 1e4
   alpha <- 0.05
-  B <- 1e3
+  n_bootstrap <- 1e3
   effect_size <- 0.5  
-  distributions <- c("Normal", "Uniform", "t", "Exponential") #, "Chi_Square", "LogNormal")
+  distributions <- c("Normal", "Uniform", "Chi_Square", "Exponential") 
   sample_size <- c(8, 10, 15, 20, 25, 30, 50)
-}
-
-# Define plot function
-create_plots <- function(results, y_var, title, ylab, filename, 
-                         colors = c("blue", "green", "red"), 
-                         pchs = c(16, 17, 21),
-                         tests = c("t-test", "Wilcoxon test", "Bootstrap test"),
-                         hline = NULL) {
-  
- # pdf(filename, width = 10, height = 8)
-  
-  # Layout: 2 rows x 3 columns for plots, 1 row for shared legend
-  layout_matrix <- matrix(1:9, nrow = 3, byrow = TRUE)
-  layout(mat = layout_matrix, heights = c(1, 1, 0.3))
-  
-  # Plotting setup
-  par(mar = c(4, 4, 2, 1))
-  
-  for (j in seq_along(distributions)) {
-    dist_name <- distributions[j]
-    
-    # Get data for each test
-    y_t <- results[[1]][, j]
-    y_w <- results[[2]][, j]
-    y_b <- results[[3]][, j]
-    
-    # Determine ylim
-    y_max <- if(y_var == "power") 1 else max(y_t, y_w, y_b, 0.2)
-    
-    # Create base plot
-    plot(sample_size, y_t, 
-         type = "b", 
-         col = colors[1], 
-         lty = 1, 
-         pch = pchs[1],
-         lwd = 2,
-         ylim = c(0, y_max),
-         xlab = "Sample Size", 
-         ylab = ylab,
-         main = dist_name)
-    
-    # Add other tests
-    lines(sample_size, y_w, type = "b", col = colors[2], lty = 1, pch = pchs[2], lwd = 2)
-    lines(sample_size, y_b, type = "b", col = colors[3], lty = 1, pch = pchs[3], lwd = 2)
-    
-    # Add reference line if specified
-    if(!is.null(hline)) abline(h = hline, col = "gray", lty = 3, lwd = 2)
-  }
-  
-  # Legend (bottom row)
-  par(mar = c(0, 0, 0, 0))
-  plot.new()
-  legend("center", legend = tests,
-         title = "Test Method", 
-         col = colors, 
-         lty = 1,
-         lwd = 2,
-         pch = pchs,
-         horiz = TRUE,
-         bty = "n", 
-         cex = 1.2)
-  
- # dev.off()
 }
 
 # Progress bar
@@ -131,12 +75,12 @@ system.time({
         # Type I error
         pval_t_H0[i] <- t.test(x)$p.value
         pval_wilcox_H0[i] <- wilcox.test(x)$p.value
-        pval_boot_H0[i] <- one_sample_bootstrap_test(x, mu0 = 0, B)
+        pval_boot_H0[i] <- one_sample_bootstrap_test(x, n_bootstrap = n_bootstrap)
         
         # power
         pval_t_H1[i] <- t.test(x + effect_size)$p.value
         pval_wilcox_H1[i] <- wilcox.test(x + effect_size)$p.value
-        pval_boot_H1[i] <- one_sample_bootstrap_test(x + effect_size, mu0 = 0, B)
+        pval_boot_H1[i] <- one_sample_bootstrap_test(x + effect_size, n_bootstrap = n_bootstrap)
       }
       
       list(
@@ -181,41 +125,123 @@ cat("Power for Wilcoxon-test\n"); print(power_wilcox.test)
 cat("Power for Bootstrap test\n"); print(power_bootstrap.test)
 
 # Save results
-save(Nsim, B, effect_size, distributions, sample_size, 
+save(Nsim, n_bootstrap, effect_size, distributions, sample_size, 
      TypeI_error_t.test, TypeI_error_wilcox.test, TypeI_error_bootstrap.test, 
      power_t.test, power_wilcox.test, power_bootstrap.test, 
      file = "one_sample_test.RData")
 
-# Create plots for one-sample case
-create_plots(list(TypeI_error_t.test, TypeI_error_wilcox.test, TypeI_error_bootstrap.test),
-             y_var = "error", title = "Type I Error Rates", ylab = "Type I Error Rate",
-              hline = 0.05)
 
-create_plots(list(power_t.test, power_wilcox.test, power_bootstrap.test),
-             y_var = "power", title = "Power", ylab = "Power",
-              hline = 0.8)
+# Create plots for Type I error rates
+# -------------------------------------------
+create_plots_typeI <- function() {
+  # Layout: 2 rows x 2 columns for plots, 1 row for shared legend
+  layout_matrix <- matrix(c(1, 2, 3, 4, 5, 5), nrow = 3, byrow = TRUE)
+  layout(mat = layout_matrix, heights = c(1, 1, 0.3))
+  
+  # Plotting setup
+  par(mar = c(4, 4, 2, 1))
+  colors <- c("blue", "green", "red")
+  pchs <- c(16, 17, 21)
+  tests <- c("t-test", "Wilcoxon test", "Bootstrap test")
+  
+  for (j in seq_along(distributions)) {
+    dist_name <- distributions[j]
+    
+    # Get data for each test
+    y_t <- TypeI_error_t.test[, j]
+    y_w <- TypeI_error_wilcox.test[, j]
+    y_b <- TypeI_error_bootstrap.test[, j]
+    
+    # Determine ylim
+    y_max <- max(y_t, y_w, y_b, 0.2, na.rm = TRUE)
+    
+    # Create base plot
+    plot(sample_size, y_t, type = "b", col = colors[1], lty = 1, pch = pchs[1], lwd = 2, ylim = c(0, y_max),xlab = "Sample Size", ylab = "Type I Error Rate", main = dist_name)
+    
+    # Add other tests
+    lines(sample_size, y_w, type = "b", col = colors[2], lty = 1, pch = pchs[2], lwd = 2)
+    lines(sample_size, y_b, type = "b", col = colors[3], lty = 1, pch = pchs[3], lwd = 2)
+    
+    # Add reference line at alpha = 0.05
+    abline(h = alpha, col = "gray", lty = 3, lwd = 2)
+  }
+  
+  # Legend (bottom row)
+  par(mar = c(0, 0, 0, 0))
+  plot.new()
+  legend("center", legend = tests, title = "Test Method", col = colors, lty = 1, lwd = 2, pch = pchs, horiz = FALSE, ncol = 3, bty = "b", cex = 1.0)
+}
 
-# ----------------------------
-# Two-sample case simulation
-# ----------------------------
+# Create plots for Power
+create_plots_power <- function() {
+  # Layout: 2 rows x 2 columns for plots, 1 row for shared legend
+  layout_matrix <- matrix(c(1, 2, 3, 4, 5, 5), nrow = 3, byrow = TRUE)
+  layout(mat = layout_matrix, heights = c(1, 1, 0.3))
+  
+  # Plotting setup
+  par(mar = c(4, 4, 2, 1))
+  colors <- c("blue", "green", "red")
+  pchs <- c(16, 17, 21, 15)
+  tests <- c("t-test", "Wilcoxon test", "Bootstrap test")
+  
+  for (j in seq_along(distributions)) {
+    dist_name <- distributions[j]
+    
+    # Get data for each test
+    y_t <- power_t.test[, j]
+    y_w <- power_wilcox.test[, j]
+    y_b <- power_bootstrap.test[, j]
+    
+    # Determine ylim
+    y_max <- 1
+    
+    # Create base plot
+    plot(sample_size, y_t, type = "b", col = colors[1], lty = 1, pch = pchs[1], lwd = 2, ylim = c(0, y_max), xlab = "Sample Size", ylab = "Power", main = dist_name)
+    
+    # Add other tests
+    lines(sample_size, y_w, type = "b", col = colors[2], lty = 1, pch = pchs[2], lwd = 2)
+    lines(sample_size, y_b, type = "b", col = colors[3], lty = 1, pch = pchs[3], lwd = 2)
+  }
+  
+  # Legend (bottom row)
+  par(mar = c(0, 0, 0, 0))
+  plot.new()
+  legend("center", legend = tests, title = "Test Method", col = colors, lty = 1, lwd = 2, pch = pchs, horiz = FALSE, ncol = 3, bty = "b", cex = 1.0)
+}
+
+# Create PDF files with the plots
+pdf("one_sample_TypeI_error_rates.pdf", width = 10, height = 8)
+create_plots_typeI()
+dev.off()
+
+pdf("one_sample_Power_rates.pdf", width = 10, height = 8)
+create_plots_power()
+dev.off()
+
+## -------------------------------------------------------
+##                Two-sample case simulation
+## ------------------------------------------------------
 
 # Bootstrap two-sample test
-bootstrap_two_sample_test <- function(x, y, B = 1000) {
-  T_obs <- mean(x) - mean(y)
+bootstrap_two_sample_test <- function(x, y, effect_size = 0,  n_bootstrap = 1000) {
+  observe_test_stat <- (mean(x) - mean(y) -effect_size)/sqrt(var(x)/length(x) + var(y)/length(y))
   combined <- c(x, y)
   n1 <- length(x)
   n2 <- length(y)
   
-  x_centered <- x - mean(x) + mean(combined)
-  y_centered <- y - mean(y) + mean(combined)
+  # Center under H0: mean(x) - mean(y) = effect_size
+  # Set group means to (grand_mean + effect_size/2) and (grand_mean - effect_size/2)
+  grand_mean <- mean(combined)
+  x_centered <- x - mean(x) + (grand_mean + effect_size/2)
+  y_centered <- y - mean(y) + (grand_mean - effect_size/2)
   
-  boot_stats <- replicate(B, {
+  boot_stats <- replicate(n_bootstrap, {
     x_star <- sample(x_centered, n1, replace = TRUE)
     y_star <- sample(y_centered, n2, replace = TRUE)
-    mean(x_star) - mean(y_star)
+    (mean(x_star) - mean(y_star) - effect_size)/sqrt(var(x_star)/length(x_star) + var(y_star)/length(y_star))
   })
   
-  p_val <- mean(abs(boot_stats) >= abs(T_obs))
+  p_val <- mean(abs(boot_stats) >= abs(observe_test_stat))
   return(p_val)
 }
 
@@ -236,12 +262,12 @@ system.time({
         # Type I error
         pval_t_H0[i] <- t.test(x, y)$p.value
         pval_wilcox_H0[i] <- wilcox.test(x, y)$p.value
-        pval_boot_H0[i] <- bootstrap_two_sample_test(x, y, B)
+        pval_boot_H0[i] <- bootstrap_two_sample_test(x, y, effect_size = 0, n_bootstrap = n_bootstrap)
         
         # power
         pval_t_H1[i] <- t.test(x, y + effect_size)$p.value
         pval_wilcox_H1[i] <- wilcox.test(x, y + effect_size)$p.value
-        pval_boot_H1[i] <- bootstrap_two_sample_test(x, y + effect_size, B)
+        pval_boot_H1[i] <- bootstrap_two_sample_test(x, y, effect_size = effect_size, n_bootstrap = n_bootstrap)
       }
       
       list(
@@ -291,10 +317,11 @@ save(Nsim, B, effect_size, distributions, sample_size,
      file = "Two_sample_test.RData")
 
 # Create plots for two-sample case
-create_plots(list(TypeI_error_t.test, TypeI_error_wilcox.test, TypeI_error_bootstrap.test),
-             y_var = "error", title = "Type I Error Rates", ylab = "Type I Error Rate",
-             filename = "two_sample_typeI_error.pdf", hline = 0.05)
+pdf("two_sample_TypeI_error_rates.pdf", width = 10, height = 8)
+create_plots_typeI()
+dev.off()
 
-create_plots(list(power_t.test, power_wilcox.test, power_bootstrap.test),
-             y_var = "power", title = "Power", ylab = "Power",
-             filename = "two_sample_power.pdf", hline = 0.8)
+pdf("two_sample_Power_rates.pdf", width = 10, height = 8)
+create_plots_power()
+dev.off()
+

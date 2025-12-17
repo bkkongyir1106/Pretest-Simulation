@@ -1,0 +1,83 @@
+---
+title: "Comparison of Power of Normality Test Methods"
+author: "Benedict Kongyir"
+date: "`r format(Sys.time(), '%m/%d/%Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.height = 8, fig.width = 10)
+library(ggplot2)
+library(gridExtra)
+library(cowplot)
+# or 
+library(patchwork)
+setwd("~/Library/Mobile Documents/com~apple~CloudDocs/Research/NORMALITY TEST METHODS")
+```
+
+## Comparison of Power of Normality test methods
+
+```{r}
+load("/Users/benedictkongyir/Library/Mobile Documents/com~apple~CloudDocs/Research/NORMALITY TEST METHODS/OneSamplePowerNormality.RData")
+```
+
+#### One Sample Case
+```{r, fig.height= 12, fig.width= 12, warning=FALSE}
+library(ggplot2)
+library(cowplot)
+
+# Convert to long-format data frame
+power_df1 <- as.data.frame(as.table(power_norm.test))
+colnames(power_df1) <- c("SampleSize", "Distribution", "Test", "Power")
+power_df1$SampleSize <- as.numeric(as.character(power_df1$SampleSize))
+
+# Exclude Weibull distribution
+power_df1 <- subset(power_df1, Distribution != "Weibull")
+
+# Define shapes for tests
+unique_tests <- unique(power_df1$Test)
+shapes <- c(16, 17, 18, 19, 15, 8, 5)
+shape_mapping <- setNames(shapes[seq_along(unique_tests)], unique_tests)
+
+# Create individual plots
+plots <- list()
+for (dist in unique(power_df1$Distribution)) {
+  p <- ggplot(subset(power_df1, Distribution == dist), 
+              aes(x = SampleSize, y = Power, color = Test, shape = Test)) +
+    geom_line() +
+    geom_point(size = 1) +
+    scale_shape_manual(values = shape_mapping) +
+    ggtitle(paste("Power for", dist)) +
+    theme_minimal() +
+    theme(legend.position = "none",
+          plot.title = element_text(size = 7),
+          axis.title = element_text(size = 6),
+          axis.text = element_text(size = 6))
+          #panel.grid = element_blank())
+  
+  plots[[dist]] <- p
+}
+
+# Create legend
+p_legend <- ggplot(power_df1, aes(x = SampleSize, y = Power, color = Test, shape = Test)) +
+  geom_point(size = 3) +
+  scale_shape_manual(values = shape_mapping) +
+  theme_minimal() +
+  theme(legend.position = "right",
+        legend.text = element_text(size = 6),
+        legend.title = element_text(size = 6))
+legend <- get_legend(p_legend)
+
+# Combine and save
+pdf("norm_test_compared.pdf", width = 6, height = 5)
+combined_plots <- plot_grid(plotlist = plots, ncol = 3)
+final_plot <- plot_grid(combined_plots, legend, rel_widths = c(3, 0.4))
+print(final_plot)
+dev.off()
+```
+
