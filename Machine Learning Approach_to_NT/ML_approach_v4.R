@@ -223,7 +223,7 @@ generate_data <- function(sample_size, N, dist = "normal", label) {
 }
 
 set.seed(12345)
-sample_size <- 50 
+sample_size <- 10 
 num.sim <- 100            
 
 # Normal data
